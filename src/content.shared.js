@@ -915,19 +915,19 @@
         const communityLinks = createEl('div', { styles: { display: 'flex', flexDirection: 'column', gap: '6px' } });
         communityLinks.append(
           createCommunityLink({
-            label: 'Visit the GitHub Repository',
+            label: '看看我们的代码仓库',
             href: 'https://github.com/jonathanbertholet/promptmanager',
             icon: 'icons/github-icon.png',
             alt: 'GitHub icon'
           }),
           createCommunityLink({
-            label: 'Leave a Review',
+            label: '留下你的评论',
             href: 'https://chromewebstore.google.com/detail/open-prompt-manager/gmhaghdbihgenofhnmdbglbkbplolain',
             icon: 'icons/review-icon.png',
             alt: 'Review icon'
           }),
           createCommunityLink({
-            label: 'Buy me a Coffee',
+            label: '一键三连~',
             href: 'https://buymeacoffee.com/jonathanbertholet',
             icon: 'icons/coffee.svg',
             alt: 'Coffee icon'

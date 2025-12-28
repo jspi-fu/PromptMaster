@@ -7,7 +7,8 @@ document.addEventListener('DOMContentLoaded', function () {
   const requestPermissionContainer = document.getElementById('request-permission');
   // Get the Get Started button container
   const getStartedBtnContainer = document.getElementById('get-started-btn-container');
-  // COMMENT: Control to remove all granted permissions at once
+  // COMMENT: Controls to grant/remove all permissions at once
+  const grantAllBtn = document.getElementById('grant-all-permissions');
   const removeAllBtn = document.getElementById('remove-all-permissions');
 
   if (!permissionGrantedContainer || !requestPermissionContainer) {
@@ -74,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // Function to populate providers UI
-  function populateProviders(providersMap) {
+  async function populateProviders(providersMap) {
     console.log('Populating UI with providers map:', providersMap);
 
     // Clear existing content
@@ -83,7 +84,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const allowedProviders = [];
 
-    for (const [key, providerInfo] of Object.entries(providersMap)) {
+    // Fetch llm_providers.json to maintain the original order
+    let providersOrder = [];
+    try {
+      const response = await fetch(chrome.runtime.getURL('llm_providers.json'));
+      if (response.ok) {
+        const data = await response.json();
+        providersOrder = (data.llm_providers || []).map(p => p.name);
+      }
+    } catch (error) {
+      console.error('Failed to load llm_providers.json for ordering:', error);
+    }
+
+    // Use ordered list if available, otherwise fall back to Object.entries
+    const providersToDisplay = providersOrder.length > 0
+      ? providersOrder.map(name => [name, providersMap[name]]).filter(([_, info]) => info)
+      : Object.entries(providersMap);
+
+    for (const [key, providerInfo] of providersToDisplay) {
       const iconUrl = providerInfo.iconUrl;
       const isAllowed = providerInfo.hasPermission === "Yes";
 
@@ -172,6 +190,72 @@ document.addEventListener('DOMContentLoaded', function () {
       requestPermissionContainer.innerHTML = '<p>No provider data found in storage.</p>'; // Example message
     }
   });
+
+  // COMMENT: Grant all permissions handler — requests all optional origins and updates providers map
+  if (grantAllBtn) {
+    grantAllBtn.addEventListener('click', async () => {
+      try {
+        // Fetch providers data to get all patterns
+        const response = await fetch(chrome.runtime.getURL('/llm_providers.json'));
+        const data = await response.json();
+        const llmList = data.llm_providers || [];
+        
+        // Collect all origin patterns
+        const allPatterns = llmList
+          .map(provider => provider.pattern)
+          .filter(Boolean);
+        
+        if (allPatterns.length === 0) {
+          alert('未找到可用的提供者权限模式');
+          return;
+        }
+        
+        // Request all permissions at once
+        chrome.permissions.request({ origins: allPatterns }, async (granted) => {
+          if (granted) {
+            // Get current providers map
+            chrome.storage.local.get(['aiProvidersMap'], (res) => {
+              const currentMap = res && res.aiProvidersMap ? res.aiProvidersMap : {};
+              const updated = {};
+              
+              // Update all providers to "Yes" in the map
+              for (const provider of llmList) {
+                const key = provider.name;
+                if (currentMap[key]) {
+                  updated[key] = {
+                    ...currentMap[key],
+                    hasPermission: 'Yes'
+                  };
+                } else {
+                  // If provider not in map yet, create entry
+                  updated[key] = {
+                    hasPermission: 'Yes',
+                    urlPattern: provider.pattern,
+                    url: provider.url,
+                    iconUrl: provider.icon_url || ''
+                  };
+                }
+              }
+              
+              // Also preserve any existing providers not in llmList
+              for (const [key, val] of Object.entries(currentMap)) {
+                if (!updated[key]) {
+                  updated[key] = val;
+                }
+              }
+              
+              chrome.storage.local.set({ aiProvidersMap: updated });
+            });
+          } else {
+            alert('部分或全部权限请求被拒绝');
+          }
+        });
+      } catch (error) {
+        console.error('Failed to grant all permissions:', error);
+        alert('请求权限时发生错误：' + error.message);
+      }
+    });
+  }
 
   // COMMENT: Remove all permissions handler — revokes all optional origins and resets providers map
   if (removeAllBtn) {

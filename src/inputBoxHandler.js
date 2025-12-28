@@ -1,6 +1,16 @@
 // inputBoxHandler.js
 // This script handles input box detection and interactions on supported websites.
 
+// COMMENT: Wrap entire script in IIFE to prevent duplicate execution
+(function() {
+  'use strict';
+  
+  // COMMENT: Check injection marker at the very beginning - if already injected, exit immediately
+  if (window.__promptManagerInputHandlerInjected) {
+    return;
+  }
+  window.__promptManagerInputHandlerInjected = true;
+
 /**
  * Class to handle input box detection and interactions on supported websites.
  */
@@ -344,3 +354,8 @@ class InputBoxHandler {
     return '';
   }
 }
+
+// Make class available globally
+window.InputBoxHandler = InputBoxHandler;
+
+})(); // End of IIFE wrapper

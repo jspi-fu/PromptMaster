@@ -1,6 +1,6 @@
 # Open Prompt Manager
 
-一个轻量级的 Chrome 扩展，用于管理多个 AI 聊天机器人的提示词，包括 ChatGPT、Claude、Gemini、NotebookLM、Deepseek、Copilot、Grok 和 Poe。
+一个轻量级的 Chrome 扩展，用于管理多个 AI 聊天机器人的提示词，支持 23+ 个主流 AI 平台，包括 ChatGPT、Claude、Gemini、豆包、智谱清言、Kimi、DeepSeek 等。
 
 ## 功能特性
 
@@ -17,10 +17,13 @@
   -->
   | ChatGPT    | Claude     | Google Gemini |
   |------------|------------|---------------|
-  | NotebookLM | Deepseek   | Copilot       |
+  | NotebookLM | DeepSeek   | Microsoft Copilot |
   | Grok       | Poe        | Qwen          |
-  | Perplexity | Kimi       | Mistral       |
-  | Abacus     | OpenRouter |               |
+  | Perplexity | Kimi       | Mistral Le Chat |
+  | ChatLLM    | OpenRouter | GitHub Copilot |
+  | 豆包       | 千问       | 智谱清言      |
+  | 元宝       | 问小白     | OpenAI Playground |
+  | LMArena    | Google AI Studio |            |
 
 
 ## 安装

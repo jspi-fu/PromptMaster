@@ -2,6 +2,17 @@
 // COMMENT: Extracted styles and merged global constants to reduce content.js size without changing behavior.
 // COMMENT: We expose constants and the style injector globally; no permissions or manifest changes required.
 
+// COMMENT: Wrap in IIFE to prevent duplicate execution
+(function() {
+  'use strict';
+  
+  // COMMENT: Check injection marker at the very beginning - if already injected, exit immediately
+  if (window.__promptManagerStylesInjected) {
+    return;
+  }
+  window.__promptManagerStylesInjected = true;
+  window.__promptManagerInjected = true; // Legacy marker for compatibility
+
 /* Global constants (merged from content.constants.js) */
 // COMMENT: Use var and window assignments so subsequent injected files see these values.
 var THEME_COLORS = window.THEME_COLORS || {
@@ -633,5 +644,7 @@ var injectGlobalStyles = window.injectGlobalStyles || function injectGlobalStyle
 
 // COMMENT: Preserve existing bootstrap call in content.js; we do not auto-invoke here to avoid double insertion.
 window.injectGlobalStyles = injectGlobalStyles;
+
+})(); // End of IIFE wrapper
 
 

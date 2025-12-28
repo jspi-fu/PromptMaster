@@ -20,6 +20,16 @@
    [16] Bootstrapping
    ============================================================================ */
 
+// COMMENT: Wrap entire script in IIFE to prevent duplicate execution
+(function() {
+  'use strict';
+  
+  // COMMENT: Check injection marker at the very beginning - if already injected, exit immediately
+  if (window.__promptManagerContentInjected) {
+    return;
+  }
+  window.__promptManagerContentInjected = true;
+
 /* ============================================================================
    [01] Global Styles Injection
    COMMENT: Ensure base CSS is present before any UI is mounted.
@@ -29,7 +39,7 @@ const ensureStylesInjected = (() => {
   return () => {
     if (injected) return;
     try {
-injectGlobalStyles();
+      injectGlobalStyles();
       injected = true;
     } catch (err) {
       console.error('[PromptManager] Failed to inject global styles safely:', err);
@@ -1835,3 +1845,5 @@ const PromptMediator = (() => {
 
 /* Initialize the extension */
 setTimeout(() => { PromptMediator.bootstrap(PromptUIManager, PromptProcessor); }, 50);
+
+})(); // End of IIFE wrapper

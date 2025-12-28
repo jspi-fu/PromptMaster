@@ -1,6 +1,62 @@
 {
   "llm_providers": [
     {
+      "name": "Qwen",
+      "pattern": "*://chat.qwen.ai/*",
+      "url": "https://chat.qwen.ai",
+      "icon_url": "../icons/qwen-icon.png",
+      "element_selector": "#chat-input"
+    },
+    {
+      "name": "千问",
+      "pattern": "*://*.qianwen.com/*",
+      "url": "https://www.qianwen.com",
+      "icon_url": "https://crystalpng.com/wp-content/uploads/2025/02/Qwen-04.png",
+      "element_selector": "textarea"
+    },
+    {
+      "name": "豆包",
+      "pattern": "*://*.doubao.com/*",
+      "url": "https://www.doubao.com",
+      "icon_url": "../icons/doubao-icon.png",
+      "element_selector": "textarea"
+    },
+    {
+      "name": "DeepSeek",
+      "pattern": "*://chat.deepseek.com/*",
+      "url": "https://chat.deepseek.com",
+      "icon_url": "../icons/deepseek-icon.png",
+      "element_selector": "textarea[placeholder='Message DeepSeek']"
+    },
+    {
+      "name": "智谱清言",
+      "pattern": "*://chatglm.cn/*",
+      "url": "https://chatglm.cn",
+      "icon_url": "https://registry.npmmirror.com/@lobehub/icons-static-png/latest/files/dark/qingyan-color.png",
+      "element_selector": "textarea"
+    },
+    {
+      "name": "元宝",
+      "pattern": "*://yuanbao.tencent.com/*",
+      "url": "https://yuanbao.tencent.com/",
+      "icon_url": "http://www.aixuanfeng.com/wp-content/uploads/2024/05/logo64@3x.png",
+      "element_selector": "div.ql-editor[contenteditable='true']"
+    },
+    {
+      "name": "问小白",
+      "pattern": "*://*.wenxiaobai.com/*",
+      "url": "https://www.wenxiaobai.com",
+      "icon_url": "https://linuxidc.loloya.cn/linuxidc/202504/36c289c8898064171f56691268cb9abb.png",
+      "element_selector": "textarea"
+    },
+    {
+      "name": "Kimi",
+      "pattern": "*://www.kimi.com/*",
+      "url": "https://www.kimi.com",
+      "icon_url": "https://www.kimi.com/favicon.ico",
+      "element_selector": "div.chat-input-editor[contenteditable='true']"
+    },
+    {
       "name": "ChatGPT",
       "pattern": "*://chatgpt.com/*",
       "url": "https://chatgpt.com",
@@ -36,13 +92,6 @@
       "element_selector": "div.ql-editor[contenteditable='true']"
     },
     {
-      "name": "DeepSeek",
-      "pattern": "*://chat.deepseek.com/*",
-      "url": "https://chat.deepseek.com",
-      "icon_url": "../icons/deepseek-icon.png",
-      "element_selector": "textarea[placeholder='Message DeepSeek']"
-    },
-    {
       "name": "Grok",
       "pattern": "*://grok.com/*",
       "url": "https://grok.com",
@@ -62,13 +111,6 @@
       "url": "*://github.com/copilot/*",
       "icon_url": "https://github.githubassets.com/favicons/favicon.svg",
       "element_selector": "#copilot-chat-textarea, textarea#copilot-chat-textarea, textarea[aria-label=\"Ask anything\"], textarea[placeholder=\"Ask anything\"], [placeholder=\"Ask Copilot\"]"
-    },
-    {
-      "name": "Kimi",
-      "pattern": "*://www.kimi.com/*",
-      "url": "https://www.kimi.com",
-      "icon_url": "https://www.kimi.com/favicon.ico",
-      "element_selector": "div.chat-input-editor[contenteditable='true']"
     },
     {
       "name": "Mistral Le Chat",
@@ -118,13 +160,6 @@
       "url": "https://lmarena.ai",
       "icon_url": "../icons/lmarena-icon.png",
       "element_selector": "textarea[name=\"message\"]"
-    },
-    {
-      "name": "Qwen",
-      "pattern": "*://chat.qwen.ai/*",
-      "url": "https://chat.qwen.ai",
-      "icon_url": "../icons/qwen-icon.png",
-      "element_selector": "#chat-input"
     }
   ]
 }

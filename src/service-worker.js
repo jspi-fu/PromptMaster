@@ -1,6 +1,57 @@
 import { getProviders } from './llm_providers.js'; // Import the correct function
 import { getPrompts, onPromptsChanged, savePrompt } from './promptStorage.js'; // COMMENT: Unified prompt storage API
 
+// COMMENT: Unified script injection function to prevent duplicate injection
+// Checks for injection marker before injecting scripts
+async function injectScriptsIfNeeded(tabId, tabUrl) {
+  // Skip injection for restricted URLs
+  if (!tabUrl || tabUrl.startsWith('chrome://') || tabUrl.startsWith('edge://') || tabUrl.startsWith('about:')) {
+    return false;
+  }
+
+  try {
+    // Check if scripts are already injected by checking for the markers
+    const [{ result: isInjected }] = await chrome.scripting.executeScript({
+      target: { tabId: tabId },
+      func: () => {
+        // Check both markers to ensure all scripts are injected
+        return (window.__promptManagerInjected === true || 
+                window.__promptManagerContentInjected === true ||
+                window.__promptManagerInputHandlerInjected === true);
+      }
+    });
+
+    if (isInjected) {
+      console.log(`Scripts already injected in tab ${tabId} (${tabUrl}), skipping...`);
+      return false;
+    }
+
+    // Inject scripts if not already injected
+    await chrome.scripting.executeScript({
+      target: { tabId: tabId },
+      files: [
+        "inputBoxHandler.js",
+        "content.styles.js",
+        "content.shared.js",
+        "content.js"
+      ]
+    });
+    console.log(`Successfully injected scripts into tab ${tabId} (${tabUrl})`);
+    return true;
+  } catch (injectionError) {
+    // Handle specific error cases
+    if (injectionError.message.includes('Cannot access') || 
+        injectionError.message.includes('No matching window') ||
+        injectionError.message.includes('tab was closed')) {
+      // Ignore errors for restricted pages or closed tabs
+      return false;
+    }
+    // Log other injection errors
+    console.error(`Failed to inject script into tab ${tabId} (${tabUrl}):`, injectionError);
+    return false;
+  }
+}
+
 chrome.runtime.onInstalled.addListener(function (details) {
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
   console.log('onInstalled', details);
@@ -35,18 +86,8 @@ chrome.permissions.onAdded.addListener(async (permissions) => {
         console.log(`Found ${tabs.length} tabs matching ${origin}`);
 
         for (const tab of tabs) {
-          // Inject the scripts into each matching tab
-          console.log(`Injecting scripts into tab ${tab.id} (${tab.url})`);
-          await chrome.scripting.executeScript({
-            target: { tabId: tab.id },
-            files: [
-              "inputBoxHandler.js",
-              "content.styles.js",
-              "content.shared.js",
-              "content.js"
-            ]
-          });
-          console.log(`Successfully injected scripts into tab ${tab.id}`);
+          // Use unified injection function to prevent duplicate injection
+          await injectScriptsIfNeeded(tab.id, tab.url);
         }
       } catch (err) {
         console.error(`Failed to query tabs or inject script for origin ${origin}:`, err);
@@ -78,36 +119,9 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
         const urlRegex = new RegExp(`^${regexPattern}`);
 
         if (hasPermission && urlRegex.test(tab.url)) {
-          console.log(`Injecting scripts into updated tab ${tabId} (${tab.url}) matching ${originPattern}`);
-          // Check if scripts are already injected (optional but good practice)
-          try {
-            await chrome.scripting.executeScript({
-              target: { tabId: tabId },
-              func: () => { /* A simple function to check injection */ window.myExtensionInjected = true; }
-            });
-            // If the above doesn't throw, it means scripts might already be there or injection is possible.
-            // Proceed with actual injection.
-            await chrome.scripting.executeScript({
-              target: { tabId: tabId },
-              files: [
-                "inputBoxHandler.js",
-                "content.styles.js",
-                "content.shared.js",
-                "content.js"
-              ]
-            });
-            console.log(`Successfully injected scripts into tab ${tabId}`);
-          } catch (injectionError) {
-             // Check if the error indicates scripts are already injected
-             if (injectionError.message.includes('Cannot access a chrome:// URL') || injectionError.message.includes('No matching window')) {
-               // Ignore errors for restricted pages or closed tabs
-             } else if (!injectionError.message.includes('already injected')) {
-                // Log other injection errors
-                console.error(`Failed to inject script into tab ${tabId} (${tab.url}):`, injectionError);
-             } else {
-               // console.log(`Scripts already injected in tab ${tabId}`); // Optional: Log if already injected
-             }
-          }
+          console.log(`Attempting to inject scripts into updated tab ${tabId} (${tab.url}) matching ${originPattern}`);
+          // Use unified injection function to prevent duplicate injection
+          await injectScriptsIfNeeded(tabId, tab.url);
           // Important: break after attempting injection for the first matching pattern
           break;
         }
