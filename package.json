@@ -8,6 +8,10 @@
     "scripts": {
         "test": "jest ./tests/",
         "debug": "node --inspect-brk node_modules/jest/bin/jest.js",
+        "build": "node scripts/build.js",
+        "build:chrome": "node scripts/build.js chrome",
+        "build:edge": "node scripts/build.js edge",
+        "build:both": "node scripts/build.js both",
         "build:prod": "cp src/manifest.prod.json src/manifest.json && echo 'Build for PROD'",
         "lint": "eslint src",
         "lint:fix": "eslint src --fix"

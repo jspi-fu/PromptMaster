@@ -750,10 +750,44 @@ const initializeChat = (messagesContainer, input, sendBtn, resetBtn, settingsBtn
       resolve(clean);
     });
   });
+  // COMMENT: 对话历史上限：最多保留 50 轮（user+assistant 配对），或总字符数不超过 100KB
+  const trimHistoryIfNeeded = (msgs) => {
+    const MAX_ROUNDS = 50;
+    const MAX_CHARS = 100000;
+    if (msgs.length <= MAX_ROUNDS * 2) {
+      const totalChars = msgs.reduce((sum, m) => sum + (m.content?.length || 0), 0);
+      if (totalChars <= MAX_CHARS) return msgs;
+    }
+    // COMMENT: 保留最近的 N 轮（从后往前取）
+    const trimmed = msgs.slice(-MAX_ROUNDS * 2);
+    const totalChars = trimmed.reduce((sum, m) => sum + (m.content?.length || 0), 0);
+    if (totalChars > MAX_CHARS) {
+      // COMMENT: 如果仍超限，按字符数从后往前截断
+      let chars = 0;
+      const result = [];
+      for (let i = trimmed.length - 1; i >= 0 && chars < MAX_CHARS; i--) {
+        const msg = trimmed[i];
+        const msgChars = msg.content?.length || 0;
+        if (chars + msgChars <= MAX_CHARS) {
+          result.unshift(msg);
+          chars += msgChars;
+        } else break;
+      }
+      return result;
+    }
+    return trimmed;
+  };
+
   const persistHistory = debounce(() => {
-    // COMMENT: 只存 user/assistant 历史；system prompt 不落盘
-    chrome.storage.local.set({ [HISTORY_KEY]: messages.slice() });
-  }, 250);
+    // COMMENT: 只存 user/assistant 历史；system prompt 不落盘；应用上限控制
+    const trimmed = trimHistoryIfNeeded(messages.slice());
+    chrome.storage.local.set({ [HISTORY_KEY]: trimmed }, () => {
+      // COMMENT: 如果被截断，同步更新内存中的 messages（保持一致性）
+      if (trimmed.length < messages.length) {
+        messages.splice(0, messages.length - trimmed.length);
+      }
+    });
+  }, 300);
 
   // Add message to chat
   const addMessage = (container, role, content, isStreaming = false) => {
@@ -877,11 +911,25 @@ const initializeChat = (messagesContainer, input, sendBtn, resetBtn, settingsBtn
       const decoder = new TextDecoder('utf-8');
       let buffer = '';
       let acc = '';
+      let pendingUpdate = false;
+      let rafScheduled = false;
 
-      const updateStreamingUI = () => {
+      // COMMENT: 使用 rAF 批量刷新，避免每次 delta 都写 DOM
+      const flushUI = () => {
+        if (!pendingUpdate) return;
+        pendingUpdate = false;
+        rafScheduled = false;
+        
         const cursorEl = contentDiv.querySelector('.opm-chat-stream-cursor');
         if (cursorEl) cursorEl.remove();
-        contentDiv.innerHTML = acc.replace(/\n/g, '<br>');
+        // COMMENT: 使用 textContent + 手动处理换行，避免频繁 innerHTML 解析
+        const textNode = document.createTextNode(acc);
+        contentDiv.textContent = '';
+        const lines = acc.split(/\n/);
+        for (let i = 0; i < lines.length; i++) {
+          if (i > 0) contentDiv.appendChild(createEl('br'));
+          if (lines[i]) contentDiv.appendChild(document.createTextNode(lines[i]));
+        }
         const nextCursor = createEl('span', {
           className: 'opm-chat-stream-cursor',
           innerHTML: '▊',
@@ -889,6 +937,14 @@ const initializeChat = (messagesContainer, input, sendBtn, resetBtn, settingsBtn
         });
         contentDiv.appendChild(nextCursor);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      };
+
+      const scheduleUpdate = () => {
+        pendingUpdate = true;
+        if (!rafScheduled) {
+          rafScheduled = true;
+          requestAnimationFrame(flushUI);
+        }
       };
 
       let done = false;
@@ -911,15 +967,26 @@ const initializeChat = (messagesContainer, input, sendBtn, resetBtn, settingsBtn
           const delta = payload?.choices?.[0]?.delta?.content ?? payload?.choices?.[0]?.message?.content ?? '';
           if (typeof delta === 'string' && delta) {
             acc += delta;
-            updateStreamingUI();
+            scheduleUpdate(); // COMMENT: 标记需要更新，由 rAF 批量刷新
           }
         }
       }
 
-      // COMMENT: 结束时移除光标并落盘对话
+      // COMMENT: 结束时确保最后一次刷新完成，移除光标
+      if (rafScheduled) {
+        await new Promise(resolve => requestAnimationFrame(() => { flushUI(); resolve(); }));
+      } else {
+        flushUI();
+      }
       const cursorEl = contentDiv.querySelector('.opm-chat-stream-cursor');
       if (cursorEl) cursorEl.remove();
-      contentDiv.innerHTML = acc.replace(/\n/g, '<br>');
+      // COMMENT: 最终渲染（无光标）
+      const lines = acc.split(/\n/);
+      contentDiv.textContent = '';
+      for (let i = 0; i < lines.length; i++) {
+        if (i > 0) contentDiv.appendChild(createEl('br'));
+        if (lines[i]) contentDiv.appendChild(document.createTextNode(lines[i]));
+      }
 
       const assistantMessage = acc || '无响应';
       messages.push({ role: 'assistant', content: assistantMessage });
@@ -2472,7 +2539,10 @@ const PromptMediator = (() => {
     processor: null,
     promptSelectHandler: null,
     mutationObserver: null,
-    storageWatcherAttached: false
+    storageWatcherAttached: false,
+    ensureUiScheduled: false,
+    ensureUiRunning: false,
+    lastEnsureUiAt: 0
   };
 
   /**
@@ -2526,7 +2596,13 @@ const PromptMediator = (() => {
     const target = document.querySelector('main') || document.body;
     if (!target) return;
 
-    const ensureUIVisible = debounce(async () => {
+    const ensureUIVisible = async () => {
+      if (state.ensureUiRunning) return;
+      const now = Date.now();
+      // COMMENT: Avoid repeated heavy rebuilds on DOM-heavy pages
+      if (now - state.lastEnsureUiAt < 1500) return;
+      state.lastEnsureUiAt = now;
+      state.ensureUiRunning = true;
       // COMMENT: Ensure UI is present even if an input box hasn't been detected yet
       if (!document.getElementById(SELECTORS.PROMPT_BUTTON_CONTAINER) &&
           !document.getElementById(SELECTORS.HOT_CORNER_CONTAINER)) {
@@ -2534,9 +2610,19 @@ const PromptMediator = (() => {
         const prompts = await PromptStorageManager.getPrompts();
         await PromptUIManager.injectUIForCurrentMode(prompts);
       }
-    }, MUTATION_DEBOUNCE_MS);
+      state.ensureUiRunning = false;
+    };
 
-    state.mutationObserver = new MutationObserver(ensureUIVisible);
+    const scheduleEnsureUIVisible = () => {
+      if (state.ensureUiScheduled) return;
+      state.ensureUiScheduled = true;
+      requestAnimationFrame(() => {
+        state.ensureUiScheduled = false;
+        ensureUIVisible().catch(err => console.error('ensureUIVisible failed:', err));
+      });
+    };
+
+    state.mutationObserver = new MutationObserver(scheduleEnsureUIVisible);
     state.mutationObserver.observe(target, { childList: true, subtree: true });
   };
 

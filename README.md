@@ -59,6 +59,14 @@
 
 - **Lint**：`npm run lint`（自动修复：`npm run lint:fix`）
 - **测试**：见 [TESTING.md](TESTING.md)
+- **构建发布包**：
+  - `npm run build` 或 `npm run build:both` - 同时生成 Chrome 和 Edge 发布包
+  - `npm run build:chrome` - 仅生成 Chrome Web Store 发布包
+  - `npm run build:edge` - 仅生成 Microsoft Edge Add-ons 发布包
+  - 输出位置：`dist/prompt-manager-chrome.zip` 和 `dist/prompt-manager-edge.zip`
+- **修改与扩展指南**：见 [MODIFICATION_GUIDE.md](MODIFICATION_GUIDE.md)（包含添加平台、设置项、UI 组件等常见修改方法）
+- **添加新平台**：见 [EXTENDING_PLATFORMS.md](EXTENDING_PLATFORMS.md)
+- **架构文档**：见 [DOCUMENTATION.md](DOCUMENTATION.md)
 
 ## 许可证
 
