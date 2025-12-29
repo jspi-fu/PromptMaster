@@ -1,6 +1,6 @@
 # 提示词管理器（Open Prompt Manager）
 
-一个轻量级的 Chrome 扩展，用于在多个 AI 平台上**快速管理与插入提示词**，并提供一个内置的“提示词生成器”（OpenAI 兼容接口）辅助生成可复用提示词。
+一个轻量级的 Chrome & edge 扩展，用于在多个 AI 平台上**快速管理与插入提示词**，并提供一个内置的“提示词生成器”（OpenAI 兼容接口）辅助生成可复用提示词。
 
 ## 功能概览
 
@@ -63,7 +63,6 @@
   - `npm run build:chrome` - 仅生成 Chrome Web Store 发布包
   - `npm run build:edge` - 仅生成 Microsoft Edge Add-ons 发布包
   - 输出位置：`dist/prompt-manager-chrome.zip` 和 `dist/prompt-manager-edge.zip`
-- **修改与扩展指南**：见 [MODIFICATION_GUIDE.md](MODIFICATION_GUIDE.md)（包含添加平台、设置项、UI 组件等常见修改方法）
 - **添加新平台**：见 [EXTENDING_PLATFORMS.md](EXTENDING_PLATFORMS.md)
 - **架构文档**：见 [DOCUMENTATION.md](DOCUMENTATION.md)
 
@@ -73,5 +72,5 @@ MIT
 
 ## 致谢
 
-- 感谢社区贡献与反馈
-- 图标来源：`Flaticon`（HideMaru）
+- 本项目基于[Open Prompt Manager](https://github.com/jonathanbertholet/promptmanager)进行汉化、功能升级与性能优化，感谢原始开发团队的杰出贡献！
+- 部分功能已经向原始项目提交PR
