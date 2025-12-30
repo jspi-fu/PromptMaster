@@ -282,8 +282,9 @@
       width: 280px;
       z-index: 10000;
       opacity: 0;
-      transform: translateY(10px);
-      transition: opacity var(--transition-speed) ease, transform var(--transition-speed) ease;
+      transform: translateY(10px) scale(0.98);
+      will-change: transform, opacity;
+      transition: opacity 0.15s ease, transform 0.2s ease;
       backdrop-filter: blur(12px);
       /* Constrain panel and let inner list scroll. The main scroll must be inside items, not the whole panel. */
       display: flex;
@@ -305,7 +306,7 @@
     }
     #${SELECTORS.ROOT} .opm-prompt-list.opm-visible {
       opacity: 1;
-      transform: translateY(0);
+      transform: translateY(0) scale(1);
     }
     #${SELECTORS.ROOT} .opm-prompt-list.opm-light {
       background-color: var(--light-bg);
@@ -457,7 +458,8 @@
       border-radius: var(--border-radius);
       font-size: 14px;
       cursor: pointer;
-      transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
+      transition: background-color 0.15s ease, transform 0.15s ease;
+      will-change: transform;
       display: flex;
       align-items: center;
       padding: 6px 12px;

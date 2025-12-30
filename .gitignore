@@ -19,6 +19,7 @@ yarn.lock
 .DS_Store
 .cursorrules
 .gitignore
+blogwrite/
 
 # Debug logs
 debug.log

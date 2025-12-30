@@ -14,7 +14,19 @@ import { generateUUID } from './utils.js';
 // ---------------------------
 export const PROMPT_STORAGE_VERSION = 2;            // bump when schema changes (v2 adds folders + tags)
 const STORAGE_KEY = 'prompts_storage';             // canonical
-const LEGACY_KEY  = 'prompts';                     // kept in sync for old code
+const LEGACY_KEY = 'prompts';                     // kept in sync for old code
+
+// 内存缓存层：减少 chrome.storage 调用
+const promptsCache = {
+  data: null,
+  timestamp: 0,
+  TTL_MS: 500
+};
+
+const invalidateCache = () => {
+  promptsCache.data = null;
+  promptsCache.timestamp = 0;
+};
 
 // Wrap chrome.storage callbacks in Promises for readability
 function storageGet(keys) {
@@ -105,8 +117,9 @@ async function writeStore(storeObj) {
   });
 }
 
-// COMMENT: Back-compat writer that accepts just prompts and preserves folders
+// Back-compat writer that accepts just prompts and preserves folders
 async function writeStorage(prompts) {
+  invalidateCache();
   const data = await storageGet([STORAGE_KEY]);
   const currentFolders = (data[STORAGE_KEY] && Array.isArray(data[STORAGE_KEY].folders)) ? data[STORAGE_KEY].folders : [];
   await writeStore({ prompts, folders: currentFolders });
@@ -132,7 +145,13 @@ function normaliseFolderArray(folders) {
 // Public API
 // ---------------------------
 export async function getPrompts() {
+  const now = Date.now();
+  if (promptsCache.data && (now - promptsCache.timestamp < promptsCache.TTL_MS)) {
+    return promptsCache.data;
+  }
   const { prompts } = await readRawStorage();
+  promptsCache.data = prompts;
+  promptsCache.timestamp = now;
   return prompts;
 }
 

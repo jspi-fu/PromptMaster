@@ -379,7 +379,15 @@
             className: `opm-search-input opm-${getMode()}`,
             attributes: { type: 'text', placeholder: '输入搜索', style: 'border-radius: 4px;' }
           });
-          search.addEventListener('input', e => { PromptUIManager.filterPromptItems(e.target.value); });
+
+          let searchDebounceTimer = null;
+          search.addEventListener('input', e => {
+            clearTimeout(searchDebounceTimer);
+            searchDebounceTimer = setTimeout(() => {
+              PromptUIManager.filterPromptItems(e.target.value);
+            }, 100);
+          });
+
           menu.appendChild(search);
           menu.appendChild(Elements.createMenuBar());
           return menu;
@@ -603,10 +611,31 @@
             }
           );
 
-          prompts.forEach((p, idx) => {
-            const item = Elements.createEditablePromptItem(p, idx, reorder);
-            itemsContainer.appendChild(item);
-          });
+          const BATCH_SIZE = 30;
+
+          const renderBatch = (startIdx) => {
+            const endIdx = Math.min(startIdx + BATCH_SIZE, prompts.length);
+            const fragment = document.createDocumentFragment();
+
+            for (let idx = startIdx; idx < endIdx; idx++) {
+              const item = Elements.createEditablePromptItem(prompts[idx], idx, reorder);
+              fragment.appendChild(item);
+            }
+            itemsContainer.appendChild(fragment);
+
+            if (endIdx < prompts.length) {
+              requestAnimationFrame(() => renderBatch(endIdx));
+            }
+          };
+
+          if (prompts.length > BATCH_SIZE) {
+            renderBatch(0);
+          } else {
+            prompts.forEach((p, idx) => {
+              const item = Elements.createEditablePromptItem(p, idx, reorder);
+              itemsContainer.appendChild(item);
+            });
+          }
           content.appendChild(itemsContainer);
           content.appendChild(Elements.createBottomMenu());
 

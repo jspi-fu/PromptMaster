@@ -758,8 +758,8 @@
         chrome.storage.local.get(['chatApiKey', 'chatBaseUrl', 'chatModelName'], (result) => {
           resolve({
             apiKey: result.chatApiKey || '',
-            baseUrl: result.chatBaseUrl || 'https://api.openai.com/v1',
-            modelName: result.chatModelName || 'gpt-3.5-turbo'
+            baseUrl: result.chatBaseUrl || 'https://openrouter.ai/api/v1',
+            modelName: result.chatModelName || 'nex-agi/deepseek-v3.1-nex-n1:free'
           });
         });
       });
@@ -1214,8 +1214,8 @@
       };
 
       const apiKey = createField('API Key', 'chat-api-key', 'password', 'sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', '服务商提供的 API 密钥', '', true);
-      const baseUrl = createField('Base URL', 'chat-base-url', 'text', 'https://api.openai.com/v1', 'API 请求地址 (需包含 /v1)');
-      const modelName = createField('Model Name', 'chat-model-name', 'text', 'gpt-3.5-turbo', '要调用的模型名称 (如 gpt-4, deepseek-chat)');
+      const baseUrl = createField('Base URL', 'chat-base-url', 'text', 'https://openrouter.ai/api/v1', 'API 请求地址 (需包含 /v1)');
+      const modelName = createField('Model Name', 'chat-model-name', 'text', 'nex-agi/deepseek-v3.1-nex-n1:free', '要调用的模型名称 (如 gpt-4, deepseek-chat)');
 
       const status = createEl('div', {
         styles: {
@@ -1315,7 +1315,7 @@
       // Event Handlers
       testBtn.addEventListener('click', async () => {
         const key = apiKey.input.value.trim();
-        const rawUrl = baseUrl.input.value.trim() || 'https://api.openai.com/v1';
+        const rawUrl = baseUrl.input.value.trim() || 'https://openrouter.ai/api/v1';
         const url = rawUrl.replace(/\/+$/, '');
 
         if (!key) return setStatus('请先填写 API Key', 'error');
@@ -1328,7 +1328,7 @@
           const r = await fetch(`${url}/chat/completions`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
-            body: JSON.stringify({ model: modelName.input.value || 'gpt-3.5-turbo', messages: [{ role: 'user', content: 'Hi' }], max_tokens: 1 }),
+            body: JSON.stringify({ model: modelName.input.value || 'nex-agi/deepseek-v3.1-nex-n1:free', messages: [{ role: 'user', content: 'Hi' }], max_tokens: 1 }),
             signal: controller.signal
           });
           clearTimeout(timeoutId);
@@ -1364,8 +1364,8 @@
       saveBtn.addEventListener('click', () => {
         chrome.storage.local.set({
           chatApiKey: apiKey.input.value.trim(),
-          chatBaseUrl: baseUrl.input.value.trim() || 'https://api.openai.com/v1',
-          chatModelName: modelName.input.value.trim() || 'gpt-3.5-turbo'
+          chatBaseUrl: baseUrl.input.value.trim() || 'https://openrouter.ai/api/v1',
+          chatModelName: modelName.input.value.trim() || 'nex-agi/deepseek-v3.1-nex-n1:free'
         }, () => {
           setStatus('保存成功', 'success');
           setTimeout(closeModal, 600);
@@ -1961,9 +1961,11 @@
       const existingPanel = listEl.querySelector(`#${SELECTORS.PANEL_CONTENT}`);
       const existingItems = existingPanel?.querySelector(`.${SELECTORS.PROMPT_ITEMS_CONTAINER}`);
       const previousScrollTop = existingItems ? existingItems.scrollTop : 0;
-      listEl.innerHTML = '';
+
+      const fragment = document.createDocumentFragment();
       const mode = PromptUIManager.state.listMode || 'list';
       const content = PromptUI.Views.renderPromptList(prompts, { mode });
+      fragment.appendChild(content);
 
       // COMMENT: Inject Info Banner if active and not dismissed
       if (PromptUIManager.BANNER_CONFIG.active) {
@@ -2023,7 +2025,7 @@
         })();
       }
 
-      listEl.appendChild(content);
+      listEl.replaceChildren(fragment);
       const newItems = content.querySelector(`.${SELECTORS.PROMPT_ITEMS_CONTAINER}`);
       if (newItems) {
         newItems.scrollTop = previousScrollTop;
@@ -2667,30 +2669,38 @@
       const target = document.querySelector('main') || document.body;
       if (!target) return;
 
+      const MIN_INTERVAL_MS = 2000;
+      const IDLE_MULTIPLIER = 2;
+
       const ensureUIVisible = async () => {
         if (state.ensureUiRunning) return;
         const now = Date.now();
-        // COMMENT: Avoid repeated heavy rebuilds on DOM-heavy pages
-        if (now - state.lastEnsureUiAt < 1500) return;
+
+        const isIdle = !PromptUIManager.manuallyOpened;
+        const interval = isIdle ? MIN_INTERVAL_MS * IDLE_MULTIPLIER : MIN_INTERVAL_MS;
+
+        if (now - state.lastEnsureUiAt < interval) return;
         state.lastEnsureUiAt = now;
         state.ensureUiRunning = true;
-        // COMMENT: Ensure UI is present even if an input box hasn't been detected yet
-        if (!document.getElementById(SELECTORS.PROMPT_BUTTON_CONTAINER) &&
-          !document.getElementById(SELECTORS.HOT_CORNER_CONTAINER)) {
-          PromptUIManager.cleanupAllUIComponents();
+
+        const btnExists = document.getElementById(SELECTORS.PROMPT_BUTTON_CONTAINER);
+        const hotCornerExists = document.getElementById(SELECTORS.HOT_CORNER_CONTAINER);
+
+        if (!btnExists && !hotCornerExists) {
           const prompts = await PromptStorageManager.getPrompts();
           await PromptUIManager.injectUIForCurrentMode(prompts);
         }
         state.ensureUiRunning = false;
       };
 
+      // 性能优化：使用 setTimeout 替代 requestAnimationFrame 以减少调用频率
+      let scheduleTimeout = null;
       const scheduleEnsureUIVisible = () => {
-        if (state.ensureUiScheduled) return;
-        state.ensureUiScheduled = true;
-        requestAnimationFrame(() => {
-          state.ensureUiScheduled = false;
+        if (scheduleTimeout) return;
+        scheduleTimeout = setTimeout(() => {
+          scheduleTimeout = null;
           ensureUIVisible().catch(err => console.error('ensureUIVisible failed:', err));
-        });
+        }, 150);
       };
 
       state.mutationObserver = new MutationObserver(scheduleEnsureUIVisible);
@@ -2700,13 +2710,15 @@
     const setupStorageChangeMonitor = () => {
       if (state.storageWatcherAttached) return;
       state.storageWatcherAttached = true;
+
+      const debouncedRefresh = debounce((prompts) => {
+        PromptUIManager.refreshItemsIfListActive(prompts);
+      }, 200);
+
       (async () => {
         try {
           const { onPromptsChanged } = await import(chrome.runtime.getURL('promptStorage.js'));
-          onPromptsChanged((prompts) => {
-            // COMMENT: Only refresh items when the list view is active to avoid polluting non-list views
-            PromptUIManager.refreshItemsIfListActive(prompts);
-          });
+          onPromptsChanged(debouncedRefresh);
         } catch (err) {
           state.storageWatcherAttached = false; // COMMENT: Allow retry if import fails transiently
           console.error('Failed to attach unified prompts change listener:', err);
