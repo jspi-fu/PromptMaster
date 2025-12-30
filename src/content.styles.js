@@ -3,9 +3,9 @@
 // COMMENT: We expose constants and the style injector globally; no permissions or manifest changes required.
 
 // COMMENT: Wrap in IIFE to prevent duplicate execution
-(function() {
+(function () {
   'use strict';
-  
+
   // COMMENT: Check injection marker at the very beginning - if already injected, exit immediately
   if (window.__promptManagerStylesInjected) {
     return;
@@ -13,61 +13,61 @@
   window.__promptManagerStylesInjected = true;
   window.__promptManagerInjected = true; // Legacy marker for compatibility
 
-/* Global constants (merged from content.constants.js) */
-// COMMENT: Use var and window assignments so subsequent injected files see these values.
-var THEME_COLORS = window.THEME_COLORS || {
-  primary: '#3674B5', primaryGradientStart: '#3674B5', primaryGradientEnd: '#578FCA',
-  hoverPrimary: '#205295', darkBackground: '#0A2647', lightBackground: '#F7FAFC',
-  darkBorder: '#144272', lightBorder: '#E2E8F0',
-  darkShadow: '0 4px 20px rgba(0,0,0,0.3)', lightShadow: '0 4px 20px rgba(0,0,0,0.15)',
-  inputDarkBorder: '1px solid #4A5568', inputLightBorder: '1px solid #CBD5E0',
-  inputDarkBg: '#2D3748', inputLightBg: '#FFFFFF',
-  inputDarkText: '#E2E8F0', inputLightText: '#2D3748'
-};
-window.THEME_COLORS = THEME_COLORS;
+  /* Global constants (merged from content.constants.js) */
+  // COMMENT: Use var and window assignments so subsequent injected files see these values.
+  var THEME_COLORS = window.THEME_COLORS || {
+    primary: '#3674B5', primaryGradientStart: '#3674B5', primaryGradientEnd: '#578FCA',
+    hoverPrimary: '#205295', darkBackground: '#0A2647', lightBackground: '#F7FAFC',
+    darkBorder: '#144272', lightBorder: '#E2E8F0',
+    darkShadow: '0 4px 20px rgba(0,0,0,0.3)', lightShadow: '0 4px 20px rgba(0,0,0,0.15)',
+    inputDarkBorder: '1px solid #4A5568', inputLightBorder: '1px solid #CBD5E0',
+    inputDarkBg: '#2D3748', inputLightBg: '#FFFFFF',
+    inputDarkText: '#E2E8F0', inputLightText: '#2D3748'
+  };
+  window.THEME_COLORS = THEME_COLORS;
 
-var UI_STYLES = window.UI_STYLES || {
-  getPromptButtonContainerStyle: pos => ({
-    position: 'fixed', zIndex: '9999',
-    bottom: `${pos.y}px`, right: `${pos.x}px`,
-    width: '40px', height: '40px',
-    userSelect: 'none',
-  }),
-  hotCornerActiveZone: {
-    position: 'fixed',
-    bottom: '0',
-    right: '0',
-    width: '60px',
-    height: '60px',
-    zIndex: '9998',
-    backgroundColor: 'transparent'
-  }
-};
-window.UI_STYLES = UI_STYLES;
+  var UI_STYLES = window.UI_STYLES || {
+    getPromptButtonContainerStyle: pos => ({
+      position: 'fixed', zIndex: '9999',
+      bottom: `${pos.y}px`, right: `${pos.x}px`,
+      width: '40px', height: '40px',
+      userSelect: 'none',
+    }),
+    hotCornerActiveZone: {
+      position: 'fixed',
+      bottom: '0',
+      right: '0',
+      width: '60px',
+      height: '60px',
+      zIndex: '9998',
+      backgroundColor: 'transparent'
+    }
+  };
+  window.UI_STYLES = UI_STYLES;
 
-var PROMPT_CLOSE_DELAY = typeof window.PROMPT_CLOSE_DELAY === 'number' ? window.PROMPT_CLOSE_DELAY : 10000;
-window.PROMPT_CLOSE_DELAY = PROMPT_CLOSE_DELAY;
+  var PROMPT_CLOSE_DELAY = typeof window.PROMPT_CLOSE_DELAY === 'number' ? window.PROMPT_CLOSE_DELAY : 10000;
+  window.PROMPT_CLOSE_DELAY = PROMPT_CLOSE_DELAY;
 
-var SELECTORS = window.SELECTORS || {
-  ROOT: 'opm-root',
-  PROMPT_BUTTON_CONTAINER: 'opm-prompt-button-container',
-  PROMPT_BUTTON: 'opm-prompt-button',
-  PROMPT_LIST: 'opm-prompt-list',
-  PANEL_CONTENT: 'opm-panel-content',
-  PROMPT_SEARCH_INPUT: 'opm-prompt-search-input',
-  PROMPT_ITEMS_CONTAINER: 'opm-prompt-items-container',
-  ONBOARDING_POPUP: 'opm-onboarding-popup',
-  HOT_CORNER_CONTAINER: 'opm-hot-corner-container',
-  HOT_CORNER_INDICATOR: 'opm-hot-corner-indicator',
-  INFO_CONTENT: 'opm-info-content',
-  CHAT_CONTENT: 'opm-chat-content'
-};
-window.SELECTORS = SELECTORS;
+  var SELECTORS = window.SELECTORS || {
+    ROOT: 'opm-root',
+    PROMPT_BUTTON_CONTAINER: 'opm-prompt-button-container',
+    PROMPT_BUTTON: 'opm-prompt-button',
+    PROMPT_LIST: 'opm-prompt-list',
+    PANEL_CONTENT: 'opm-panel-content',
+    PROMPT_SEARCH_INPUT: 'opm-prompt-search-input',
+    PROMPT_ITEMS_CONTAINER: 'opm-prompt-items-container',
+    ONBOARDING_POPUP: 'opm-onboarding-popup',
+    HOT_CORNER_CONTAINER: 'opm-hot-corner-container',
+    HOT_CORNER_INDICATOR: 'opm-hot-corner-indicator',
+    INFO_CONTENT: 'opm-info-content',
+    CHAT_CONTENT: 'opm-chat-content'
+  };
+  window.SELECTORS = SELECTORS;
 
-// COMMENT: Make function globally available (uses constants defined above)
-var injectGlobalStyles = window.injectGlobalStyles || function injectGlobalStyles() {
-  const styleEl = document.createElement('style');
-  styleEl.textContent = `
+  // COMMENT: Make function globally available (uses constants defined above)
+  var injectGlobalStyles = window.injectGlobalStyles || function injectGlobalStyles() {
+    const styleEl = document.createElement('style');
+    styleEl.textContent = `
     #${SELECTORS.ROOT} {
       --primary: ${THEME_COLORS.primary};
       --primary-gradient-start: ${THEME_COLORS.primaryGradientStart};
@@ -662,6 +662,9 @@ var injectGlobalStyles = window.injectGlobalStyles || function injectGlobalStyle
     #${SELECTORS.ROOT} .opm-tag-suggestions.opm-light { background-color: var(--light-bg); border: 1px solid var(--light-border); }
     #${SELECTORS.ROOT} .opm-tag-suggestions.opm-dark { background-color: var(--dark-bg); border: 1px solid var(--dark-border); box-shadow: var(--dark-shadow); }
 
+    #${SELECTORS.ROOT} .opm-tag-suggestions.opm-light .opm-tag-suggestion-item { color: #000; }
+    #${SELECTORS.ROOT} .opm-tag-suggestions.opm-dark .opm-tag-suggestion-item { color: var(--input-dark-text); }
+
     #${SELECTORS.ROOT} .opm-tag-suggestion-item {
       padding: 6px 8px;
       border-radius: 6px;
@@ -955,11 +958,11 @@ var injectGlobalStyles = window.injectGlobalStyles || function injectGlobalStyle
       background-color: #1e293b;
     }
   `;
-  document.head.appendChild(styleEl);
-};
+    document.head.appendChild(styleEl);
+  };
 
-// COMMENT: Preserve existing bootstrap call in content.js; we do not auto-invoke here to avoid double insertion.
-window.injectGlobalStyles = injectGlobalStyles;
+  // COMMENT: Preserve existing bootstrap call in content.js; we do not auto-invoke here to avoid double insertion.
+  window.injectGlobalStyles = injectGlobalStyles;
 
 })(); // End of IIFE wrapper
 

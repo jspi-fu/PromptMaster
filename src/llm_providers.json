@@ -74,7 +74,7 @@
       "name": "Claude",
       "pattern": "*://claude.ai/*",
       "url": "https://claude.ai",
-      "icon_url": "https://claude.ai/images/claude_app_icon.png",
+      "icon_url": "https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/claude-ai-icon.png",
       "element_selector": "div[contenteditable='true']"
     },
     {

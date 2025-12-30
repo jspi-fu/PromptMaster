@@ -226,7 +226,7 @@ async function renderPermissionsGate() {
 
 - 实时更新：监听提示词存储更改和 `aiProvidersMap` 更改以自动刷新 UI。
 - 信息横幅可以通过存储标志切换并且可以关闭。
-- 页脚链接到 GitHub、Chrome 网上应用店和专用权限页面。
+- 页脚链接到 Gitee、Chrome 网上应用店和专用权限页面。
 
 ## 权限管理器 (`permissions/*`)
 
@@ -285,6 +285,8 @@ const handleProviderClick = function (event) {
 ## 值得注意的细节和小注意事项
 
 - 后台注入路径检查 URL 模式和权限，但在所有边缘情况下并不严格防止双重注入。代码首先尝试通过 `executeScript(func: ...)` 进行小的“探测”；如果需要，考虑更强的幂等性保护。
+- **外部点击处理 (Outside Click Handling)**: 为解决主要 UI 面板在各类 Portal 元素（如标签建议列表）交互时意外关闭的问题，`OutsideClickCloser` 现在监听 `mousedown` 事件而非 `click`。这提供了更稳健的“意图检测”，防止了事件冒泡带来的误判。
+- **UI 样式微调**: 针对标签建议列表在浅色模式下的文本可见性问题进行了修复，强制指定了高对比度文本颜色。
 - `settings.js` 仍存在历史遗留逻辑（与当前主 UI/侧边栏的导入导出路径不一致）。建议以 `content.shared.js` 的 Settings 视图与侧边栏为准，逐步清理未使用入口。
 - `llm_providers.json` 包含两个名为“Google AI Studio”的条目；无害，但如果您计划在其他地方渲染唯一名称列表，可以通过名称去重。
 
