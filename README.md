@@ -22,8 +22,11 @@
 | ChatGPT | Claude | Gemini |
 |---|---|---|
 | DeepSeek | 豆包 | Kimi |
-| 智谱清言 | Perplexity | Poe |
+| 智谱清言 | Perplexity AI | Poe |
 | Grok | NotebookLM | OpenAI Playground |
+| Qwen | 千问 | 元宝 |
+| 问小白 | ChatLLM | Mistral Le Chat |
+| Google AI Studio | LMArena | |
 
 ## 安装与使用
 
@@ -35,7 +38,7 @@
 
 ### 键盘快捷键
 
-- **macOS**：`⌘ + Shift + P`
+- **macOS**：`⌘ + ⇧ + P`
 - **Windows / Linux**：`Ctrl + M`
 - 方向键：在列表中上下移动
 - Enter：选择提示词
