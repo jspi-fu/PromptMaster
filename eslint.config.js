@@ -26,7 +26,8 @@ export default [
         ignores: [
             "node_modules/*",
             "tests/*",
-            "src/icons/*"
+            "src/icons/*",
+            "docs/*"
         ]
     }
 ];
