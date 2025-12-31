@@ -1,0 +1,230 @@
+{
+  "extensionName": {
+    "message": "提示词大师"
+  },
+  "extensionDescription": {
+    "message": "开源提示词管理器，拥有跨AI平台提示词管理、提示词生成、提示词市场等功能，支持 ChatGPT、Gemini、豆包、千问 等20个 AI 平台。"
+  },
+  "openSidebar": {
+    "message": "打开侧边栏"
+  },
+  "promptTitle": {
+    "message": "提示词标题"
+  },
+  "promptContent": {
+    "message": "在此输入您的提示词 - 使用 #变量名# 来设置动态值。"
+  },
+  "savePrompt": {
+    "message": "保存提示词"
+  },
+  "add": {
+    "message": "添加"
+  },
+  "cancel": {
+    "message": "取消"
+  },
+  "aiAssistant": {
+    "message": "AI 助手"
+  },
+  "addMore": {
+    "message": "添加更多"
+  },
+  "settings": {
+    "message": "设置"
+  },
+  "export": {
+    "message": "导出"
+  },
+  "import": {
+    "message": "导入"
+  },
+  "managePrompts": {
+    "message": "管理您保存的提示词。"
+  },
+  "otherSettings": {
+    "message": "其他设置可在使用 AI 助手时找到。"
+  },
+  "start": {
+    "message": "开始使用"
+  },
+  "keyboardNavigation": {
+    "message": "键盘导航与快捷键"
+  },
+  "hoverClick": {
+    "message": "悬停/点击"
+  },
+  "openPromptList": {
+    "message": "打开提示词列表按钮"
+  },
+  "openClosePromptList": {
+    "message": "打开/关闭提示词列表"
+  },
+  "navigatePromptList": {
+    "message": "导航提示词列表"
+  },
+  "selectPrompt": {
+    "message": "选择提示词"
+  },
+  "closePromptMaster": {
+    "message": "关闭提示词大师"
+  },
+  "shortcutsAvailable": {
+    "message": "这些快捷键可在扩展支持的任何页面上使用。"
+  },
+  "addAIAssistants": {
+    "message": "在下方添加您支持的 AI 助手以开始使用。"
+  },
+  "newVersionNewFeatures": {
+    "message": "新版本，新功能！"
+  },
+  "hello": {
+    "message": "您好，"
+  },
+  "v2Released": {
+    "message": "虽然不常这样做，但我很高兴与您分享 V2 版本终于发布了！它带来了新功能和改进，并为一些很酷的功能奠定了基础。"
+  },
+  "support19LLMs": {
+    "message": "现在支持 19 个大语言模型！"
+  },
+  "newLLMPermissionManager": {
+    "message": "新 LLM 的权限管理器。"
+  },
+  "responsiveSidebar": {
+    "message": "响应式侧边栏用于编写提示词。"
+  },
+  "copyPaste": {
+    "message": "从侧边栏和右键菜单复制和粘贴。"
+  },
+  "appendPromptSetting": {
+    "message": "新设置：将提示词追加到输入框。"
+  },
+  "betterThanEver": {
+    "message": "现在看起来比以往任何时候都更好，支持明暗模式。"
+  },
+  "permissionManagement": {
+    "message": "权限管理可通过侧边栏右下角的"
+  },
+  "lockIcon": {
+    "message": "锁定图标"
+  },
+  "permissionManagementEnd": {
+    "message": "进行管理。"
+  },
+  "thankYou": {
+    "message": "对于许多给予支持、分享反馈和使用此扩展的用户，我想借此机会说声"
+  },
+  "thanks": {
+    "message": "谢谢"
+  },
+  "leaveReview": {
+    "message": "欢迎在 Chrome 网上应用店为"
+  },
+  "promptMasterLink": {
+    "message": "提示词大师"
+  },
+  "leaveReviewEnd": {
+    "message": "留下评价。"
+  },
+  "thanksAgain": {
+    "message": "再次感谢！"
+  },
+  "gitee": {
+    "message": "Gitee"
+  },
+  "buyMeACoffee": {
+    "message": "给原作者一键三连~"
+  },
+  "leaveFeedback": {
+    "message": "留下你的反馈"
+  },
+  "info": {
+    "message": "信息"
+  },
+  "optionalPermissions": {
+    "message": "可选权限、热角模式、侧边栏！"
+  },
+  "hopeYouLike": {
+    "message": "希望您喜欢！"
+  },
+  "featureRequests": {
+    "message": "功能请求"
+  },
+  "contactMe": {
+    "message": "在"
+  },
+  "contactMeEnd": {
+    "message": "上联系我"
+  },
+  "back": {
+    "message": "返回"
+  },
+  "openSourceSimple": {
+    "message": "开源而简洁"
+  },
+  "hoverToStart": {
+    "message": "悬停开始"
+  },
+  "orViewKeyboardShortcuts": {
+    "message": "或查看键盘快捷键。"
+  },
+  "exploreFeatures": {
+    "message": "探索功能"
+  },
+  "exploreFeaturesCaption": {
+    "message": "热角模式、提示词变量、右键菜单、组织提示词、导出和导入..."
+  },
+  "features": {
+    "message": "功能特性"
+  },
+  "yourPromptsOneClick": {
+    "message": "您的提示词，一键即达"
+  },
+  "yourPromptsOneClickSubtitle": {
+    "message": "只需悬停即可开始。"
+  },
+  "availableWhereYouNeed": {
+    "message": "在您需要的任何地方可用"
+  },
+  "availableWhereYouNeedSubtitle": {
+    "message": "20 个大语言模型、右键菜单、侧边栏。"
+  },
+  "advancedFeatures": {
+    "message": "高级功能"
+  },
+  "advancedFeaturesSubtitle": {
+    "message": "提示词变量、标签、搜索、追加提示词、轻松导入。"
+  },
+  "keyboardShortcuts": {
+    "message": "键盘快捷键"
+  },
+  "keyboardShortcutsSubtitle": {
+    "message": "键盘快捷键和导航。"
+  },
+  "simpleEasy": {
+    "message": "简洁易用"
+  },
+  "simpleEasySubtitle": {
+    "message": "用户友好、明暗模式、热角模式。"
+  },
+  "openSource": {
+    "message": "开源"
+  },
+  "openSourceSubtitle": {
+    "message": "无需账户，完全隐私。"
+  },
+  "allowed": {
+    "message": "已允许"
+  },
+  "available": {
+    "message": "可用"
+  },
+  "grantAllPermissions": {
+    "message": "允许所有权限"
+  },
+  "removeAllPermissions": {
+    "message": "移除所有权限"
+  },
+  "chromeStore": {
+    "message": "Chrome Store"
+  }
+}

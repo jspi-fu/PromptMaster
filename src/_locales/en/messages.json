@@ -1,0 +1,230 @@
+{
+  "extensionName": {
+    "message": "PromptMaster"
+  },
+  "extensionDescription": {
+    "message": "Open source prompt manager with cross-AI platform prompt management, prompt generation, prompt marketplace and more. Supports 20 AI platforms including ChatGPT, Gemini, Doubao, Qwen, etc."
+  },
+  "openSidebar": {
+    "message": "Open Sidebar"
+  },
+  "promptTitle": {
+    "message": "Prompt Title"
+  },
+  "promptContent": {
+    "message": "Enter your prompt here - Use #variable# to set dynamic values."
+  },
+  "savePrompt": {
+    "message": "Save Prompt"
+  },
+  "add": {
+    "message": "Add"
+  },
+  "cancel": {
+    "message": "Cancel"
+  },
+  "aiAssistant": {
+    "message": "AI Assistant"
+  },
+  "addMore": {
+    "message": "Add More"
+  },
+  "settings": {
+    "message": "Settings"
+  },
+  "export": {
+    "message": "Export"
+  },
+  "import": {
+    "message": "Import"
+  },
+  "managePrompts": {
+    "message": "Manage your saved prompts."
+  },
+  "otherSettings": {
+    "message": "Other settings can be found when using AI assistants."
+  },
+  "start": {
+    "message": "Get Started"
+  },
+  "keyboardNavigation": {
+    "message": "Keyboard Navigation & Shortcuts"
+  },
+  "hoverClick": {
+    "message": "Hover/Click"
+  },
+  "openPromptList": {
+    "message": "Open Prompt List Button"
+  },
+  "openClosePromptList": {
+    "message": "Open/Close Prompt List"
+  },
+  "navigatePromptList": {
+    "message": "Navigate Prompt List"
+  },
+  "selectPrompt": {
+    "message": "Select Prompt"
+  },
+  "closePromptMaster": {
+    "message": "Close PromptMaster"
+  },
+  "shortcutsAvailable": {
+    "message": "These shortcuts are available on any page supported by the extension."
+  },
+  "addAIAssistants": {
+    "message": "Add your supported AI assistants below to get started."
+  },
+  "newVersionNewFeatures": {
+    "message": "New Version, New Features!"
+  },
+  "hello": {
+    "message": "Hello,"
+  },
+  "v2Released": {
+    "message": "Although I don't do this often, I'm excited to share that V2 is finally released! It brings new features and improvements, and lays the foundation for some cool features."
+  },
+  "support19LLMs": {
+    "message": "Now supports 19 large language models!"
+  },
+  "newLLMPermissionManager": {
+    "message": "New permission manager for LLMs."
+  },
+  "responsiveSidebar": {
+    "message": "Responsive sidebar for writing prompts."
+  },
+  "copyPaste": {
+    "message": "Copy and paste from sidebar and right-click menu."
+  },
+  "appendPromptSetting": {
+    "message": "New setting: Append prompt to input box."
+  },
+  "betterThanEver": {
+    "message": "Now looks better than ever, supports light and dark modes."
+  },
+  "permissionManagement": {
+    "message": "Permission management is available through the"
+  },
+  "lockIcon": {
+    "message": "lock icon"
+  },
+  "permissionManagementEnd": {
+    "message": "in the bottom right of the sidebar."
+  },
+  "thankYou": {
+    "message": "For many users who have supported, shared feedback, and used this extension, I'd like to take this opportunity to say"
+  },
+  "thanks": {
+    "message": "thank you"
+  },
+  "leaveReview": {
+    "message": "Welcome to leave a review for"
+  },
+  "promptMasterLink": {
+    "message": "PromptMaster"
+  },
+  "leaveReviewEnd": {
+    "message": "on the Chrome Web Store."
+  },
+  "thanksAgain": {
+    "message": "Thanks again!"
+  },
+  "gitee": {
+    "message": "Gitee"
+  },
+  "buyMeACoffee": {
+    "message": "Support the author"
+  },
+  "leaveFeedback": {
+    "message": "Leave Feedback"
+  },
+  "info": {
+    "message": "Info"
+  },
+  "optionalPermissions": {
+    "message": "Optional permissions, hot corner mode, sidebar!"
+  },
+  "hopeYouLike": {
+    "message": "Hope you like it!"
+  },
+  "featureRequests": {
+    "message": "Feature Requests"
+  },
+  "contactMe": {
+    "message": "Contact me on"
+  },
+  "contactMeEnd": {
+    "message": ""
+  },
+  "back": {
+    "message": "Back"
+  },
+  "openSourceSimple": {
+    "message": "Open Source & Simple"
+  },
+  "hoverToStart": {
+    "message": "Hover to Start"
+  },
+  "orViewKeyboardShortcuts": {
+    "message": "or view keyboard shortcuts."
+  },
+  "exploreFeatures": {
+    "message": "Explore Features"
+  },
+  "exploreFeaturesCaption": {
+    "message": "Hot corner mode, prompt variables, right-click menu, organize prompts, export and import..."
+  },
+  "features": {
+    "message": "Features"
+  },
+  "yourPromptsOneClick": {
+    "message": "Your Prompts, One Click Away"
+  },
+  "yourPromptsOneClickSubtitle": {
+    "message": "Just hover to start."
+  },
+  "availableWhereYouNeed": {
+    "message": "Available Where You Need It"
+  },
+  "availableWhereYouNeedSubtitle": {
+    "message": "20 LLMs, right-click menu, sidebar."
+  },
+  "advancedFeatures": {
+    "message": "Advanced Features"
+  },
+  "advancedFeaturesSubtitle": {
+    "message": "Prompt variables, tags, search, append prompts, easy import."
+  },
+  "keyboardShortcuts": {
+    "message": "Keyboard Shortcuts"
+  },
+  "keyboardShortcutsSubtitle": {
+    "message": "Keyboard shortcuts and navigation."
+  },
+  "simpleEasy": {
+    "message": "Simple & Easy"
+  },
+  "simpleEasySubtitle": {
+    "message": "User-friendly, light/dark mode, hot corner mode."
+  },
+  "openSource": {
+    "message": "Open Source"
+  },
+  "openSourceSubtitle": {
+    "message": "No account needed, complete privacy."
+  },
+  "allowed": {
+    "message": "Allowed"
+  },
+  "available": {
+    "message": "Available"
+  },
+  "grantAllPermissions": {
+    "message": "Grant All Permissions"
+  },
+  "removeAllPermissions": {
+    "message": "Remove All Permissions"
+  },
+  "chromeStore": {
+    "message": "Chrome Store"
+  }
+}
