@@ -27,13 +27,13 @@
     const iconFilter = () => (typeof getIconFilterFn === 'function' ? getIconFilterFn() : fallbackIconFilter);
 
     const ICON_SVGS = {
-      list: `<img src="${chrome.runtime.getURL('icons/list.svg')}" width="16" height="16" alt="提示词列表" title="提示词列表" style="filter: ${iconFilter()}">`,
-      add: `<img src="${chrome.runtime.getURL('icons/new.svg')}" width="16" height="16" alt="添加提示词" title="添加提示词" style="filter: ${iconFilter()}">`,
-      delete: `<img src="${chrome.runtime.getURL('icons/delete.svg')}" width="16" height="16" alt="删除" title="删除" style="filter: ${iconFilter()}">`,
-      edit: `<img src="${chrome.runtime.getURL('icons/edit.svg')}" width="16" height="16" alt="编辑" title="编辑" style="filter: ${iconFilter()}">`,
-      settings: `<img src="${chrome.runtime.getURL('icons/settings.svg')}" width="16" height="16" alt="设置" title="设置" style="filter: ${iconFilter()}">`,
-      help: `<img src="${chrome.runtime.getURL('icons/help.svg')}" width="16" height="16" alt="帮助" title="帮助" style="filter: ${iconFilter()}">`,
-      chat: `<img src="${chrome.runtime.getURL('icons/chatllm.png')}" width="16" height="16" alt="提示词生成" title="提示词生成" style="filter: ${iconFilter()}">`,
+      list: `<img src="${chrome.runtime.getURL('icons/list.svg')}" width="16" height="16" alt="${chrome.i18n.getMessage('promptList')}" title="${chrome.i18n.getMessage('promptList')}" style="filter: ${iconFilter()}">`,
+      add: `<img src="${chrome.runtime.getURL('icons/new.svg')}" width="16" height="16" alt="${chrome.i18n.getMessage('addNewPrompt')}" title="${chrome.i18n.getMessage('addNewPrompt')}" style="filter: ${iconFilter()}">`,
+      delete: `<img src="${chrome.runtime.getURL('icons/delete.svg')}" width="16" height="16" alt="${chrome.i18n.getMessage('delete')}" title="${chrome.i18n.getMessage('delete')}" style="filter: ${iconFilter()}">`,
+      edit: `<img src="${chrome.runtime.getURL('icons/edit.svg')}" width="16" height="16" alt="${chrome.i18n.getMessage('edit')}" title="${chrome.i18n.getMessage('edit')}" style="filter: ${iconFilter()}">`,
+      settings: `<img src="${chrome.runtime.getURL('icons/settings.svg')}" width="16" height="16" alt="${chrome.i18n.getMessage('settings')}" title="${chrome.i18n.getMessage('settings')}" style="filter: ${iconFilter()}">`,
+      help: `<img src="${chrome.runtime.getURL('icons/help.svg')}" width="16" height="16" alt="${chrome.i18n.getMessage('help')}" title="${chrome.i18n.getMessage('help')}" style="filter: ${iconFilter()}">`,
+      chat: `<img src="${chrome.runtime.getURL('icons/chatllm.png')}" width="16" height="16" alt="${chrome.i18n.getMessage('promptGeneration')}" title="${chrome.i18n.getMessage('promptGeneration')}" style="filter: ${iconFilter()}">`,
     };
 
     const TagService = (() => {
@@ -78,7 +78,7 @@
         const tagsSet = new Set(Array.isArray(initialTags) ? initialTags : []);
         const row = createEl('div', { className: `opm-tag-row opm-${getMode()}` });
         const pills = createEl('div', { className: 'opm-tags-container' });
-        const input = createEl('input', { attributes: { type: 'text', placeholder: '标签(Enter确认)' }, className: `opm-tag-input opm-${getMode()}` });
+        const input = createEl('input', { attributes: { type: 'text', placeholder: chrome.i18n.getMessage('tagInputPlaceholder') }, className: `opm-tag-input opm-${getMode()}` });
         const suggestions = createEl('div', { className: `opm-tag-suggestions opm-${getMode()}`, styles: { display: 'none' } });
         let activeIndex = -1; let options = [];
 
@@ -219,7 +219,7 @@
             });
           };
 
-          const allPill = makePill('全部', (selectedTag || 'all') === 'all');
+          const allPill = makePill(chrome.i18n.getMessage('all'), (selectedTag || 'all') === 'all');
           allPill.dataset.tag = 'all';
           allPill.addEventListener('click', e => { e.stopPropagation(); if (typeof onSelect === 'function') onSelect('all'); updateSelected('all'); });
           wrapper.appendChild(allPill);
@@ -238,7 +238,7 @@
           const expandBtn = createEl('button', {
             className: `opm-tags-expand-btn opm-${getMode()}`,
             innerHTML: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`,
-            attributes: { 'aria-label': '展开标签', 'title': '展开标签' },
+            attributes: { 'aria-label': chrome.i18n.getMessage('expandTags'), 'title': chrome.i18n.getMessage('expandTags') },
             eventListeners: {
               click: (e) => {
                 e.stopPropagation();
@@ -345,7 +345,7 @@
           const editIcon = Elements.createIconButton('edit', (e) => { e.stopPropagation(); window.PromptUIManager.showEditForm(prompt); });
           const deleteIcon = Elements.createIconButton('delete', (e) => {
             e.stopPropagation();
-            if (confirm(`确定要删除"${prompt.title}"吗？`)) window.PromptUIManager.deletePrompt(prompt.uuid);
+            if (confirm(chrome.i18n.getMessage('confirmDeletePrompt', [prompt.title]))) window.PromptUIManager.deletePrompt(prompt.uuid);
           });
           actions.append(editIcon, deleteIcon);
 
@@ -377,7 +377,7 @@
           const search = createEl('input', {
             id: SELECTORS.PROMPT_SEARCH_INPUT,
             className: `opm-search-input opm-${getMode()}`,
-            attributes: { type: 'text', placeholder: '输入搜索', style: 'border-radius: 4px;' }
+            attributes: { type: 'text', placeholder: chrome.i18n.getMessage('searchPlaceholder'), style: 'border-radius: 4px;' }
           });
 
           let searchDebounceTimer = null;
@@ -572,9 +572,9 @@
       const Views = {
         createPromptForm({ initialTitle = '', initialContent = '', submitLabel = 'Save', onSubmit }) {
           const form = createEl('div', { className: `opm-form-container opm-create-form opm-${getMode()}`, styles: { padding: '0', display: 'flex', flexDirection: 'column', gap: '4px' } });
-          const titleIn = createEl('input', { attributes: { placeholder: '提示词标题' }, className: `opm-input-field opm-${getMode()}`, styles: { borderRadius: '4px' } });
+          const titleIn = createEl('input', { attributes: { placeholder: chrome.i18n.getMessage('promptTitlePlaceholder') }, className: `opm-input-field opm-${getMode()}`, styles: { borderRadius: '4px' } });
           const contentArea = createEl('textarea', {
-            attributes: { placeholder: '编写您的提示词。使用 #变量名# 来添加变量' },
+            attributes: { placeholder: chrome.i18n.getMessage('promptContentPlaceholder') },
             className: `opm-textarea-field opm-${getMode()}`,
             styles: { flex: '1 1 auto', minHeight: '0', height: 'auto' }
           });
@@ -584,7 +584,7 @@
           saveBtn.addEventListener('click', async e => {
             e.stopPropagation();
             const t = titleIn.value.trim(), c = contentArea.value.trim();
-            if (!t || !c) { alert('请填写标题和内容。'); return; }
+            if (!t || !c) { alert(chrome.i18n.getMessage('fillTitleAndContent')); return; }
             if (typeof onSubmit === 'function') await onSubmit({ title: t, content: c });
           });
           form.append(titleIn, contentArea, saveBtn);
@@ -673,9 +673,9 @@
           const enableTags = await window.PromptStorageManager.getEnableTags();
 
           const form = createEl('div', { className: `opm-form-container opm-${getMode()}`, styles: { padding: '0', display: 'flex', flexDirection: 'column', gap: '8px' } });
-          const titleIn = createEl('input', { attributes: { placeholder: '提示词标题' }, className: `opm-input-field opm-${getMode()}`, styles: { borderRadius: '4px' } });
+          const titleIn = createEl('input', { attributes: { placeholder: chrome.i18n.getMessage('promptTitlePlaceholder') }, className: `opm-input-field opm-${getMode()}`, styles: { borderRadius: '4px' } });
           const contentArea = createEl('textarea', {
-            attributes: { placeholder: '在此输入您的提示词。使用 #变量名# 来添加变量' },
+            attributes: { placeholder: chrome.i18n.getMessage('promptContent') },
             className: `opm-textarea-field opm-${getMode()}`,
             styles: { flex: '1 1 auto', minHeight: '0', height: 'auto' }
           });
@@ -691,14 +691,14 @@
             tagsBlock.append(label, tagInput.element);
           }
 
-          const saveBtn = createEl('button', { innerHTML: '创建提示词', className: `opm-button opm-${getMode()}` });
+          const saveBtn = createEl('button', { innerHTML: chrome.i18n.getMessage('addPrompt'), className: `opm-button opm-${getMode()}` });
           saveBtn.addEventListener('click', async e => {
             e.stopPropagation();
             const t = titleIn.value.trim(), c = contentArea.value.trim();
-            if (!t || !c) { alert('请填写标题和内容。'); return; }
+            if (!t || !c) { alert(chrome.i18n.getMessage('fillTitleAndContent')); return; }
             const tags = enableTags && tagInput ? tagInput.getTags() : [];
             const res = await window.PromptStorageManager.savePrompt({ title: t, content: c, tags });
-            if (!res.success) { alert('保存提示词时出错。'); return; }
+            if (!res.success) { alert(chrome.i18n.getMessage('savePromptError')); return; }
             window.PanelRouter.mount(window.PanelView.LIST);
           });
 
@@ -710,11 +710,11 @@
         },
         createSettingsForm() {
           const form = createEl('div', { className: `opm-form-container opm-${getMode()}`, styles: { padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' } });
-          const title = createEl('div', { styles: { fontWeight: 'bold', fontSize: '16px', marginBottom: '10px' }, innerHTML: '设置' });
+          const title = createEl('div', { styles: { fontWeight: 'bold', fontSize: '16px', marginBottom: '10px' }, innerHTML: chrome.i18n.getMessage('settings') });
           const settings = createEl('div', { styles: { display: 'flex', flexDirection: 'column', gap: '12px' } });
 
           settings.appendChild(Elements.createToggleRow({
-            labelText: '热角模式',
+            labelText: chrome.i18n.getMessage('hotCornerMode'),
             getValue: async () => (await window.PromptStorageManager.getDisplayMode()) === 'hotCorner',
             onToggle: async (active) => {
               const newMode = active ? 'hotCorner' : 'standard';
@@ -724,21 +724,21 @@
           }));
 
           settings.appendChild(Elements.createToggleRow({
-            labelText: '追加模式',
-            tooltipText: '开启后：插入提示词时会追加到输入框末尾，不会覆盖你已输入的内容。',
+            labelText: chrome.i18n.getMessage('appendMode'),
+            tooltipText: chrome.i18n.getMessage('appendModeTooltip'),
             getValue: async () => await window.PromptStorageManager.getDisableOverwrite(),
             onToggle: async (active) => { await window.PromptStorageManager.saveDisableOverwrite(active); }
           }));
 
           settings.appendChild(Elements.createToggleRow({
-            labelText: '启用标签',
-            tooltipText: '开启后：可为提示词添加标签，并支持按标签筛选；设置页还会显示“标签管理”。',
+            labelText: chrome.i18n.getMessage('enableTags'),
+            tooltipText: chrome.i18n.getMessage('enableTagsTooltip'),
             getValue: async () => await window.PromptStorageManager.getEnableTags(),
             onToggle: async (active) => { await window.PromptStorageManager.saveEnableTags(active); }
           }));
 
           settings.appendChild(Elements.createToggleRow({
-            labelText: '暗色模式',
+            labelText: chrome.i18n.getMessage('darkMode'),
             getValue: async () => {
               const enabled = await window.PromptStorageManager.getForceDarkMode();
               window.isDarkModeForced = !!enabled;
@@ -751,9 +751,9 @@
             }
           }));
 
-          const dataSectionTitle = createEl('div', { styles: { fontWeight: 'bold', fontSize: '14px', marginTop: '6px' }, innerHTML: '提示词管理' });
+          const dataSectionTitle = createEl('div', { styles: { fontWeight: 'bold', fontSize: '14px', marginTop: '6px' }, innerHTML: chrome.i18n.getMessage('promptManagement') });
           const dataActions = createEl('div', { styles: { display: 'flex', gap: '8px' } });
-          const exportBtn = createEl('button', { innerHTML: '导出', className: `opm-button opm-${getMode()}` });
+          const exportBtn = createEl('button', { innerHTML: chrome.i18n.getMessage('export'), className: `opm-button opm-${getMode()}` });
           exportBtn.addEventListener('click', async e => {
             e.stopPropagation();
             try {
@@ -767,10 +767,10 @@
               document.body.removeChild(a);
               URL.revokeObjectURL(url);
             } catch (err) {
-              alert('导出失败。');
+              alert(chrome.i18n.getMessage('exportFailed'));
             }
           });
-          const importBtn = createEl('button', { innerHTML: '导入', className: `opm-button opm-${getMode()}` });
+          const importBtn = createEl('button', { innerHTML: chrome.i18n.getMessage('import'), className: `opm-button opm-${getMode()}` });
           importBtn.addEventListener('click', async e => {
             e.stopPropagation();
             const fileInput = createEl('input', { attributes: { type: 'file', accept: '.json' } });
@@ -783,10 +783,10 @@
                   if (!Array.isArray(imported)) throw new Error('Invalid format');
                   const merged = await window.PromptStorageManager.mergeImportedPrompts(imported);
                   window.PromptUIManager.refreshPromptList(merged);
-                  importBtn.textContent = '导入成功！';
-                  setTimeout(() => importBtn.textContent = '导入', window.IMPORT_SUCCESS_RESET_MS || 2000);
+                  importBtn.textContent = chrome.i18n.getMessage('importSuccess');
+                  setTimeout(() => importBtn.textContent = chrome.i18n.getMessage('import'), window.IMPORT_SUCCESS_RESET_MS || 2000);
                 } catch (err) {
-                  alert('无效的 JSON 文件格式。');
+                  alert(chrome.i18n.getMessage('invalidJsonFormat'));
                 }
               }
             });
@@ -794,21 +794,21 @@
           });
           dataActions.append(exportBtn, importBtn);
           const deleteAllBtn = createEl('button', {
-            innerHTML: '删除所有提示词',
+            innerHTML: chrome.i18n.getMessage('deleteAllPrompts'),
             className: `opm-button opm-${getMode()}`,
             styles: { backgroundColor: '#9CA3AF', marginTop: '4px' }
           });
           deleteAllBtn.addEventListener('click', async e => {
             e.stopPropagation();
-            if (!confirm('确定要删除所有提示词吗？此操作无法撤销。')) return;
+            if (!confirm(chrome.i18n.getMessage('confirmDeleteAll'))) return;
             try {
               await window.PromptStorageManager.setPrompts([]);
               window.PanelRouter.mount(window.PanelView.SETTINGS);
             } catch (_) {
-              alert('删除提示词失败。');
+              alert(chrome.i18n.getMessage('deletePromptsFailed'));
             }
           });
-          const tagMgmtTitle = createEl('div', { styles: { fontWeight: 'bold', fontSize: '14px', marginTop: '12px', display: 'none' }, innerHTML: '标签管理' });
+          const tagMgmtTitle = createEl('div', { styles: { fontWeight: 'bold', fontSize: '14px', marginTop: '12px', display: 'none' }, innerHTML: chrome.i18n.getMessage('tagManagement') });
           const tagMgmtContainer = createEl('div', { styles: { display: 'none', flexDirection: 'column', gap: '6px' } });
           (async () => {
             try {
@@ -988,23 +988,23 @@
           };
 
           // COMMENT: Highlight community call-to-actions so users can find Gitee + reviews fast.
-          const communityTitle = createEl('div', { styles: { fontWeight: 'bold', fontSize: '13px', marginTop: '10px', opacity: 0.85 }, innerHTML: '支持我们的工作' });
+          const communityTitle = createEl('div', { styles: { fontWeight: 'bold', fontSize: '13px', marginTop: '10px', opacity: 0.85 }, innerHTML: chrome.i18n.getMessage('supportOurWork') });
           const communityLinks = createEl('div', { styles: { display: 'flex', flexDirection: 'column', gap: '6px' } });
           communityLinks.append(
             createCommunityLink({
-              label: '看看我们的开源仓库',
+              label: chrome.i18n.getMessage('viewOpenSourceRepo'),
               href: 'https://gitee.com/ye_sheng0839/prompt-master',
               icon: 'icons/gitee.svg',
               alt: 'Gitee icon'
             }),
             createCommunityLink({
-              label: '留下你的意见，我们会持续优化',
+              label: chrome.i18n.getMessage('leaveFeedback'),
               href: 'https://gitee.com/ye_sheng0839/prompt-master/issues',
               icon: 'icons/review-icon.png',
               alt: 'Review icon'
             }),
             createCommunityLink({
-              label: '给英文版原作者一键三连~',
+              label: chrome.i18n.getMessage('supportOriginalAuthor'),
               href: 'https://buymeacoffee.com/jonathanbertholet',
               icon: 'icons/coffee.svg',
               alt: 'Coffee icon'

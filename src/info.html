@@ -1,15 +1,20 @@
 <!-- COMMENT: This page is rendered inside the extension panel. We style it using the same theme tokens defined on #opm-root in content.styles.js so it feels native. -->
 <style>
   /* COMMENT: Ultra-minimal info view. High-contrast text, no borders/shadows, just essentials. */
-  #opm-root.opm-light .pm-info { color: var(--input-light-text); }
-  #opm-root.opm-dark  .pm-info { color: var(--input-dark-text); }
+  #opm-root.opm-light .pm-info {
+    color: var(--input-light-text);
+  }
 
-  .pm-info { 
-    display: flex; 
-    flex-direction: column; 
-    gap: 8px; 
-    font-size: 14px; 
-    line-height: 1.4; 
+  #opm-root.opm-dark .pm-info {
+    color: var(--input-dark-text);
+  }
+
+  .pm-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 14px;
+    line-height: 1.4;
     padding: 4px 0;
   }
 
@@ -32,7 +37,7 @@
     gap: 8px;
     flex-wrap: wrap;
   }
-  
+
   .pm-section-note {
     font-size: 12px;
     opacity: 0.6;
@@ -40,7 +45,8 @@
   }
 
   /* COMMENT: Chips and keyboard keys kept for clarity, not decoration */
-  .pm-chip, .pm-kbd {
+  .pm-chip,
+  .pm-kbd {
     background-color: var(--primary);
     color: #fff;
     padding: 2px 8px;
@@ -50,34 +56,64 @@
     height: 22px;
     white-space: nowrap;
   }
-  .pm-kbd { gap: 2px; font-family: monospace; font-size: 11px; }
-  .pm-plus { margin: 0 2px; }
-  .pm-sep { margin: 0 4px; opacity: .6; }
+
+  .pm-kbd {
+    gap: 2px;
+    font-family: monospace;
+    font-size: 11px;
+  }
+
+  .pm-plus {
+    margin: 0 2px;
+  }
+
+  .pm-sep {
+    margin: 0 4px;
+    opacity: .6;
+  }
 
   /* COMMENT: Link uses theme primary and a subtle underline on hover */
-  .pm-link { color: var(--primary); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
-  .pm-link:hover, .pm-link:focus { text-decoration: underline; outline: none; }
+  .pm-link {
+    color: var(--primary);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .pm-link:hover,
+  .pm-link:focus {
+    text-decoration: underline;
+    outline: none;
+  }
 
   @media (max-width: 360px) {
-    .pm-kbd { font-size: 10px; padding: 2px 6px; }
-    .pm-chip { padding: 2px 6px; }
+    .pm-kbd {
+      font-size: 10px;
+      padding: 2px 6px;
+    }
+
+    .pm-chip {
+      padding: 2px 6px;
+    }
   }
 </style>
 
 <div class="pm-info">
-  
+
   <div class="pm-section">
-    <div class="pm-section-title">打开</div>
+    <div class="pm-section-title" data-i18n-text="infoOpen"></div>
     <div class="pm-section-content">
-      <span class="pm-kbd"><span>⌘</span><span class="pm-plus">+</span><span>⇧</span><span class="pm-plus">+</span><span>P</span></span>
+      <span class="pm-kbd"><span>⌘</span><span class="pm-plus">+</span><span>⇧</span><span
+          class="pm-plus">+</span><span>P</span></span>
       <span class="pm-sep">/</span>
       <span class="pm-kbd"><span>Ctrl</span><span class="pm-plus">+</span><span>M</span></span>
     </div>
-    <div class="pm-section-note">或悬停</div>
+    <div class="pm-section-note" data-i18n-text="infoOrHover"></div>
   </div>
 
   <div class="pm-section">
-    <div class="pm-section-title">导航</div>
+    <div class="pm-section-title" data-i18n-text="infoNavigation"></div>
     <div class="pm-section-content">
       <span class="pm-chip">↑ ↓ + Enter</span>
       <span class="pm-sep">/</span>
@@ -86,19 +122,19 @@
   </div>
 
   <div class="pm-section">
-    <div class="pm-section-title">变量</div>
+    <div class="pm-section-title" data-i18n-text="infoVariables"></div>
     <div class="pm-section-content">
       <span class="pm-chip">#name#</span>
     </div>
-    <div class="pm-section-note">使用 # 语法在提示词中插入动态值</div>
+    <div class="pm-section-note" data-i18n-text="infoVariablesDesc"></div>
   </div>
 
   <div class="pm-section">
-    <div class="pm-section-title">功能</div>
+    <div class="pm-section-title" data-i18n-text="infoFeatures"></div>
     <div class="pm-section-content">
-      <span class="pm-chip">右键菜单</span>
-      <span class="pm-chip">侧边栏编辑器</span>
-      <span class="pm-chip">热角模式</span>
+      <span class="pm-chip" data-i18n-text="contextMenu"></span>
+      <span class="pm-chip" data-i18n-text="sidebarEditor"></span>
+      <span class="pm-chip" data-i18n-text="hotCornerMode"></span>
     </div>
   </div>
 

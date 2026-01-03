@@ -366,7 +366,15 @@
       container.append(title, info);
       fetch(chrome.runtime.getURL(sourcePath))
         .then(r => r.text())
-        .then(html => { info.innerHTML = html; })
+        .then(html => {
+          info.innerHTML = html;
+          // 处理 info.html 中的国际化属性
+          info.querySelectorAll('[data-i18n-text]').forEach(el => {
+            const key = el.getAttribute('data-i18n-text');
+            const msg = chrome.i18n.getMessage(key);
+            if (msg) el.textContent = msg;
+          });
+        })
         .catch(err => console.error(`[PromptManager] Failed to load ${sourcePath}:`, err));
       ScrollVisibilityManager.observe(info);
       return container;
@@ -421,7 +429,7 @@
         styles: { display: 'flex', flexDirection: 'column' }
       });
       const titleText = createEl('div', {
-        innerHTML: '提示词生成器',
+        innerHTML: chrome.i18n.getMessage('promptGenerator'),
         styles: { fontSize: '16px', fontWeight: '600', color: dark ? THEME_COLORS.inputDarkText : THEME_COLORS.inputLightText }
       });
       title.append(titleText);
@@ -430,7 +438,7 @@
 
       const resetBtn = createEl('button', {
         className: 'opm-chat-reset',
-        innerHTML: '重置',
+        innerHTML: chrome.i18n.getMessage('reset'),
         styles: {
           background: 'transparent',
           border: 'none',
@@ -447,7 +455,7 @@
 
       const settingsBtn = createEl('button', {
         className: 'opm-chat-settings',
-        innerHTML: `<img src="${chrome.runtime.getURL('icons/settings.svg')}" width="16" height="16" alt="设置" style="filter: ${getIconFilter()}">`,
+        innerHTML: `<img src="${chrome.runtime.getURL('icons/settings.svg')}" width="16" height="16" alt="${chrome.i18n.getMessage('settings')}" style="filter: ${getIconFilter()}">`,
         styles: {
           background: 'transparent',
           border: 'none',
@@ -497,7 +505,7 @@
         id: 'opm-chat-input',
         className: `opm-chat-input opm-${getMode()}`,
         attributes: {
-          placeholder: '输入你的需求…',
+          placeholder: chrome.i18n.getMessage('chatInputPlaceholder'),
           rows: '1'
         },
         styles: {
@@ -646,7 +654,7 @@
       },
       [PanelView.HELP]: {
         builder: () => createInfoView({
-          titleText: '导航与功能',
+          titleText: chrome.i18n.getMessage('navigationAndFeatures'),
           contentId: SELECTORS.INFO_CONTENT,
           sourcePath: 'info.html'
         }),
@@ -825,8 +833,8 @@
       if (role === 'assistant' && !isStreaming) {
         const saveBtn = createEl('div', {
           className: 'opm-chat-save-prompt',
-          innerHTML: `<img src="${chrome.runtime.getURL('icons/new.svg')}" width="14" height="14" alt="保存" style="filter: ${getIconFilter()}">`,
-          attributes: { title: '保存为提示词' }
+          innerHTML: `<img src="${chrome.runtime.getURL('icons/new.svg')}" width="14" height="14" alt="${chrome.i18n.getMessage('save')}" style="filter: ${getIconFilter()}">`,
+          attributes: { title: chrome.i18n.getMessage('saveAsPrompt') }
         });
         saveBtn.addEventListener('click', (e) => {
           e.stopPropagation();
@@ -861,12 +869,7 @@
 
     // Get welcome message
     const getWelcomeMessage = () => {
-      return `输入格式：
-- 目标平台:ChatGPT、Claude、Gemini或其他
-- 提示风格:详细(交互优化)或基本(快速优化)
-
-例子:"使用 ChatGPT 详细模式-给我写一封营销邮件"
-`;
+      return chrome.i18n.getMessage('inputFormat');
     };
 
     // COMMENT: 初始化时恢复历史（若无历史则显示欢迎语）
@@ -889,7 +892,7 @@
     const sendMessage = async (userMessage) => {
       const settings = await loadSettings();
       if (!settings.apiKey) {
-        addMessage(messagesContainer, 'assistant', '您需要在右上角配置正确的模型哦 🔧，在测试连接成功后再与我对话叭', false);
+        addMessage(messagesContainer, 'assistant', chrome.i18n.getMessage('configureModelFirst'), false);
         return;
       }
 
@@ -1014,7 +1017,7 @@
           if (lines[i]) contentDiv.appendChild(document.createTextNode(lines[i]));
         }
 
-        const assistantMessage = acc || '无响应';
+        const assistantMessage = acc || chrome.i18n.getMessage('noResponse');
         messages.push({ role: 'assistant', content: assistantMessage });
         persistHistory();
 
@@ -1022,8 +1025,8 @@
         if (messageDiv && !messageDiv.querySelector('.opm-chat-save-prompt')) {
           const saveBtn = createEl('div', {
             className: 'opm-chat-save-prompt',
-            innerHTML: `<img src="${chrome.runtime.getURL('icons/new.svg')}" width="14" height="14" alt="保存" style="filter: ${getIconFilter()}">`,
-            attributes: { title: '保存为提示词' }
+            innerHTML: `<img src="${chrome.runtime.getURL('icons/new.svg')}" width="14" height="14" alt="${chrome.i18n.getMessage('save')}" style="filter: ${getIconFilter()}">`,
+            attributes: { title: chrome.i18n.getMessage('saveAsPrompt') }
           });
           saveBtn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -1034,7 +1037,7 @@
       } catch (error) {
         console.error('[PromptManager] Chat API error:', error);
         // COMMENT: 统一显示友好的配置引导,避免技术性错误信息吓到用户
-        contentDiv.innerHTML = '您需要在右上角正确配置模型哦 🔧，在测试连接成功后再与我对话叭';
+        contentDiv.innerHTML = chrome.i18n.getMessage('configureModelFirst');
       }
     };
 
@@ -1116,11 +1119,11 @@
         }
       });
       const title = createEl('h3', {
-        innerHTML: '模型配置',
+        innerHTML: chrome.i18n.getMessage('modelConfig'),
         styles: { margin: '0 0 6px 0', fontSize: '18px', fontWeight: '600', color: dark ? '#f8fafc' : '#0f172a' }
       });
       const desc = createEl('p', {
-        innerHTML: '配置兼容 OpenAI 接口的模型服务（推荐使用Openrouter）。',
+        innerHTML: chrome.i18n.getMessage('modelConfigDesc'),
         styles: { margin: '0', fontSize: '13px', color: dark ? '#94a3b8' : '#64748b', lineHeight: '1.4' }
       });
       header.append(title, desc);
@@ -1141,7 +1144,7 @@
           const openRouterLink = createEl('a', {
             href: 'https://openrouter.ai/settings/keys',
             target: '_blank',
-            title: '获取 API Key',
+            title: chrome.i18n.getMessage('getApiKey'),
             styles: {
               display: 'inline-flex',
               alignItems: 'center',
@@ -1213,9 +1216,9 @@
         return { wrapper, input };
       };
 
-      const apiKey = createField('API Key', 'chat-api-key', 'password', 'sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', '服务商提供的 API 密钥', '', true);
-      const baseUrl = createField('Base URL', 'chat-base-url', 'text', 'https://openrouter.ai/api/v1', 'API 请求地址 (需包含 /v1)');
-      const modelName = createField('Model Name', 'chat-model-name', 'text', 'nex-agi/deepseek-v3.1-nex-n1:free', '要调用的模型名称 (如 gpt-4, deepseek-chat)');
+      const apiKey = createField('API Key', 'chat-api-key', 'password', 'sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', chrome.i18n.getMessage('apiKeyHelp'), '', true);
+      const baseUrl = createField('Base URL', 'chat-base-url', 'text', 'https://openrouter.ai/api/v1', chrome.i18n.getMessage('baseUrlHelp'));
+      const modelName = createField('Model Name', 'chat-model-name', 'text', 'nex-agi/deepseek-v3.1-nex-n1:free', chrome.i18n.getMessage('modelNameHelp'));
 
       const status = createEl('div', {
         styles: {
@@ -1261,7 +1264,7 @@
 
       const leftActions = createEl('div');
       const testBtn = createEl('button', {
-        innerHTML: '测试连接',
+        innerHTML: chrome.i18n.getMessage('testConnection'),
         styles: {
           background: 'transparent', border: 'none', cursor: 'pointer',
           fontSize: '13px', fontWeight: '500',
@@ -1276,7 +1279,7 @@
 
       const rightActions = createEl('div', { styles: { display: 'flex', gap: '12px' } });
       const cancelBtn = createEl('button', {
-        innerHTML: '取消',
+        innerHTML: chrome.i18n.getMessage('cancel'),
         styles: {
           background: 'transparent', border: `1px solid ${dark ? '#475569' : '#cbd5e1'}`, cursor: 'pointer',
           fontSize: '13px', fontWeight: '500',
@@ -1289,7 +1292,7 @@
       cancelBtn.addEventListener('mouseleave', () => { cancelBtn.style.borderColor = dark ? '#475569' : '#cbd5e1'; });
 
       const saveBtn = createEl('button', {
-        innerHTML: '保存配置',
+        innerHTML: chrome.i18n.getMessage('saveConfig'),
         styles: {
           background: THEME_COLORS.primary, border: 'none', cursor: 'pointer',
           fontSize: '13px', fontWeight: '500',
@@ -1318,9 +1321,9 @@
         const rawUrl = baseUrl.input.value.trim() || 'https://openrouter.ai/api/v1';
         const url = rawUrl.replace(/\/+$/, '');
 
-        if (!key) return setStatus('请先填写 API Key', 'error');
+        if (!key) return setStatus(chrome.i18n.getMessage('fillApiKeyFirst'), 'error');
 
-        setStatus('正在连接服务器...', 'info');
+        setStatus(chrome.i18n.getMessage('connecting'), 'info');
         try {
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 15000);
@@ -1334,20 +1337,20 @@
           clearTimeout(timeoutId);
 
           if (r.ok) {
-            setStatus('连接成功！配置可用', 'success');
+            setStatus(chrome.i18n.getMessage('connectionSuccess'), 'success');
           } else {
             const errData = await r.json().catch(() => ({}));
             if (r.status === 404) {
-              setStatus(`连接失败 (404): 路径未找到，请确认 Base URL 正确 (通常以 /v1 结尾)`, 'error');
+              setStatus(chrome.i18n.getMessage('connectionFailed404'), 'error');
             } else {
-              setStatus(`连接失败 (${r.status}): ${errData.error?.message || '请检查配置'}`, 'error');
+              setStatus(chrome.i18n.getMessage('connectionFailed', [r.status, errData.error?.message || chrome.i18n.getMessage('checkConfig')]), 'error');
             }
           }
         } catch (e) {
           if (e.name === 'AbortError') {
-            setStatus('连接超时: 请检查网络或 Base URL', 'error');
+            setStatus(chrome.i18n.getMessage('connectionTimeout'), 'error');
           } else {
-            setStatus(`请求错误: ${e.message}`, 'error');
+            setStatus(chrome.i18n.getMessage('requestError', [e.message]), 'error');
           }
         }
       });
@@ -1367,7 +1370,7 @@
           chatBaseUrl: baseUrl.input.value.trim() || 'https://openrouter.ai/api/v1',
           chatModelName: modelName.input.value.trim() || 'nex-agi/deepseek-v3.1-nex-n1:free'
         }, () => {
-          setStatus('保存成功', 'success');
+          setStatus(chrome.i18n.getMessage('saveSuccess'), 'success');
           setTimeout(closeModal, 600);
         });
       });

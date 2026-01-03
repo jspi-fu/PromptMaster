@@ -18,10 +18,10 @@
       <div class="custom-header-center">
         <img src="../icons/icon128.png" alt="Prompt Master Icon" width="48" height="48" class="custom-header-icon"
           id="header-icon">
-        <h1 class="custom-text-emphasis custom-theme-blue">提示词大师</h1>
+        <h1 class="custom-text-emphasis custom-theme-blue" data-i18n="extensionName"></h1>
       </div>
       <p class="custom-lead-text">
-        开源而简洁
+        <span data-i18n="openAndSimple"></span>
       </p>
 
       <div class="custom-container-mt5 custom-onboarding-section">
@@ -29,64 +29,64 @@
           <div class="custom-col">
             <img src="../icons/onboarding-start.png" alt="Hover to start" class="custom-onboarding-gif">
             <!-- Updated path to onboarding-start.png -->
-            <h3 class="custom-onboarding-gif-title">悬停开始</h3>
+            <h3 class="custom-onboarding-gif-title" data-i18n="hoverToStart"></h3>
             <p class="custom-onboarding-caption">
-              或查看键盘快捷键。
+              <span data-i18n="orCheckKeyboardShortcuts"></span>
             </p>
           </div>
           <div class="custom-col">
             <img src="../icons/onboarding-start2.png" alt="探索功能" class="custom-onboarding-gif">
             <!-- Updated path to onboarding-start.png -->
-            <h3 class="custom-onboarding-gif-title">探索功能</h3>
-            <p class="custom-onboarding-caption">热角模式、提示词变量、右键菜单、组织提示词、导出和导入...</p>
+            <h3 class="custom-onboarding-gif-title" data-i18n="exploreFeatures"></h3>
+            <p class="custom-onboarding-caption" data-i18n="featuresDescription"></p>
           </div>
         </div>
         <!-- COMMENT: Features section (inserted between onboarding row and get-started button) -->
         <section class="custom-features-section" aria-labelledby="features-title">
-          <h3 id="features-title" class="custom-features-title">功能特性</h3>
+          <h3 id="features-title" class="custom-features-title" data-i18n="featuresTitle"></h3>
           <!-- COMMENT: Each feature item now includes a subtitle for instant context -->
           <ul class="custom-features-list">
             <!-- COMMENT: Add/remove items to customize the feature list -->
             <li class="custom-feature-item">
               <!-- COMMENT: Subtitle clarifies how the quick-launch workflow behaves -->
               <div class="custom-feature-copy">
-                <span class="custom-feature-text">您的提示词，一键即达</span>
-                <span class="custom-feature-subtitle">只需悬停即可开始。</span>
+                <span class="custom-feature-text" data-i18n="featureQuickAccess"></span>
+                <span class="custom-feature-subtitle" data-i18n="featureQuickAccessDesc"></span>
               </div>
             </li>
             <li class="custom-feature-item">
               <!-- COMMENT: Subtitle explains the value of granting host permissions -->
               <div class="custom-feature-copy">
-                <span class="custom-feature-text">在您需要的任何地方可用</span>
-                <span class="custom-feature-subtitle">20 个大语言模型、右键菜单、侧边栏。</span>
+                <span class="custom-feature-text" data-i18n="featureAvailableEverywhere"></span>
+                <span class="custom-feature-subtitle" data-i18n="featureAvailableEverywhereDesc"></span>
               </div>
             </li>
             <li class="custom-feature-item">
               <!-- COMMENT: Subtitle highlights dynamic placeholder collection -->
               <div class="custom-feature-copy">
-                <span class="custom-feature-text">高级功能</span>
-                <span class="custom-feature-subtitle">提示词变量、标签、搜索、追加提示词、轻松导入。</span>
+                <span class="custom-feature-text" data-i18n="featureAdvanced"></span>
+                <span class="custom-feature-subtitle" data-i18n="featureAdvancedDesc"></span>
               </div>
             </li>
             <li class="custom-feature-item">
               <!-- COMMENT: Subtitle calls out multi-surface availability -->
               <div class="custom-feature-copy">
-                <span class="custom-feature-text">键盘快捷键</span>
-                <span class="custom-feature-subtitle">键盘快捷键和导航。</span>
+                <span class="custom-feature-text" data-i18n="featureKeyboardShortcuts"></span>
+                <span class="custom-feature-subtitle" data-i18n="featureKeyboardShortcutsDesc"></span>
               </div>
             </li>
             <li class="custom-feature-item">
               <!-- COMMENT: Subtitle reassures users about data portability -->
               <div class="custom-feature-copy">
-                <span class="custom-feature-text">简洁易用</span>
-                <span class="custom-feature-subtitle">用户友好、明暗模式、热角模式。</span>
+                <span class="custom-feature-text" data-i18n="featureSimpleAndEasy"></span>
+                <span class="custom-feature-subtitle" data-i18n="featureSimpleAndEasyDesc"></span>
               </div>
             </li>
             <li class="custom-feature-item">
               <!-- COMMENT: Subtitle explains how hot corner activation works -->
               <div class="custom-feature-copy">
-                <span class="custom-feature-text">开源</span>
-                <span class="custom-feature-subtitle">无需账户，完全隐私。</span>
+                <span class="custom-feature-text" data-i18n="featureOpenSource"></span>
+                <span class="custom-feature-subtitle" data-i18n="featureOpenSourceDesc"></span>
               </div>
             </li>
           </ul>
@@ -100,7 +100,7 @@
         <div class="custom-section-border">
           <!-- Title inside the border -->
           <span class="custom-badge-absolute">
-            <small class="custom-badge-text">已允许</small>
+            <small class="custom-badge-text" data-i18n="permissionsGranted"></small>
           </span>
 
           <!-- Buttons -->
@@ -113,7 +113,7 @@
         <div class="custom-section-border">
           <!-- Title inside the border -->
           <span class="custom-badge-absolute">
-            <small class="custom-badge-text">可用</small>
+            <small class="custom-badge-text" data-i18n="permissionsAvailable"></small>
           </span>
 
           <!-- Buttons -->
@@ -122,10 +122,10 @@
           <!-- COMMENT: Actions to grant/revoke all optional host permissions -->
           <div style="margin-top: 1rem; text-align: center; display: flex; gap: 0.5rem; justify-content: center;">
             <button id="grant-all-permissions" class="custom-button" style="padding: 0.5rem 0.9rem;">
-              允许所有权限
+              <span data-i18n="grantAllPermissions"></span>
             </button>
             <button id="remove-all-permissions" class="custom-button" style="padding: 0.5rem 0.9rem;">
-              移除所有权限
+              <span data-i18n="removeAllPermissions"></span>
             </button>
           </div>
         </div>

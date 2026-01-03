@@ -226,5 +226,421 @@
   },
   "chromeStore": {
     "message": "Chrome Store"
+  },
+  "copyToClipboard": {
+    "message": "Copy to clipboard"
+  },
+  "edit": {
+    "message": "Edit"
+  },
+  "delete": {
+    "message": "Delete"
+  },
+  "confirmDelete": {
+    "message": "Are you sure you want to delete this prompt?"
+  },
+  "updatePrompt": {
+    "message": "Update"
+  },
+  "addPrompt": {
+    "message": "Add Prompt"
+  },
+  "openPromptMaster": {
+    "message": "Open PromptMaster"
+  },
+  "saveAsNewPrompt": {
+    "message": "Save as New Prompt"
+  },
+  "promptSaved": {
+    "message": "Prompt Saved"
+  },
+  "savedTitle": {
+    "message": "Saved: $TITLE$",
+    "placeholders": {
+      "title": {
+        "content": "$1"
+      }
+    }
+  },
+  "promptCopied": {
+    "message": "Prompt Copied"
+  },
+  "copiedTitle": {
+    "message": "Copied: $TITLE$",
+    "placeholders": {
+      "title": {
+        "content": "$1"
+      }
+    }
+  },
+  "promptGenerator": {
+    "message": "Prompt Generator"
+  },
+  "reset": {
+    "message": "Reset"
+  },
+  "inputYourRequest": {
+    "message": "Enter your request..."
+  },
+  "navigationAndFeatures": {
+    "message": "Navigation & Features"
+  },
+  "saveAsPrompt": {
+    "message": "Save as Prompt"
+  },
+  "noResponse": {
+    "message": "No response"
+  },
+  "configureModelFirst": {
+    "message": "Please configure the model in the top right corner 🔧 Test the connection before chatting with me."
+  },
+  "modelConfig": {
+    "message": "Model Configuration"
+  },
+  "modelConfigDesc": {
+    "message": "Configure an OpenAI-compatible model service (Openrouter recommended)."
+  },
+  "getApiKey": {
+    "message": "Get API Key"
+  },
+  "apiKeyLabel": {
+    "message": "API Key"
+  },
+  "apiKeyPlaceholder": {
+    "message": "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  },
+  "apiKeyDesc": {
+    "message": "API key provided by the service"
+  },
+  "baseUrlLabel": {
+    "message": "Base URL"
+  },
+  "baseUrlPlaceholder": {
+    "message": "https://openrouter.ai/api/v1"
+  },
+  "baseUrlDesc": {
+    "message": "API endpoint URL (must include /v1)"
+  },
+  "modelNameLabel": {
+    "message": "Model Name"
+  },
+  "modelNamePlaceholder": {
+    "message": "nex-agi/deepseek-v3.1-nex-n1:free"
+  },
+  "modelNameDesc": {
+    "message": "Model name to use (e.g., gpt-4, deepseek-chat)"
+  },
+  "testConnection": {
+    "message": "Test Connection"
+  },
+  "saveConfig": {
+    "message": "Save Config"
+  },
+  "apiKeyHelp": {
+    "message": "API key provided by the service provider"
+  },
+  "baseUrlHelp": {
+    "message": "API request URL (must include /v1)"
+  },
+  "modelNameHelp": {
+    "message": "Model name to call (e.g., gpt-4, deepseek-chat)"
+  },
+  "fillApiKeyFirst": {
+    "message": "Please fill in the API Key first"
+  },
+  "connecting": {
+    "message": "Connecting to server..."
+  },
+  "connectionSuccess": {
+    "message": "Connection successful! Configuration is valid"
+  },
+  "connectionFailed404": {
+    "message": "Connection failed (404): Path not found, please verify Base URL (usually ends with /v1)"
+  },
+  "connectionTimeout": {
+    "message": "Connection timeout: Please check network or Base URL"
+  },
+  "checkConfig": {
+    "message": "Please check configuration"
+  },
+  "save": {
+    "message": "Save"
+  },
+  "promptList": {
+    "message": "Prompt List"
+  },
+  "addNewPrompt": {
+    "message": "Add Prompt"
+  },
+  "help": {
+    "message": "Help"
+  },
+  "promptGeneration": {
+    "message": "Prompt Generation"
+  },
+  "tagInputPlaceholder": {
+    "message": "Tag (Enter to confirm)"
+  },
+  "all": {
+    "message": "All"
+  },
+  "expandTags": {
+    "message": "Expand Tags"
+  },
+  "confirmDeletePrompt": {
+    "message": "Delete \"$TITLE$\"?",
+    "placeholders": {
+      "title": {
+        "content": "$1"
+      }
+    }
+  },
+  "searchPlaceholder": {
+    "message": "Search"
+  },
+  "promptTitlePlaceholder": {
+    "message": "Prompt Title"
+  },
+  "promptContentPlaceholder": {
+    "message": "Write your prompt. Use #variable# to add variables"
+  },
+  "fillTitleAndContent": {
+    "message": "Please fill in the title and content."
+  },
+  "enterPromptTitle": {
+    "message": "Enter prompt title"
+  },
+  "addTitleFirst": {
+    "message": "Please add a title for the prompt."
+  },
+  "promptNumber": {
+    "message": "Prompt $NUMBER$",
+    "placeholders": {
+      "number": {
+        "content": "$1"
+      }
+    }
+  },
+  "open": {
+    "message": "Open"
+  },
+  "orHover": {
+    "message": "or hover"
+  },
+  "navigation": {
+    "message": "Navigation"
+  },
+  "variables": {
+    "message": "Variables"
+  },
+  "variablesDesc": {
+    "message": "Use # syntax to insert dynamic values in prompts"
+  },
+  "contextMenu": {
+    "message": "Context Menu"
+  },
+  "sidebarEditor": {
+    "message": "Sidebar Editor"
+  },
+  "hotCornerMode": {
+    "message": "Hot Corner Mode"
+  },
+  "startFromBestPractice": {
+    "message": "Start from Best Practice (Recommended)"
+  },
+  "startFromScratch": {
+    "message": "Start from Scratch"
+  },
+  "selectAIAssistants": {
+    "message": "First, select the AI assistants you want to use."
+  },
+  "noProviderPatterns": {
+    "message": "No available provider permission patterns found"
+  },
+  "permissionDenied": {
+    "message": "Some or all permission requests were denied"
+  },
+  "permissionError": {
+    "message": "Error requesting permissions: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "inputFormat": {
+    "message": "Input format:\n- Target platform: ChatGPT, Claude, Gemini, or other\n- Prompt style: Detailed (interactive) or Basic (quick)\n\nExample: \"Using ChatGPT detailed mode - write me a marketing email\""
+  },
+  "requestFailed": {
+    "message": "Request failed"
+  },
+  "supportAuthor": {
+    "message": "Support Author"
+  },
+  "openProvider": {
+    "message": "Open $NAME$",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "activateProvider": {
+    "message": "Activate $NAME$",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "appendMode": {
+    "message": "Append Mode"
+  },
+  "appendModeTooltip": {
+    "message": "When enabled: prompts will be appended to the input box instead of overwriting existing content."
+  },
+  "enableTags": {
+    "message": "Enable Tags"
+  },
+  "enableTagsTooltip": {
+    "message": "When enabled: you can add tags to prompts and filter by tags; Tag Management will also appear in settings."
+  },
+  "darkMode": {
+    "message": "Dark Mode"
+  },
+  "promptManagement": {
+    "message": "Prompt Management"
+  },
+  "exportFailed": {
+    "message": "Export failed."
+  },
+  "importSuccess": {
+    "message": "Import successful!"
+  },
+  "invalidJsonFormat": {
+    "message": "Invalid JSON file format."
+  },
+  "deleteAllPrompts": {
+    "message": "Delete All Prompts"
+  },
+  "confirmDeleteAll": {
+    "message": "Are you sure you want to delete all prompts? This action cannot be undone."
+  },
+  "deletePromptsFailed": {
+    "message": "Failed to delete prompts."
+  },
+  "tagManagement": {
+    "message": "Tag Management"
+  },
+  "savePromptError": {
+    "message": "Error saving prompt."
+  },
+  "createPrompt": {
+    "message": "Create Prompt"
+  },
+  "openAndSimple": {
+    "message": "Open and Simple"
+  },
+  "hoverToStart": {
+    "message": "Hover to Start"
+  },
+  "orCheckKeyboardShortcuts": {
+    "message": "Or check keyboard shortcuts."
+  },
+  "exploreFeatures": {
+    "message": "Explore Features"
+  },
+  "featuresDescription": {
+    "message": "Hot corner mode, prompt variables, context menu, organize prompts, export and import..."
+  },
+  "featuresTitle": {
+    "message": "Features"
+  },
+  "featureQuickAccess": {
+    "message": "Your prompts, one click away"
+  },
+  "featureQuickAccessDesc": {
+    "message": "Just hover to start."
+  },
+  "featureAvailableEverywhere": {
+    "message": "Available wherever you need"
+  },
+  "featureAvailableEverywhereDesc": {
+    "message": "20 LLMs, context menu, sidebar."
+  },
+  "featureAdvanced": {
+    "message": "Advanced Features"
+  },
+  "featureAdvancedDesc": {
+    "message": "Prompt variables, tags, search, append prompts, easy import."
+  },
+  "featureKeyboardShortcuts": {
+    "message": "Keyboard Shortcuts"
+  },
+  "featureKeyboardShortcutsDesc": {
+    "message": "Keyboard shortcuts and navigation."
+  },
+  "featureSimpleAndEasy": {
+    "message": "Simple and Easy"
+  },
+  "featureSimpleAndEasyDesc": {
+    "message": "User-friendly, light/dark mode, hot corner mode."
+  },
+  "featureOpenSource": {
+    "message": "Open Source"
+  },
+  "featureOpenSourceDesc": {
+    "message": "No account needed, completely private."
+  },
+  "permissionsGranted": {
+    "message": "Granted"
+  },
+  "permissionsAvailable": {
+    "message": "Available"
+  },
+  "grantAllPermissions": {
+    "message": "Grant All Permissions"
+  },
+  "removeAllPermissions": {
+    "message": "Remove All Permissions"
+  },
+  "supportOurWork": {
+    "message": "Support Our Work"
+  },
+  "viewOpenSourceRepo": {
+    "message": "View our open source repository"
+  },
+  "leaveFeedback": {
+    "message": "Leave feedback, we'll keep improving"
+  },
+  "supportOriginalAuthor": {
+    "message": "Support the original author~"
+  },
+  "infoOpen": {
+    "message": "Open"
+  },
+  "infoOrHover": {
+    "message": "or hover"
+  },
+  "infoNavigation": {
+    "message": "Navigation"
+  },
+  "infoVariables": {
+    "message": "Variables"
+  },
+  "infoVariablesDesc": {
+    "message": "Use # syntax to insert dynamic values in prompts"
+  },
+  "infoFeatures": {
+    "message": "Features"
+  },
+  "contextMenu": {
+    "message": "Context Menu"
+  },
+  "sidebarEditor": {
+    "message": "Sidebar Editor"
+  },
+  "saveSuccess": {
+    "message": "Saved successfully"
   }
 }

@@ -247,7 +247,7 @@ async function createPromptContextMenu() {
     // Create the parent menu
     chrome.contextMenus.create({
       id: 'open-prompt-manager',
-      title: '打开提示词大师',
+      title: chrome.i18n.getMessage('openPromptMaster'),
       contexts: ['all']
     });
     // First child: "Save as prompt" – only shown when there is a text selection
@@ -255,7 +255,7 @@ async function createPromptContextMenu() {
     chrome.contextMenus.create({
       id: 'save-as-prompt',
       parentId: 'open-prompt-manager',
-      title: '保存为新提示词',
+      title: chrome.i18n.getMessage('saveAsNewPrompt'),
       contexts: ['selection']
     });
     // COMMENT: Visual separator between "Save as prompt" and the list of existing prompts.
@@ -272,7 +272,7 @@ async function createPromptContextMenu() {
         chrome.contextMenus.create({
           id: 'prompt-' + idx,
           parentId: 'open-prompt-manager',
-          title: prompt.title || `提示词 ${idx + 1}`,
+          title: prompt.title || chrome.i18n.getMessage('promptNumber', [(idx + 1).toString()]),
           contexts: ['all']
         });
       });
@@ -317,16 +317,18 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
       // Ask for a title using the page's built-in blocking prompt
       const [{ result: titleValue }] = await chrome.scripting.executeScript({
         target: { tabId: tab.id },
-        func: () => {
-          return window.prompt('请输入提示词标题', '');
-        }
+        func: (msg) => {
+          return window.prompt(msg, '');
+        },
+        args: [chrome.i18n.getMessage('enterPromptTitle')]
       });
       const title = (titleValue || '').trim();
       if (!title) {
         // Show the requested error message if no title provided
         await chrome.scripting.executeScript({
           target: { tabId: tab.id },
-          func: () => { window.alert('请为提示词添加标题。'); }
+          func: (msg) => { window.alert(msg); },
+          args: [chrome.i18n.getMessage('addTitleFirst')]
         });
         return;
       }
@@ -336,8 +338,8 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
       chrome.notifications?.create({
         type: 'basic',
         iconUrl: 'icons/icon128.png',
-        title: '提示词已保存',
-        message: `已保存：${title}`
+        title: chrome.i18n.getMessage('promptSaved'),
+        message: chrome.i18n.getMessage('savedTitle', [title])
       });
     } catch (err) {
       console.error('Failed to save prompt from selection:', err);
@@ -356,8 +358,8 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         chrome.notifications?.create({
           type: 'basic',
           iconUrl: 'icons/icon128.png',
-          title: '提示词已复制',
-          message: `已复制：${prompts[idx].title}`
+          title: chrome.i18n.getMessage('promptCopied'),
+          message: chrome.i18n.getMessage('copiedTitle', [prompts[idx].title])
         });
       } catch (err) {
         // Fallback: try to copy using the tabs API if clipboard API fails

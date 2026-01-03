@@ -1,8 +1,11 @@
 import { importPrompts } from '../promptStorage.js';
+import { t, initI18n } from '../i18n.js';
 
 // This script is injected into the page to manage permissions for AI providers
 // It retrieves the providers map from storage and creates elements for each provider
 document.addEventListener('DOMContentLoaded', function () {
+  // Initialize i18n for static HTML elements
+  initI18n();
 
   // Get the target containers
   const permissionGrantedContainer = document.getElementById('permission-granted');
@@ -61,10 +64,10 @@ document.addEventListener('DOMContentLoaded', function () {
             <div style="display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 16px; margin-top: 1.5rem;">
               <button id="get-started-best-practices-btn" class="custom-button" style="height: 46px; padding: 0 1.5rem; border-radius: 8px; font-size: 1rem; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: none; cursor: pointer; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.1s;">
                 <img src="../icons/icon-button.png" alt="Icon" width="20" height="20" style="object-fit: cover; filter: brightness(0) invert(1);"> 
-                <span style="font-weight: 500;">从最佳实践开始 (推荐)</span>
+                <span style="font-weight: 500;">${t('startFromBestPractice')}</span>
               </button>
               <button id="get-started-scratch-btn" style="height: 46px; padding: 0 1.5rem; border-radius: 8px; font-size: 1rem; border: 1px solid #e2e8f0; background: #fff; color: #64748b; font-weight: 500; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center;">
-                从0开始
+                ${t('startFromScratch')}
               </button>
             </div>`;
 
@@ -96,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function () {
     } else if (getStartedBtnContainer) {
       // When no providers are allowed yet, show guidance title instead of the button
       // This matches the requested behavior: display a title until at least one LLM is selected
-      getStartedBtnContainer.innerHTML = '<h3 class="custom-onboarding-title">首先，选择你想要使用的AI助手。</h3>';
+      getStartedBtnContainer.innerHTML = `<h3 class="custom-onboarding-title">${t('selectAIAssistants')}</h3>`;
     }
   }
 
@@ -175,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 // Persist change; UI will refresh via storage.onChanged listener
                 chrome.storage.local.set({ aiProvidersMap: providersMap });
               } else {
-                alert(`Permission denied for ${providerKey}`);
+                alert(t('permissionDenied'));
               }
             });
           };
@@ -232,7 +235,7 @@ document.addEventListener('DOMContentLoaded', function () {
           .filter(Boolean);
 
         if (allPatterns.length === 0) {
-          alert('未找到可用的提供者权限模式');
+          alert(t('noProviderPatterns'));
           return;
         }
 
@@ -273,12 +276,12 @@ document.addEventListener('DOMContentLoaded', function () {
               chrome.storage.local.set({ aiProvidersMap: updated });
             });
           } else {
-            alert('部分或全部权限请求被拒绝');
+            alert(t('permissionDenied'));
           }
         });
       } catch (error) {
         console.error('Failed to grant all permissions:', error);
-        alert('请求权限时发生错误：' + error.message);
+        alert(t('permissionError', [error.message]));
       }
     });
   }

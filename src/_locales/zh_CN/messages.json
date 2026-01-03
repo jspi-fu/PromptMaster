@@ -226,5 +226,421 @@
   },
   "chromeStore": {
     "message": "Chrome Store"
+  },
+  "copyToClipboard": {
+    "message": "复制到剪贴板"
+  },
+  "edit": {
+    "message": "编辑"
+  },
+  "delete": {
+    "message": "删除"
+  },
+  "confirmDelete": {
+    "message": "您确定要删除此提示词吗？"
+  },
+  "updatePrompt": {
+    "message": "更新"
+  },
+  "addPrompt": {
+    "message": "添加提示词"
+  },
+  "openPromptMaster": {
+    "message": "打开提示词大师"
+  },
+  "saveAsNewPrompt": {
+    "message": "保存为新提示词"
+  },
+  "promptSaved": {
+    "message": "提示词已保存"
+  },
+  "savedTitle": {
+    "message": "已保存：$TITLE$",
+    "placeholders": {
+      "title": {
+        "content": "$1"
+      }
+    }
+  },
+  "promptCopied": {
+    "message": "提示词已复制"
+  },
+  "copiedTitle": {
+    "message": "已复制：$TITLE$",
+    "placeholders": {
+      "title": {
+        "content": "$1"
+      }
+    }
+  },
+  "promptGenerator": {
+    "message": "提示词生成器"
+  },
+  "reset": {
+    "message": "重置"
+  },
+  "inputYourRequest": {
+    "message": "输入你的需求…"
+  },
+  "navigationAndFeatures": {
+    "message": "导航与功能"
+  },
+  "saveAsPrompt": {
+    "message": "保存为提示词"
+  },
+  "noResponse": {
+    "message": "无响应"
+  },
+  "configureModelFirst": {
+    "message": "您需要在右上角配置正确的模型哦 🔧，在测试连接成功后再与我对话叭"
+  },
+  "modelConfig": {
+    "message": "模型配置"
+  },
+  "modelConfigDesc": {
+    "message": "配置兼容 OpenAI 接口的模型服务（推荐使用Openrouter）。"
+  },
+  "getApiKey": {
+    "message": "获取 API Key"
+  },
+  "apiKeyLabel": {
+    "message": "API Key"
+  },
+  "apiKeyPlaceholder": {
+    "message": "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  },
+  "apiKeyDesc": {
+    "message": "服务商提供的 API 密钥"
+  },
+  "baseUrlLabel": {
+    "message": "Base URL"
+  },
+  "baseUrlPlaceholder": {
+    "message": "https://openrouter.ai/api/v1"
+  },
+  "baseUrlDesc": {
+    "message": "API 请求地址 (需包含 /v1)"
+  },
+  "modelNameLabel": {
+    "message": "Model Name"
+  },
+  "modelNamePlaceholder": {
+    "message": "nex-agi/deepseek-v3.1-nex-n1:free"
+  },
+  "modelNameDesc": {
+    "message": "要调用的模型名称 (如 gpt-4, deepseek-chat)"
+  },
+  "testConnection": {
+    "message": "测试连接"
+  },
+  "saveConfig": {
+    "message": "保存配置"
+  },
+  "apiKeyHelp": {
+    "message": "服务商提供的 API 密钥"
+  },
+  "baseUrlHelp": {
+    "message": "API 请求地址 (需包含 /v1)"
+  },
+  "modelNameHelp": {
+    "message": "要调用的模型名称 (如 gpt-4, deepseek-chat)"
+  },
+  "fillApiKeyFirst": {
+    "message": "请先填写 API Key"
+  },
+  "connecting": {
+    "message": "正在连接服务器..."
+  },
+  "connectionSuccess": {
+    "message": "连接成功！配置可用"
+  },
+  "connectionFailed404": {
+    "message": "连接失败 (404): 路径未找到，请确认 Base URL 正确 (通常以 /v1 结尾)"
+  },
+  "connectionTimeout": {
+    "message": "连接超时: 请检查网络或 Base URL"
+  },
+  "checkConfig": {
+    "message": "请检查配置"
+  },
+  "save": {
+    "message": "保存"
+  },
+  "promptList": {
+    "message": "提示词列表"
+  },
+  "addNewPrompt": {
+    "message": "添加提示词"
+  },
+  "help": {
+    "message": "帮助"
+  },
+  "promptGeneration": {
+    "message": "提示词生成"
+  },
+  "tagInputPlaceholder": {
+    "message": "标签(Enter确认)"
+  },
+  "all": {
+    "message": "全部"
+  },
+  "expandTags": {
+    "message": "展开标签"
+  },
+  "confirmDeletePrompt": {
+    "message": "确定要删除\"$TITLE$\"吗？",
+    "placeholders": {
+      "title": {
+        "content": "$1"
+      }
+    }
+  },
+  "searchPlaceholder": {
+    "message": "输入搜索"
+  },
+  "promptTitlePlaceholder": {
+    "message": "提示词标题"
+  },
+  "promptContentPlaceholder": {
+    "message": "编写您的提示词。使用 #变量名# 来添加变量"
+  },
+  "fillTitleAndContent": {
+    "message": "请填写标题和内容。"
+  },
+  "enterPromptTitle": {
+    "message": "请输入提示词标题"
+  },
+  "addTitleFirst": {
+    "message": "请为提示词添加标题。"
+  },
+  "promptNumber": {
+    "message": "提示词 $NUMBER$",
+    "placeholders": {
+      "number": {
+        "content": "$1"
+      }
+    }
+  },
+  "open": {
+    "message": "打开"
+  },
+  "orHover": {
+    "message": "或悬停"
+  },
+  "navigation": {
+    "message": "导航"
+  },
+  "variables": {
+    "message": "变量"
+  },
+  "variablesDesc": {
+    "message": "使用 # 语法在提示词中插入动态值"
+  },
+  "contextMenu": {
+    "message": "右键菜单"
+  },
+  "sidebarEditor": {
+    "message": "侧边栏编辑器"
+  },
+  "hotCornerMode": {
+    "message": "热角模式"
+  },
+  "startFromBestPractice": {
+    "message": "从最佳实践开始 (推荐)"
+  },
+  "startFromScratch": {
+    "message": "从0开始"
+  },
+  "selectAIAssistants": {
+    "message": "首先，选择你想要使用的AI助手。"
+  },
+  "noProviderPatterns": {
+    "message": "未找到可用的提供者权限模式"
+  },
+  "permissionDenied": {
+    "message": "部分或全部权限请求被拒绝"
+  },
+  "permissionError": {
+    "message": "请求权限时发生错误：$ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "inputFormat": {
+    "message": "输入格式：\n- 目标平台:ChatGPT、Claude、Gemini或其他\n- 提示风格:详细(交互优化)或基本(快速优化)\n\n例子:\"使用 ChatGPT 详细模式-给我写一封营销邮件\""
+  },
+  "requestFailed": {
+    "message": "请求失败"
+  },
+  "supportAuthor": {
+    "message": "一键三连~"
+  },
+  "openProvider": {
+    "message": "打开 $NAME$",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "activateProvider": {
+    "message": "激活 $NAME$",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "appendMode": {
+    "message": "追加模式"
+  },
+  "appendModeTooltip": {
+    "message": "开启后：插入提示词时会追加到输入框末尾，不会覆盖你已输入的内容。"
+  },
+  "enableTags": {
+    "message": "启用标签"
+  },
+  "enableTagsTooltip": {
+    "message": "开启后：可为提示词添加标签，并支持按标签筛选；设置页还会显示「标签管理」。"
+  },
+  "darkMode": {
+    "message": "暗色模式"
+  },
+  "promptManagement": {
+    "message": "提示词管理"
+  },
+  "exportFailed": {
+    "message": "导出失败。"
+  },
+  "importSuccess": {
+    "message": "导入成功！"
+  },
+  "invalidJsonFormat": {
+    "message": "无效的 JSON 文件格式。"
+  },
+  "deleteAllPrompts": {
+    "message": "删除所有提示词"
+  },
+  "confirmDeleteAll": {
+    "message": "确定要删除所有提示词吗？此操作无法撤销。"
+  },
+  "deletePromptsFailed": {
+    "message": "删除提示词失败。"
+  },
+  "tagManagement": {
+    "message": "标签管理"
+  },
+  "savePromptError": {
+    "message": "保存提示词时出错。"
+  },
+  "createPrompt": {
+    "message": "创建提示词"
+  },
+  "openAndSimple": {
+    "message": "开源而简洁"
+  },
+  "hoverToStart": {
+    "message": "悬停开始"
+  },
+  "orCheckKeyboardShortcuts": {
+    "message": "或查看键盘快捷键。"
+  },
+  "exploreFeatures": {
+    "message": "探索功能"
+  },
+  "featuresDescription": {
+    "message": "热角模式、提示词变量、右键菜单、组织提示词、导出和导入..."
+  },
+  "featuresTitle": {
+    "message": "功能特性"
+  },
+  "featureQuickAccess": {
+    "message": "您的提示词，一键即达"
+  },
+  "featureQuickAccessDesc": {
+    "message": "只需悬停即可开始。"
+  },
+  "featureAvailableEverywhere": {
+    "message": "在您需要的任何地方可用"
+  },
+  "featureAvailableEverywhereDesc": {
+    "message": "20 个大语言模型、右键菜单、侧边栏。"
+  },
+  "featureAdvanced": {
+    "message": "高级功能"
+  },
+  "featureAdvancedDesc": {
+    "message": "提示词变量、标签、搜索、追加提示词、轻松导入。"
+  },
+  "featureKeyboardShortcuts": {
+    "message": "键盘快捷键"
+  },
+  "featureKeyboardShortcutsDesc": {
+    "message": "键盘快捷键和导航。"
+  },
+  "featureSimpleAndEasy": {
+    "message": "简洁易用"
+  },
+  "featureSimpleAndEasyDesc": {
+    "message": "用户友好、明暗模式、热角模式。"
+  },
+  "featureOpenSource": {
+    "message": "开源"
+  },
+  "featureOpenSourceDesc": {
+    "message": "无需账户，完全隐私。"
+  },
+  "permissionsGranted": {
+    "message": "已允许"
+  },
+  "permissionsAvailable": {
+    "message": "可用"
+  },
+  "grantAllPermissions": {
+    "message": "允许所有权限"
+  },
+  "removeAllPermissions": {
+    "message": "移除所有权限"
+  },
+  "supportOurWork": {
+    "message": "支持我们的工作"
+  },
+  "viewOpenSourceRepo": {
+    "message": "看看我们的开源仓库"
+  },
+  "leaveFeedback": {
+    "message": "留下你的意见，我们会持续优化"
+  },
+  "supportOriginalAuthor": {
+    "message": "给英文版原作者一键三连~"
+  },
+  "infoOpen": {
+    "message": "打开"
+  },
+  "infoOrHover": {
+    "message": "或悬停"
+  },
+  "infoNavigation": {
+    "message": "导航"
+  },
+  "infoVariables": {
+    "message": "变量"
+  },
+  "infoVariablesDesc": {
+    "message": "使用 # 语法在提示词中插入动态值"
+  },
+  "infoFeatures": {
+    "message": "功能"
+  },
+  "contextMenu": {
+    "message": "右键菜单"
+  },
+  "sidebarEditor": {
+    "message": "侧边栏编辑器"
+  },
+  "saveSuccess": {
+    "message": "保存成功"
   }
 }
