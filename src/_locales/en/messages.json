@@ -135,7 +135,7 @@
     "message": "Support the author"
   },
   "leaveFeedback": {
-    "message": "Leave Feedback"
+    "message": "Leave feedback, we'll keep improving"
   },
   "info": {
     "message": "Info"
@@ -366,6 +366,9 @@
   "save": {
     "message": "Save"
   },
+  "saveSuccess": {
+    "message": "Saved successfully"
+  },
   "promptList": {
     "message": "Prompt List"
   },
@@ -541,9 +544,6 @@
   "openAndSimple": {
     "message": "Open and Simple"
   },
-  "hoverToStart": {
-    "message": "Hover to Start"
-  },
   "orCheckKeyboardShortcuts": {
     "message": "Or check keyboard shortcuts."
   },
@@ -598,20 +598,11 @@
   "permissionsAvailable": {
     "message": "Available"
   },
-  "grantAllPermissions": {
-    "message": "Grant All Permissions"
-  },
-  "removeAllPermissions": {
-    "message": "Remove All Permissions"
-  },
   "supportOurWork": {
     "message": "Support Our Work"
   },
   "viewOpenSourceRepo": {
     "message": "View our open source repository"
-  },
-  "leaveFeedback": {
-    "message": "Leave feedback, we'll keep improving"
   },
   "supportOriginalAuthor": {
     "message": "Support the original author~"
@@ -633,14 +624,5 @@
   },
   "infoFeatures": {
     "message": "Features"
-  },
-  "contextMenu": {
-    "message": "Context Menu"
-  },
-  "sidebarEditor": {
-    "message": "Sidebar Editor"
-  },
-  "saveSuccess": {
-    "message": "Saved successfully"
   }
 }

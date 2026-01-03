@@ -135,7 +135,7 @@
     "message": "给原作者一键三连~"
   },
   "leaveFeedback": {
-    "message": "留下你的反馈"
+    "message": "留下你的意见，我们会持续优化"
   },
   "info": {
     "message": "信息"
@@ -366,6 +366,9 @@
   "save": {
     "message": "保存"
   },
+  "saveSuccess": {
+    "message": "保存成功"
+  },
   "promptList": {
     "message": "提示词列表"
   },
@@ -541,9 +544,6 @@
   "openAndSimple": {
     "message": "开源而简洁"
   },
-  "hoverToStart": {
-    "message": "悬停开始"
-  },
   "orCheckKeyboardShortcuts": {
     "message": "或查看键盘快捷键。"
   },
@@ -598,20 +598,11 @@
   "permissionsAvailable": {
     "message": "可用"
   },
-  "grantAllPermissions": {
-    "message": "允许所有权限"
-  },
-  "removeAllPermissions": {
-    "message": "移除所有权限"
-  },
   "supportOurWork": {
     "message": "支持我们的工作"
   },
   "viewOpenSourceRepo": {
     "message": "看看我们的开源仓库"
-  },
-  "leaveFeedback": {
-    "message": "留下你的意见，我们会持续优化"
   },
   "supportOriginalAuthor": {
     "message": "给英文版原作者一键三连~"
@@ -633,14 +624,5 @@
   },
   "infoFeatures": {
     "message": "功能"
-  },
-  "contextMenu": {
-    "message": "右键菜单"
-  },
-  "sidebarEditor": {
-    "message": "侧边栏编辑器"
-  },
-  "saveSuccess": {
-    "message": "保存成功"
   }
 }
