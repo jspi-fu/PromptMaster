@@ -2,6 +2,12 @@
 
 一个轻量级的 Chrome & edge 扩展，用于在多个 AI 平台上**快速管理与插入提示词**，并提供一个内置的“提示词生成器”（OpenAI 兼容接口）辅助生成可复用提示词。
 
+## 界面示例
+![UseinAI](public/UseinAI.png)
+![UsefromBP](public/UsefromBP.png)
+![UsePromptcreate](public/UsePromptcreate.png)
+
+
 ## 功能概览
 
 - **提示词管理**：创建 / 编辑 / 删除 / 搜索；支持导入导出。
@@ -71,7 +77,7 @@
 
 ## 许可证
 
-[MIT](LICENSE)
+本插件使用[MIT](LICENSE)协议，欢迎任何形式的贡献！
 
 ## 致谢
 

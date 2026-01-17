@@ -32,6 +32,7 @@ debug.log
 
 # Coverage directory
 coverage/
+public/files/
 
 # Temporary files
 *.tmp
