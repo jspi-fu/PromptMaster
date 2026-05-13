@@ -5,6 +5,26 @@ import * as PromptStorage from '../promptStorage.js';
 import { exportPrompts, importPrompts } from '../importExport.js';
 import { initI18n, t } from '../i18n.js';
 
+// COMMENT: Track forced dark mode state to sync with floating mode
+let isDarkModeForced = false;
+
+// COMMENT: Apply dark mode class to document based on forced setting or system preference
+function applyTheme() {
+  const shouldBeDark = isDarkModeForced || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  document.documentElement.classList.toggle('force-dark', shouldBeDark);
+}
+
+// COMMENT: Load dark mode preference from storage
+async function loadThemePreference() {
+  try {
+    const result = await chrome.storage.local.get(['forceDarkMode']);
+    isDarkModeForced = result.forceDarkMode === true;
+    applyTheme();
+  } catch (err) {
+    // Ignore errors
+  }
+}
+
 // COMMENT: Helper to check if any provider permissions are granted
 async function hasAnyGrantedProviderPermission() {
   return new Promise(resolve => {
@@ -319,6 +339,11 @@ function displayPrompts(prompts) {
       document.getElementById('prompt-title').value = prompt.title;
       document.getElementById('prompt-content').value = prompt.content;
       document.getElementById('prompt-index').value = index;
+      
+      // Load tags
+      currentTags = prompt.tags ? [...prompt.tags] : [];
+      renderTags();
+      
       document.getElementById('submit-button').innerHTML = `<img src="../icons/add-icon.png" alt="${t('add')}" style="margin-right: 5px" /><span>${t('updatePrompt')}</span>`;
       document.getElementById('cancel-edit-button').style.display = 'inline';
     });
@@ -382,6 +407,85 @@ document.addEventListener('DOMContentLoaded', () => {
   // COMMENT: Info banner elements for close/dismiss behavior
   const infoBanner = document.getElementById('info-banner');
   const infoBannerClose = document.getElementById('info-banner-close');
+  
+  // Tag elements
+  const tagsContainer = document.getElementById('tags-container');
+  const tagsDisplay = document.getElementById('tags-display');
+  const tagInput = document.getElementById('tag-input');
+  
+  // Current tags
+  let currentTags = [];
+
+  // Function to render tags
+  function renderTags() {
+    tagsDisplay.innerHTML = '';
+    currentTags.forEach((tag, index) => {
+      const tagPill = document.createElement('span');
+      tagPill.className = 'tag-pill';
+      
+      const tagText = document.createElement('span');
+      tagText.textContent = tag;
+      tagPill.appendChild(tagText);
+      
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'tag-remove';
+      removeBtn.textContent = '×';
+      removeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        currentTags.splice(index, 1);
+        renderTags();
+      });
+      tagPill.appendChild(removeBtn);
+      
+      tagsDisplay.appendChild(tagPill);
+    });
+  }
+
+  // Function to add a tag
+  function addTag(tagName) {
+    const trimmedTag = tagName.trim();
+    if (trimmedTag && !currentTags.includes(trimmedTag)) {
+      currentTags.push(trimmedTag);
+      renderTags();
+    }
+  }
+
+  // Function to clear tags
+  function clearTags() {
+    currentTags = [];
+    renderTags();
+  }
+
+  // Tag input event listeners
+  if (tagInput) {
+    tagInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addTag(tagInput.value);
+        tagInput.value = '';
+      } else if (e.key === 'Backspace' && tagInput.value === '') {
+        e.preventDefault();
+        if (currentTags.length > 0) {
+          currentTags.pop();
+          renderTags();
+        }
+      }
+    });
+
+    tagInput.addEventListener('blur', () => {
+      if (tagInput.value) {
+        addTag(tagInput.value);
+        tagInput.value = '';
+      }
+    });
+
+    // Click on tags container to focus input
+    tagsContainer.addEventListener('click', (e) => {
+      if (e.target !== tagInput && !e.target.classList.contains('tag-remove')) {
+        tagInput.focus();
+      }
+    });
+  }
 
   // Load prompts and display
   loadPrompts();
@@ -389,6 +493,8 @@ document.addEventListener('DOMContentLoaded', () => {
   renderPermissionsGate();
   // COMMENT: Render LLMs section on load
   renderLLMsSection();
+  // COMMENT: Load and apply theme preference
+  loadThemePreference();
 
   // COMMENT: Wire Available subheading toggle (fold/unfold)
   const availableToggle = document.getElementById('llms-available-toggle');
@@ -441,6 +547,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // COMMENT: Also refresh the LLMs section so pills reflect new activation status
         renderLLMsSection();
       }
+      // COMMENT: React to theme changes from floating mode
+      if (area === 'local' && changes.forceDarkMode) {
+        isDarkModeForced = changes.forceDarkMode.newValue === true;
+        applyTheme();
+      }
     });
   } catch (err) {
     // Ignore if not available
@@ -490,17 +601,18 @@ document.addEventListener('DOMContentLoaded', () => {
     event.preventDefault();
     const title = titleInput.value.trim();
     const content = contentInput.value;
+    const tags = [...currentTags];
 
     if (promptIndexInput.value === '') {
       // COMMENT: Add new prompt via unified manager
-      PromptStorage.savePrompt({ title, content }).catch(console.error);
+      PromptStorage.savePrompt({ title, content, tags }).catch(console.error);
     } else {
       // COMMENT: Update existing prompt by mapping index to uuid via unified manager
       const index = parseInt(promptIndexInput.value, 10);
       PromptStorage.getPrompts().then(prompts => {
         if (index >= 0 && index < prompts.length) {
           const uuid = prompts[index].uuid;
-          return PromptStorage.updatePrompt(uuid, { title, content });
+          return PromptStorage.updatePrompt(uuid, { title, content, tags });
         }
       }).catch(console.error);
     }
@@ -509,6 +621,7 @@ document.addEventListener('DOMContentLoaded', () => {
     titleInput.value = '';
     contentInput.value = '';
     promptIndexInput.value = '';
+    clearTags();
     submitButton.innerHTML = `<img src="../icons/add-icon.png" alt="${t('add')}" style="margin-right: 5px" /><span>${t('savePrompt')}</span>`;
     cancelEditButton.style.display = 'none';
   });
@@ -519,6 +632,7 @@ document.addEventListener('DOMContentLoaded', () => {
     titleInput.value = '';
     contentInput.value = '';
     promptIndexInput.value = '';
+    clearTags();
     submitButton.innerHTML = `<img src="../icons/add-icon.png" alt="${t('add')}" style="margin-right: 5px" /><span>${t('addPrompt')}</span>`;
     cancelEditButton.style.display = 'none';
   });

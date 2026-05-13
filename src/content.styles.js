@@ -17,12 +17,12 @@
   // COMMENT: Use var and window assignments so subsequent injected files see these values.
   var THEME_COLORS = window.THEME_COLORS || {
     primary: '#3674B5', primaryGradientStart: '#3674B5', primaryGradientEnd: '#578FCA',
-    hoverPrimary: '#205295', darkBackground: '#0A2647', lightBackground: '#F7FAFC',
-    darkBorder: '#144272', lightBorder: '#E2E8F0',
-    darkShadow: '0 4px 20px rgba(0,0,0,0.3)', lightShadow: '0 4px 20px rgba(0,0,0,0.15)',
-    inputDarkBorder: '1px solid #4A5568', inputLightBorder: '1px solid #CBD5E0',
-    inputDarkBg: '#2D3748', inputLightBg: '#FFFFFF',
-    inputDarkText: '#E2E8F0', inputLightText: '#2D3748'
+    hoverPrimary: '#4A90D9', darkBackground: '#0F0F0F', lightBackground: '#F7FAFC',
+    darkBorder: '#2A2A2A', lightBorder: '#E2E8F0',
+    darkShadow: '0 4px 20px rgba(0,0,0,0.5)', lightShadow: '0 4px 20px rgba(0,0,0,0.15)',
+    inputDarkBorder: '1px solid #3A3A3A', inputLightBorder: '1px solid #CBD5E0',
+    inputDarkBg: '#1A1A1A', inputLightBg: '#FFFFFF',
+    inputDarkText: '#E8E8E8', inputLightText: '#2D3748'
   };
   window.THEME_COLORS = THEME_COLORS;
 
@@ -68,7 +68,8 @@
   var injectGlobalStyles = window.injectGlobalStyles || function injectGlobalStyles() {
     const styleEl = document.createElement('style');
     styleEl.textContent = `
-    #${SELECTORS.ROOT} {
+    /* COMMENT: 全局 CSS 变量，供弹窗等不在 #opm-root 内的元素使用 */
+    :root {
       --primary: ${THEME_COLORS.primary};
       --primary-gradient-start: ${THEME_COLORS.primaryGradientStart};
       --primary-gradient-end: ${THEME_COLORS.primaryGradientEnd};
@@ -85,6 +86,14 @@
       --input-light-bg: ${THEME_COLORS.inputLightBg};
       --input-dark-text: ${THEME_COLORS.inputDarkText};
       --input-light-text: ${THEME_COLORS.inputLightText};
+      /* 扩展暗色主题变量 */
+      --dark-text-secondary: #888888;
+      --dark-text-tertiary: #AAAAAA;
+      --dark-input-border: #3A3A3A;
+      --dark-hover-bg: #252525;
+      --dark-card-bg: #1A1A1A;
+    }
+    #${SELECTORS.ROOT} {
       --transition-speed: 0.3s;
       --border-radius: 8px;
       --font-family: 'Roboto', sans-serif;
@@ -421,7 +430,7 @@
     }
     #${SELECTORS.ROOT}.opm-dark .opm-tag-pill-filter {
       border-color: var(--dark-border);
-      background-color: #144272;
+      background-color: var(--dark-card-bg);
       color: var(--input-dark-text);
     }
     /* Selected state for tag pill */
@@ -430,8 +439,8 @@
       border-color: #BBD3FF;
     }
     #${SELECTORS.ROOT}.opm-dark .opm-tag-pill-filter[aria-pressed="true"] {
-      background-color: #2E3A4E;
-      border-color: #3E4C66;
+      background-color: var(--dark-hover-bg);
+      border-color: var(--primary);
     }
     /* Generic text colors for common containers */
     #${SELECTORS.ROOT} .opm-form-container.opm-light { color: var(--input-light-text); }
@@ -454,6 +463,48 @@
     }
     #${SELECTORS.ROOT} .opm-prompt-list-item.opm-light { color: var(--input-light-text); }
     #${SELECTORS.ROOT} .opm-prompt-list-item.opm-dark { color: var(--input-dark-text); }
+    /* COMMENT: 社区链接（支持我们的工作）颜色跟随主题自动切换 */
+    #${SELECTORS.ROOT} .opm-community-title {
+      font-weight: bold;
+      font-size: 13px;
+      margin-top: 10px;
+      opacity: 0.85;
+    }
+    #${SELECTORS.ROOT} .opm-community-title.opm-light,
+    #${SELECTORS.ROOT} .opm-community-link.opm-light {
+      color: var(--input-light-text);
+    }
+    #${SELECTORS.ROOT} .opm-community-title.opm-dark,
+    #${SELECTORS.ROOT} .opm-community-link.opm-dark {
+      color: var(--input-dark-text);
+    }
+    #${SELECTORS.ROOT} .opm-community-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 13px;
+      font-weight: 500;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+    #${SELECTORS.ROOT} .opm-community-link.opm-light {
+      border: 1px solid rgba(0,0,0,0.05);
+      background-color: rgba(15, 23, 42, 0.03);
+    }
+    #${SELECTORS.ROOT} .opm-community-link.opm-dark {
+      border: 1px solid rgba(255,255,255,0.12);
+      background-color: rgba(255,255,255,0.03);
+    }
+    #${SELECTORS.ROOT} .opm-community-link.opm-light:hover {
+      background-color: rgba(54, 116, 181, 0.1);
+      border-color: rgba(54, 116, 181, 0.25);
+    }
+    #${SELECTORS.ROOT} .opm-community-link.opm-dark:hover {
+      background-color: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.2);
+    }
     #${SELECTORS.ROOT} .opm-prompt-list-item {
       border-radius: var(--border-radius);
       font-size: 14px;
@@ -807,11 +858,11 @@
       border: 1px solid #e2e8f0;
     }
     #${SELECTORS.ROOT}.opm-dark .opm-chat-message.opm-chat-assistant {
-      background-color: #1e293b;
-      color: #f8fafc;
-      border-color: #334155;
+      background-color: var(--dark-card-bg);
+      color: var(--input-dark-text);
+      border-color: var(--dark-border);
     }
-    
+
     /* Save prompt icon on assistant messages */
     #${SELECTORS.ROOT} .opm-chat-save-prompt {
       position: absolute;
@@ -831,8 +882,8 @@
       transition: transform 0.1s ease;
     }
     #${SELECTORS.ROOT}.opm-dark .opm-chat-save-prompt {
-      background-color: #1e293b;
-      border-color: #334155;
+      background-color: var(--dark-card-bg);
+      border-color: var(--dark-border);
     }
     #${SELECTORS.ROOT} .opm-chat-message.opm-chat-assistant:hover .opm-chat-save-prompt {
       display: flex;
@@ -842,7 +893,7 @@
       background-color: #f8fafc;
     }
     #${SELECTORS.ROOT}.opm-dark .opm-chat-save-prompt:hover {
-      background-color: #334155;
+      background-color: var(--dark-hover-bg);
     }
 
     #${SELECTORS.ROOT} .opm-chat-input-area {
@@ -856,7 +907,7 @@
     }
     #${SELECTORS.ROOT}.opm-dark .opm-chat-input-area {
       border-top-color: var(--dark-border);
-      background-color: rgba(10, 38, 71, 0.5);
+      background-color: rgba(15, 15, 15, 0.8);
     }
     #${SELECTORS.ROOT} .opm-chat-input {
       flex: 1;
@@ -881,68 +932,68 @@
       color: var(--input-dark-text);
     }
     
-    /* Shadcn-style Modal */
-    #${SELECTORS.ROOT} .opm-chat-settings-content {
+    /* Shadcn-style Modal - 使用全局选择器，因为弹窗不在 #opm-root 内 */
+    .opm-chat-settings-content {
       border-radius: 12px;
       border: 1px solid #e2e8f0;
       background-color: #fff;
       box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     }
-    #${SELECTORS.ROOT}.opm-dark .opm-chat-settings-content {
-      border-color: #1e293b;
-      background-color: #020617;
+    .opm-chat-settings-content.opm-dark {
+      border-color: var(--dark-border);
+      background-color: var(--dark-bg);
       box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
     }
-    #${SELECTORS.ROOT} .opm-chat-settings-header {
+    .opm-chat-settings-header {
       padding: 16px 20px;
       border-bottom: 1px solid #f1f5f9;
     }
-    #${SELECTORS.ROOT}.opm-dark .opm-chat-settings-header {
-      border-bottom-color: #1e293b;
+    .opm-chat-settings-header.opm-dark {
+      border-bottom-color: var(--dark-border);
     }
-    #${SELECTORS.ROOT} .opm-chat-settings-title {
+    .opm-chat-settings-title {
       font-size: 18px;
       font-weight: 600;
       color: #0f172a;
     }
-    #${SELECTORS.ROOT}.opm-dark .opm-chat-settings-title {
-      color: #f8fafc;
+    .opm-chat-settings-title.opm-dark {
+      color: var(--input-dark-text);
     }
-    #${SELECTORS.ROOT} .opm-chat-settings-desc {
+    .opm-chat-settings-desc {
       font-size: 13px;
       color: #64748b;
       margin-top: 4px;
     }
-    #${SELECTORS.ROOT}.opm-dark .opm-chat-settings-desc {
-      color: #94a3b8;
+    .opm-chat-settings-desc.opm-dark {
+      color: var(--dark-text-secondary);
     }
-    #${SELECTORS.ROOT} .opm-chat-settings-body {
+    .opm-chat-settings-body {
       padding: 20px;
     }
-    #${SELECTORS.ROOT} .opm-chat-settings-footer {
+    .opm-chat-settings-footer {
       padding: 16px 20px;
       border-top: 1px solid #f1f5f9;
       display: flex;
       justify-content: flex-end;
       gap: 8px;
     }
-    #${SELECTORS.ROOT}.opm-dark .opm-chat-settings-footer {
-      border-top-color: #1e293b;
+    .opm-chat-settings-footer.opm-dark {
+      border-top-color: var(--dark-border);
     }
-    #${SELECTORS.ROOT} .opm-chat-settings-field {
+    .opm-chat-settings-field {
       margin-bottom: 16px;
     }
-    #${SELECTORS.ROOT} .opm-chat-settings-label {
+    .opm-chat-settings-label {
       font-size: 13px;
       font-weight: 500;
       color: #334155;
       margin-bottom: 6px;
       display: block;
     }
-    #${SELECTORS.ROOT}.opm-dark .opm-chat-settings-label {
-      color: #cbd5e1;
+    .opm-chat-settings-label.opm-dark {
+      color: var(--dark-text-tertiary);
     }
-    #${SELECTORS.ROOT} .opm-chat-settings-input {
+    .opm-chat-settings-input {
       width: 100%;
       padding: 8px 12px;
       border-radius: 6px;
@@ -952,21 +1003,21 @@
       background-color: #ffffff;
       color: #0f172a;
     }
-    #${SELECTORS.ROOT} .opm-chat-settings-input:focus {
+    .opm-chat-settings-input:focus {
       outline: none;
       border-color: var(--primary);
       box-shadow: 0 0 0 2px rgba(54, 116, 181, 0.1);
     }
-    #${SELECTORS.ROOT}.opm-dark .opm-chat-settings-input {
-      background-color: #0f172a;
-      border-color: #334155;
-      color: #f8fafc;
+    .opm-chat-settings-input.opm-dark {
+      background-color: var(--dark-card-bg);
+      border-color: var(--dark-input-border);
+      color: var(--input-dark-text);
     }
-    #${SELECTORS.ROOT}.opm-dark .opm-chat-settings-input:focus {
+    .opm-chat-settings-input.opm-dark:focus {
       border-color: var(--primary);
       box-shadow: 0 0 0 2px rgba(54, 116, 181, 0.2);
     }
-    #${SELECTORS.ROOT} .opm-chat-settings-btn {
+    .opm-chat-settings-btn {
       padding: 8px 16px;
       border-radius: 6px;
       font-size: 13px;
@@ -975,35 +1026,44 @@
       transition: all 0.2s ease;
       border: 1px solid transparent;
     }
-    #${SELECTORS.ROOT} .opm-chat-settings-btn-primary {
+    .opm-chat-settings-btn-primary {
       background-color: #0f172a;
       color: #fff;
     }
-    #${SELECTORS.ROOT} .opm-chat-settings-btn-primary:hover {
+    .opm-chat-settings-btn-primary:hover {
       background-color: #1e293b;
     }
-    #${SELECTORS.ROOT}.opm-dark .opm-chat-settings-btn-primary {
-      background-color: #f8fafc;
-      color: #020617;
+    .opm-chat-settings-btn-primary.opm-dark {
+      background-color: var(--input-dark-text);
+      color: var(--dark-bg);
     }
-    #${SELECTORS.ROOT}.opm-dark .opm-chat-settings-btn-primary:hover {
-      background-color: #e2e8f0;
+    .opm-chat-settings-btn-primary.opm-dark:hover {
+      background-color: #FFFFFF;
     }
-    #${SELECTORS.ROOT} .opm-chat-settings-btn-outline {
+    .opm-chat-settings-btn-outline {
       background-color: #fff;
       border-color: #e2e8f0;
       color: #0f172a;
     }
-    #${SELECTORS.ROOT} .opm-chat-settings-btn-outline:hover {
+    .opm-chat-settings-btn-outline:hover {
       background-color: #f8fafc;
     }
-    #${SELECTORS.ROOT}.opm-dark .opm-chat-settings-btn-outline {
+    .opm-chat-settings-btn-outline.opm-dark {
       background-color: transparent;
-      border-color: #334155;
-      color: #f8fafc;
+      border-color: var(--dark-input-border);
+      color: var(--input-dark-text);
     }
-    #${SELECTORS.ROOT}.opm-dark .opm-chat-settings-btn-outline:hover {
-      background-color: #1e293b;
+    .opm-chat-settings-btn-outline.opm-dark:hover {
+      background-color: var(--dark-card-bg);
+    }
+    .opm-chat-settings-help.opm-dark {
+      color: var(--dark-text-secondary);
+    }
+    .opm-chat-settings-test-btn.opm-dark {
+      color: var(--dark-text-secondary);
+    }
+    .opm-chat-settings-test-btn.opm-light {
+      color: #64748b;
     }
   `;
     document.head.appendChild(styleEl);

@@ -955,32 +955,16 @@
             } catch (_) { /* ignore */ }
           })();
 
-          // COMMENT: Prepare shared styles so the external link tiles match the active theme.
-          const isDarkTheme = getMode() === 'dark';
-          const linkTileStyles = {
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            textDecoration: 'none',
-            borderRadius: '6px',
-            padding: '6px 10px',
-            fontSize: '13px',
-            fontWeight: '500',
-            border: isDarkTheme ? '1px solid rgba(255,255,255,0.12)' : '1px solid rgba(0,0,0,0.05)',
-            backgroundColor: isDarkTheme ? 'rgba(255,255,255,0.03)' : 'rgba(15, 23, 42, 0.03)',
-            color: isDarkTheme ? THEME_COLORS.inputDarkText : THEME_COLORS.inputLightText,
-            transition: 'background-color 0.2s ease, border-color 0.2s ease'
-          };
-
           // COMMENT: Builder keeps Gitee + review links consistent (icon + label + spacing).
+          // 使用 CSS class 让颜色跟随主题自动切换，无需硬编码
           const createCommunityLink = ({ label, href, icon, alt }) => {
             const link = createEl('a', {
               attributes: { href, target: '_blank', rel: 'noopener noreferrer' },
-              styles: { ...linkTileStyles }
+              className: `opm-community-link opm-${getMode()}`
             });
+            // COMMENT: 保留图标原始颜色，不应用主题 filter，让 Gitee 红、Coffee 棕等原色显示
             const iconImg = createEl('img', {
-              attributes: { src: chrome.runtime.getURL(icon), alt, width: '20', height: '20' },
-              styles: { filter: iconFilter() }
+              attributes: { src: chrome.runtime.getURL(icon), alt, width: '20', height: '20' }
             });
             const text = createEl('span', { innerHTML: label });
             link.append(iconImg, text);
@@ -988,7 +972,10 @@
           };
 
           // COMMENT: Highlight community call-to-actions so users can find Gitee + reviews fast.
-          const communityTitle = createEl('div', { styles: { fontWeight: 'bold', fontSize: '13px', marginTop: '10px', opacity: 0.85 }, innerHTML: chrome.i18n.getMessage('supportOurWork') });
+          const communityTitle = createEl('div', {
+            className: `opm-community-title opm-${getMode()}`,
+            innerHTML: chrome.i18n.getMessage('supportOurWork')
+          });
           const communityLinks = createEl('div', { styles: { display: 'flex', flexDirection: 'column', gap: '6px' } });
           communityLinks.append(
             createCommunityLink({

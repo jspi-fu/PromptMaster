@@ -1,4 +1,4 @@
-## 提示词大师（Prompt Master）— 架构与开发者指南 (v2.6.3)
+## 提示词大师（Prompt Master）— 架构与开发者指南 (v2.7.0)
 
 本文档解释了 `src` 目录中 Chrome 扩展的结构、端到端工作原理以及主要逻辑所在位置。涵盖后台/Service Worker 编排、内容脚本和 UI 层、存储/版本管理、权限引导、侧边栏应用以及提供商集成，并补充“提示词生成器”的实现与数据流。
 
@@ -28,7 +28,7 @@
 {
     "manifest_version": 3,
     "name": "提示词大师",
-    "version": "2.6.3",
+    "version": "2.7.0",
     "permissions": ["sidePanel","storage","tabs","scripting","activeTab","contextMenus"],
     "side_panel": { "default_path": "sidepanel/index.html" },
     "background": { "service_worker": "service-worker.js", "type": "module" },
@@ -254,6 +254,10 @@ const handleProviderClick = function (event) {
 - `content.styles.js` 在单个根（`#opm-root`）下将所有 CSS 注入到页面，具有浅色/深色变体。
 - 当前默认策略为：**滚动条永久隐藏**（仅保留滚动能力），以保持 UI 视觉更简洁。
 - 内容 UI 和侧边栏共享一致的颜色系统。
+- **CSS 变量系统**：所有主题颜色通过 CSS 自定义属性（变量）集中管理，定义在 `:root` 作用域以确保全局可访问（包括弹窗等不在 `#opm-root` 内的元素）。
+- **暗色主题配色**：主色为黑色 (`#0F0F0F`)，辅色为灰色系 (`#1A1A1A`, `#2A2A2A`, `#252525`)，强调色为蓝色 (`#3674B5`)。
+- **图标颜色保护**：第三方图标（如 Gitee）保留原始颜色，不应用主题滤镜；仅内部 SVG 图标根据主题自动调整。
+- **动态主题切换**：通过为元素添加/移除 `opm-light` / `opm-dark` 类实现无刷新主题切换，所有颜色通过 CSS 变量自动更新。
 - 图标通过主题感知的 CSS 过滤器着色。
 
 ## 键盘、热角和引导
@@ -287,6 +291,9 @@ const handleProviderClick = function (event) {
 - 后台注入路径检查 URL 模式和权限，但在所有边缘情况下并不严格防止双重注入。代码首先尝试通过 `executeScript(func: ...)` 进行小的“探测”；如果需要，考虑更强的幂等性保护。
 - **外部点击处理 (Outside Click Handling)**: 为解决主要 UI 面板在各类 Portal 元素（如标签建议列表）交互时意外关闭的问题，`OutsideClickCloser` 现在监听 `mousedown` 事件而非 `click`。这提供了更稳健的“意图检测”，防止了事件冒泡带来的误判。
 - **UI 样式微调**: 针对标签建议列表在浅色模式下的文本可见性问题进行了修复，强制指定了高对比度文本颜色。
+- **CSS 变量全局化**: 主题颜色变量从 `#opm-root` 作用域迁移至 `:root`，确保模型配置弹窗等不在主容器内的元素能正确继承主题颜色，避免透明背景问题。
+- **社区链接颜色修复**: "支持我们的工作"区域的颜色现在通过 `opm-light` / `opm-dark` 类自动切换，确保在主题热切换时颜色同步更新。
+- **侧边栏图标保护**: 侧边栏页脚图标（Gitee 等）添加 `footer-icon-original` 类，避免在暗色模式下被 `invert(100%)` 滤镜覆盖原始颜色。
 - `settings.js` 仍存在历史遗留逻辑（与当前主 UI/侧边栏的导入导出路径不一致）。建议以 `content.shared.js` 的 Settings 视图与侧边栏为准，逐步清理未使用入口。
 - `llm_providers.json` 包含两个名为“Google AI Studio”的条目；无害，但如果您计划在其他地方渲染唯一名称列表，可以通过名称去重。
 

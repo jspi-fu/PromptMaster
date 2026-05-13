@@ -5,14 +5,14 @@
       "pattern": "*://chat.qwen.ai/*",
       "url": "https://chat.qwen.ai",
       "icon_url": "../icons/qwen-icon.png",
-      "element_selector": "#chat-input"
+      "element_selector": "textarea"
     },
     {
       "name": "千问",
       "pattern": "*://*.qianwen.com/*",
       "url": "https://www.qianwen.com",
       "icon_url": "https://crystalpng.com/wp-content/uploads/2025/02/Qwen-04.png",
-      "element_selector": "textarea"
+      "element_selector": "[data-slate-editor='true'], [data-slate-node='value'], [contenteditable='true']"
     },
     {
       "name": "豆包",
@@ -26,7 +26,7 @@
       "pattern": "*://chat.deepseek.com/*",
       "url": "https://chat.deepseek.com",
       "icon_url": "../icons/deepseek-icon.png",
-      "element_selector": "textarea[placeholder='Message DeepSeek']"
+      "element_selector": "textarea"
     },
     {
       "name": "智谱清言",
@@ -46,7 +46,7 @@
       "name": "问小白",
       "pattern": "*://*.wenxiaobai.com/*",
       "url": "https://www.wenxiaobai.com",
-      "icon_url": "https://linuxidc.loloya.cn/linuxidc/202504/36c289c8898064171f56691268cb9abb.png",
+      "icon_url": "https://uziai.com/wp-content/uploads/2025/08/1755660686-wenxiaobai-logo-2.png",
       "element_selector": "textarea"
     },
     {
@@ -124,7 +124,7 @@
       "pattern": "*://aistudio.google.com/*",
       "url": "https://aistudio.google.com",
       "icon_url": "https://www.gstatic.com/aistudio/ai_studio_favicon_32x32.png",
-      "element_selector": "textarea[aria-label=\"Type something or tab to choose an example prompt\"]"
+      "element_selector": "textarea"
     },
     {
       "name": "Perplexity AI",
@@ -139,6 +139,34 @@
       "url": "https://lmarena.ai",
       "icon_url": "../icons/lmarena-icon.png",
       "element_selector": "textarea[name=\"message\"]"
+    },
+    {
+      "name": "Minimax",
+      "pattern": "*://agent.minimaxi.com/*",
+      "url": "https://agent.minimaxi.com/",
+      "icon_url": "../icons/minimax.svg",
+      "element_selector": ".tiptap.ProseMirror.tiptap-editor"
+    },
+    {
+      "name": "扣子",
+      "pattern": "*://www.coze.cn/*",
+      "url": "https://www.coze.cn/",
+      "icon_url": "../icons/coze.svg",
+      "element_selector": ".cm-content.cm-lineWrapping"
+    },
+    {
+      "name": "Xiaomi MiMo",
+      "pattern": "*://aistudio.xiaomimimo.com/*",
+      "url": "https://aistudio.xiaomimimo.com/",
+      "icon_url": "../icons/xiaomimimo.svg",
+      "element_selector": "textarea"
+    },
+    {
+      "name": "阶跃AI",
+      "pattern": "*://www.stepfun.com/*",
+      "url": "https://www.stepfun.com/",
+      "icon_url": "https://www.stepfun.com/favicon.ico",
+      "element_selector": "textarea"
     }
   ]
 }

@@ -1101,9 +1101,7 @@
         styles: {
           width: '90%', maxWidth: '440px',
           maxHeight: '85vh', overflowY: 'auto',
-          backgroundColor: dark ? '#1e293b' : '#ffffff',
           borderRadius: '16px',
-          border: `1px solid ${dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}`,
           boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
           transform: 'scale(0.95)',
           transition: 'transform 0.2s ease',
@@ -1113,30 +1111,33 @@
 
       // Header
       const header = createEl('div', {
+        className: `opm-chat-settings-header opm-${getMode()}`,
         styles: {
-          padding: '20px 24px',
-          borderBottom: `1px solid ${dark ? 'rgba(255,255,255,0.06)' : '#f1f5f9'}`
+          padding: '20px 24px'
         }
       });
       const title = createEl('h3', {
         innerHTML: chrome.i18n.getMessage('modelConfig'),
-        styles: { margin: '0 0 6px 0', fontSize: '18px', fontWeight: '600', color: dark ? '#f8fafc' : '#0f172a' }
+        className: `opm-chat-settings-title opm-${getMode()}`,
+        styles: { margin: '0 0 6px 0', fontSize: '18px', fontWeight: '600' }
       });
       const desc = createEl('p', {
         innerHTML: chrome.i18n.getMessage('modelConfigDesc'),
-        styles: { margin: '0', fontSize: '13px', color: dark ? '#94a3b8' : '#64748b', lineHeight: '1.4' }
+        className: `opm-chat-settings-desc opm-${getMode()}`,
+        styles: { margin: '0', fontSize: '13px', lineHeight: '1.4' }
       });
       header.append(title, desc);
 
       // Body
-      const body = createEl('div', { styles: { padding: '24px' } });
+      const body = createEl('div', { className: 'opm-chat-settings-body', styles: { padding: '24px' } });
 
       const createField = (label, id, type, placeholder, helpText, defaultValue, showLinkIcon = false) => {
-        const wrapper = createEl('div', { styles: { marginBottom: '16px' } });
+        const wrapper = createEl('div', { className: 'opm-chat-settings-field', styles: { marginBottom: '16px' } });
         const labelWrapper = createEl('div', { styles: { display: 'flex', alignItems: 'center', marginBottom: '6px' } });
         const labelEl = createEl('label', {
           innerHTML: label,
-          styles: { fontSize: '13px', fontWeight: '500', color: dark ? '#cbd5e1' : '#334155' }
+          className: `opm-chat-settings-label opm-${getMode()}`,
+          styles: { fontSize: '13px', fontWeight: '500' }
         });
         labelWrapper.append(labelEl);
 
@@ -1160,7 +1161,7 @@
               border: 'none'
             }
           });
-          openRouterLink.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="${dark ? '#94a3b8' : '#64748b'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          openRouterLink.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="${dark ? 'var(--dark-text-secondary)' : '#64748b'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
           <polyline points="15 3 21 3 21 9"></polyline>
           <line x1="10" y1="14" x2="21" y2="3"></line>
@@ -1171,7 +1172,7 @@
           });
           openRouterLink.addEventListener('mouseleave', () => {
             openRouterLink.style.backgroundColor = 'transparent';
-            openRouterLink.querySelector('svg').style.stroke = dark ? '#94a3b8' : '#64748b';
+            openRouterLink.querySelector('svg').style.stroke = dark ? 'var(--dark-text-secondary)' : '#64748b';
           });
           openRouterLink.addEventListener('click', (e) => {
             e.preventDefault();
@@ -1182,12 +1183,10 @@
 
         const input = createEl('input', {
           id, type, placeholder,
+          className: `opm-chat-settings-input opm-${getMode()}`,
           styles: {
             width: '100%', padding: '10px 12px',
             borderRadius: '8px',
-            border: `1px solid ${dark ? '#334155' : '#cbd5e1'}`,
-            backgroundColor: dark ? '#0f172a' : '#ffffff',
-            color: dark ? '#e2e8f0' : '#1e293b',
             fontSize: '14px',
             outline: 'none',
             boxSizing: 'border-box',
@@ -1201,7 +1200,7 @@
           input.style.boxShadow = `0 0 0 2px ${THEME_COLORS.primary}30`;
         });
         input.addEventListener('blur', () => {
-          input.style.borderColor = dark ? '#334155' : '#cbd5e1';
+          input.style.borderColor = '';
           input.style.boxShadow = 'none';
         });
 
@@ -1209,7 +1208,8 @@
         if (helpText) {
           const help = createEl('div', {
             innerHTML: helpText,
-            styles: { marginTop: '4px', fontSize: '12px', color: dark ? '#64748b' : '#94a3b8' }
+            className: `opm-chat-settings-help opm-${getMode()}`,
+            styles: { marginTop: '4px', fontSize: '12px' }
           });
           wrapper.append(help);
         }
@@ -1253,10 +1253,9 @@
 
       // Footer
       const footer = createEl('div', {
+        className: `opm-chat-settings-footer opm-${getMode()}`,
         styles: {
           padding: '16px 24px',
-          backgroundColor: dark ? 'rgba(0,0,0,0.2)' : '#f8fafc',
-          borderTop: `1px solid ${dark ? 'rgba(255,255,255,0.06)' : '#f1f5f9'}`,
           borderRadius: '0 0 16px 16px',
           display: 'flex', justifyContent: 'space-between', alignItems: 'center'
         }
@@ -1265,31 +1264,31 @@
       const leftActions = createEl('div');
       const testBtn = createEl('button', {
         innerHTML: chrome.i18n.getMessage('testConnection'),
+        className: `opm-chat-settings-test-btn opm-${getMode()}`,
         styles: {
           background: 'transparent', border: 'none', cursor: 'pointer',
           fontSize: '13px', fontWeight: '500',
-          color: dark ? '#94a3b8' : '#64748b',
           padding: '8px 12px', borderRadius: '6px',
           transition: 'color 0.2s, background 0.2s'
         }
       });
       testBtn.addEventListener('mouseenter', () => { testBtn.style.color = THEME_COLORS.primary; testBtn.style.backgroundColor = dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'; });
-      testBtn.addEventListener('mouseleave', () => { testBtn.style.color = dark ? '#94a3b8' : '#64748b'; testBtn.style.backgroundColor = 'transparent'; });
+      testBtn.addEventListener('mouseleave', () => { testBtn.style.color = ''; testBtn.style.backgroundColor = 'transparent'; });
       leftActions.append(testBtn);
 
       const rightActions = createEl('div', { styles: { display: 'flex', gap: '12px' } });
       const cancelBtn = createEl('button', {
         innerHTML: chrome.i18n.getMessage('cancel'),
+        className: `opm-chat-settings-btn opm-chat-settings-btn-outline opm-${getMode()}`,
         styles: {
-          background: 'transparent', border: `1px solid ${dark ? '#475569' : '#cbd5e1'}`, cursor: 'pointer',
+          background: 'transparent', cursor: 'pointer',
           fontSize: '13px', fontWeight: '500',
-          color: dark ? '#cbd5e1' : '#475569',
           padding: '8px 16px', borderRadius: '6px',
           transition: 'all 0.2s'
         }
       });
-      cancelBtn.addEventListener('mouseenter', () => { cancelBtn.style.borderColor = dark ? '#94a3b8' : '#94a3b8'; });
-      cancelBtn.addEventListener('mouseleave', () => { cancelBtn.style.borderColor = dark ? '#475569' : '#cbd5e1'; });
+      cancelBtn.addEventListener('mouseenter', () => { cancelBtn.style.borderColor = THEME_COLORS.primary; });
+      cancelBtn.addEventListener('mouseleave', () => { cancelBtn.style.borderColor = ''; });
 
       const saveBtn = createEl('button', {
         innerHTML: chrome.i18n.getMessage('saveConfig'),
@@ -1986,9 +1985,9 @@
                 alignItems: 'start',
                 justifyContent: 'space-between',
                 gap: '8px',
-                borderBottom: isDarkMode() ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.06)',
+                borderBottom: isDarkMode() ? '1px solid var(--dark-border)' : '1px solid rgba(0,0,0,0.06)',
                 backgroundColor: isDarkMode() ? 'rgba(54, 116, 181, 0.15)' : '#ebf8ff', // Tinted primary/blue
-                color: isDarkMode() ? '#E2E8F0' : '#2C5282',
+                color: isDarkMode() ? 'var(--input-dark-text)' : '#2C5282',
                 flex: '0 0 auto',
                 lineHeight: '1.4'
               },

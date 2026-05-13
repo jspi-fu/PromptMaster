@@ -20,6 +20,7 @@ yarn.lock
 .cursorrules
 .gitignore
 blogwrite/
+.trae/
 
 # Debug logs
 debug.log
@@ -37,4 +38,3 @@ public/files/
 # Temporary files
 *.tmp
 *.temp 
-docs/

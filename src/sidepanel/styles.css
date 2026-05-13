@@ -473,20 +473,32 @@ footer.footer {
 }
 
 @media (prefers-color-scheme: dark) {
-  footer.footer {
-    background: #0A2647; /* Solid dark background to avoid overlap look */
+  :root:not(.force-light) footer.footer {
+    background: var(--dark-bg); /* Solid dark background to avoid overlap look */
   }
+}
+
+html.force-dark footer.footer {
+  background: var(--dark-bg);
 }
 
 /* Dark mode ring for icon-only pills */
 @media (prefers-color-scheme: dark) {
-  .llm-pill.icon-only .llm-pill-icon {
+  :root:not(.force-light) .llm-pill.icon-only .llm-pill-icon {
     box-shadow: 0 0 0 1px rgba(54,116,181,0.6);
-    background-color: #1A202C;
+    background-color: var(--dark-input-bg);
   }
-  .llm-pill.icon-only:hover .llm-pill-icon {
+  :root:not(.force-light) .llm-pill.icon-only:hover .llm-pill-icon {
     box-shadow: 0 0 0 2px rgba(54,116,181,0.7);
   }
+}
+
+html.force-dark .llm-pill.icon-only .llm-pill-icon {
+  box-shadow: 0 0 0 1px rgba(54,116,181,0.6);
+  background-color: var(--dark-input-bg);
+}
+html.force-dark .llm-pill.icon-only:hover .llm-pill-icon {
+  box-shadow: 0 0 0 2px rgba(54,116,181,0.7);
 }
 
 /* Responsive adjustments */
@@ -499,124 +511,244 @@ footer.footer {
 /* ============================================================
    Unified dark theme overrides (matches content script theme)
    ============================================================ */
+/* ============================================================
+   Unified dark theme overrides (matches content script theme)
+   Supports both system preference and forced dark mode
+   ============================================================ */
 @media (prefers-color-scheme: dark) {
-  body {
-    background-color: #0A2647;
-    color: #E2E8F0;
+  :root:not(.force-light) body {
+    background-color: var(--dark-bg);
+    color: var(--dark-text);
   }
   /* COMMENT: Subtle divider color in dark mode for Prompt Management section */
-  #pm-section {
+  :root:not(.force-light) #pm-section {
     border-top-color: rgba(255,255,255,0.08);
   }
 
   /* Headings adopt primary colour for contrast */
-  h2, h3 {
-    color: #3674B5;
+  :root:not(.force-light) h2, :root:not(.force-light) h3 {
+    color: var(--primary);
   }
 
   /* Input & textarea fields */
-  input[type="text"], textarea {
-    background-color: #144272;
-    color: #E2E8F0;
-    border-color: #4A5568;
+  :root:not(.force-light) input[type="text"], :root:not(.force-light) textarea {
+    background-color: var(--dark-input-bg);
+    color: var(--dark-text);
+    border-color: var(--dark-input-border);
   }
   /* Placeholder in dark */
-  ::placeholder { color: #A0AEC0; opacity: 1; }
+  :root:not(.force-light) ::placeholder { color: var(--dark-text-secondary); opacity: 1; }
 
   /* Main action buttons */
-  button.main {
+  :root:not(.force-light) button.main {
     background-color: var(--primary);
-    color: #E2E8F0;
+    color: var(--dark-text);
   }
-  button.main:hover {
-    background-color: #434C5E;
+  :root:not(.force-light) button.main:hover {
+    background-color: var(--hover-primary);
   }
 
   /* Prompt list items */
-  #prompt-list li {
-    background-color: #205295;
-    color: #CBD5E0;
+  :root:not(.force-light) #prompt-list li {
+    background-color: var(--dark-card-bg);
+    color: var(--dark-text-tertiary);
   }
-  #prompt-list button:hover {
-    background-color: #434C5E;
+  :root:not(.force-light) #prompt-list button:hover {
+    background-color: var(--dark-hover-bg);
   }
 
     /* Info banner unified dark theme */
-    .info-banner {
-      background-color: #2E3A4E;
-      border-color: #3E4C66;
-      color: #E2E8F0;
+    :root:not(.force-light) .info-banner {
+      background-color: var(--dark-card-bg);
+      border-color: var(--dark-border);
+      color: var(--dark-text);
     }
-    .info-banner-list {
+    :root:not(.force-light) .info-banner-list {
       list-style: disc;
     }
 
   /* Prompt list item hover (lift) */
-  #prompt-list li:hover {
-    background-color: #434C5E; /* hover-dark background */
+  :root:not(.force-light) #prompt-list li:hover {
+    background-color: var(--dark-hover-bg); /* hover-dark background */
     transform: translateY(-2px);
-    color: #E2E8F0; /* ensure readable text */
+    color: var(--dark-text); /* ensure readable text */
   }
 
   /* Title heading & icons use light colour */
-  .title h2 {
-    color: #E2E8F0;
+  :root:not(.force-light) .title h2 {
+    color: var(--dark-text);
   }
-  .header-icon,
-  .title img,
-  .footer-icons img,
-  #prompt-list button img {
+  :root:not(.force-light) .header-icon,
+  :root:not(.force-light) .title img,
+  :root:not(.force-light) .footer-icons img,
+  :root:not(.force-light) #prompt-list button img {
     filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(213deg) brightness(130%) contrast(87%);
+  }
+  /* COMMENT: 保留原始颜色的图标在暗色模式下不应用 filter */
+  :root:not(.force-light) .footer-icons.footer-icon-original {
+    filter: none;
   }
 
   /* Info banner links: force readable white in dark mode (override UA visited purple) */
-  .info-banner a,
-  .info-banner a:visited {
+  :root:not(.force-light) .info-banner a,
+  :root:not(.force-light) .info-banner a:visited {
     color: #FFFFFF;
   }
-  .info-banner a:hover,
-  .info-banner a:focus {
+  :root:not(.force-light) .info-banner a:hover,
+  :root:not(.force-light) .info-banner a:focus {
     color: #FFFFFF;
     text-decoration: underline;
   }
   /* LLMs section dark overrides */
-  .llms-subheading {
-    color: #A0AEC0;
+  :root:not(.force-light) .llms-subheading {
+    color: var(--dark-text-secondary);
   }
-  .llm-pill.active {
-    background-color: #0b498a;
-    border-color: #0b498a;
-    color: #E2E8F0;
+  :root:not(.force-light) .llm-pill.active {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: var(--dark-text);
   }
-  .llm-pill.active:hover {
-    background-color: #0b498a;
-    border-color: #0b498a;
-    box-shadow: 0 0 0 3px rgba(11,73,138,0.32);
+  :root:not(.force-light) .llm-pill.active:hover {
+    background-color: var(--hover-primary);
+    border-color: var(--hover-primary);
+    box-shadow: 0 0 0 3px rgba(54,116,181,0.32);
   }
-  .llm-pill.inactive {
-    color: #E2E8F0;
-    border-color: #3674B5;
+  :root:not(.force-light) .llm-pill.inactive {
+    color: var(--dark-text);
+    border-color: var(--primary);
     background-color: transparent;
   }
-  .llm-pill.inactive:hover {
+  :root:not(.force-light) .llm-pill.inactive:hover {
     background-color: rgba(54,116,181,0.16);
     box-shadow: 0 0 0 3px rgba(54,116,181,0.28);
   }
 
   /* Footer background stays transparent but icons/text lighten */
-  footer.footer {
+  :root:not(.force-light) footer.footer {
     background: transparent;
-    color: #A0AEC0;
+    color: var(--dark-text-secondary);
   }
+}
+
+/* COMMENT: Forced dark mode - applies when .force-dark is on html element */
+html.force-dark body {
+  background-color: var(--dark-bg);
+  color: var(--dark-text);
+}
+html.force-dark #pm-section {
+  border-top-color: rgba(255,255,255,0.08);
+}
+html.force-dark h2, html.force-dark h3 {
+  color: var(--primary);
+}
+html.force-dark input[type="text"], html.force-dark textarea {
+  background-color: var(--dark-input-bg);
+  color: var(--dark-text);
+  border-color: var(--dark-input-border);
+}
+html.force-dark ::placeholder { color: var(--dark-text-secondary); opacity: 1; }
+html.force-dark button.main {
+  background-color: var(--primary);
+  color: var(--dark-text);
+}
+html.force-dark button.main:hover {
+  background-color: var(--hover-primary);
+}
+html.force-dark #prompt-list li {
+  background-color: var(--dark-card-bg);
+  color: var(--dark-text-tertiary);
+}
+html.force-dark #prompt-list button:hover {
+  background-color: var(--dark-hover-bg);
+}
+html.force-dark .info-banner {
+  background-color: var(--dark-card-bg);
+  border-color: var(--dark-border);
+  color: var(--dark-text);
+}
+html.force-dark .info-banner-list {
+  list-style: disc;
+}
+html.force-dark #prompt-list li:hover {
+  background-color: var(--dark-hover-bg);
+  transform: translateY(-2px);
+  color: var(--dark-text);
+}
+html.force-dark .title h2 {
+  color: var(--dark-text);
+}
+html.force-dark .header-icon,
+html.force-dark .title img,
+html.force-dark .footer-icons img,
+html.force-dark #prompt-list button img {
+  filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(213deg) brightness(130%) contrast(87%);
+}
+/* COMMENT: 保留原始颜色的图标在强制暗色模式下不应用 filter */
+html.force-dark .footer-icons.footer-icon-original {
+  filter: none;
+}
+html.force-dark .info-banner a,
+html.force-dark .info-banner a:visited {
+  color: #FFFFFF;
+}
+html.force-dark .info-banner a:hover,
+html.force-dark .info-banner a:focus {
+  color: #FFFFFF;
+  text-decoration: underline;
+}
+html.force-dark .llms-subheading {
+  color: var(--dark-text-secondary);
+}
+html.force-dark .llm-pill.active {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: var(--dark-text);
+}
+html.force-dark .llm-pill.active:hover {
+  background-color: var(--hover-primary);
+  border-color: var(--hover-primary);
+  box-shadow: 0 0 0 3px rgba(54,116,181,0.32);
+}
+html.force-dark .llm-pill.inactive {
+  color: var(--dark-text);
+  border-color: var(--primary);
+  background-color: transparent;
+}
+html.force-dark .llm-pill.inactive:hover {
+  background-color: rgba(54,116,181,0.16);
+  box-shadow: 0 0 0 3px rgba(54,116,181,0.28);
+}
+html.force-dark footer.footer {
+  background: transparent;
+  color: var(--dark-text-secondary);
 }
 
 /* ============================================================
    Unified LIGHT theme overrides (matches content script theme)
    ============================================================ */
 :root {
+  /* 主色 */
   --primary: #3674b5;
   --hover-primary: #4b93e0;
+
+  /* 浅色主题 */
   --light-bg: #F7FAFC;
+  --light-text: #2D3748;
+  --light-text-secondary: #64748b;
+  --light-border: #E2E8F0;
+  --light-input-bg: #FFFFFF;
+  --light-input-border: #CBD5E0;
+
+  /* 暗色主题 */
+  --dark-bg: #0F0F0F;
+  --dark-text: #E8E8E8;
+  --dark-text-secondary: #888888;
+  --dark-text-tertiary: #AAAAAA;
+  --dark-border: #2A2A2A;
+  --dark-input-bg: #1A1A1A;
+  --dark-input-border: #3A3A3A;
+  --dark-hover-bg: #252525;
+  --dark-card-bg: #1A1A1A;
 }
 
 /* Headings adopt primary colour */
@@ -825,3 +957,118 @@ button.main:hover {
    - Dark mode: white via filter for non-header icons, header uses dark asset
    ============================================================ */
 /* No special light-mode filter needed; using coloured PNG via <picture> */
+
+/* ============================================================
+   Tag styles
+   ============================================================ */
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 6px;
+  padding: 6px;
+  border: 1px solid var(--primary);
+  border-radius: 6px;
+  background-color: #ffffff;
+  align-items: flex-start;
+  min-height: 36px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.force-light) .tags-container {
+    background-color: var(--dark-card-bg);
+    border-color: var(--dark-input-border);
+  }
+}
+
+html.force-dark .tags-container {
+  background-color: var(--dark-card-bg);
+  border-color: var(--dark-input-border);
+}
+
+.tags-display {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.tags-display:empty {
+  display: none;
+}
+
+.tag-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background-color: rgba(54, 116, 181, 0.12);
+  color: var(--primary);
+  font-size: 12px;
+  line-height: 1.4;
+  user-select: none;
+  cursor: default;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.force-light) .tag-pill {
+    background-color: rgba(54, 116, 181, 0.2);
+    color: var(--dark-text-secondary);
+  }
+}
+
+html.force-dark .tag-pill {
+  background-color: rgba(54, 116, 181, 0.2);
+  color: var(--dark-text-secondary);
+}
+
+.tag-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  border-radius: 50%;
+  transition: background-color 0.15s ease;
+}
+
+.tag-remove:hover {
+  background-color: rgba(54, 116, 181, 0.2);
+}
+
+/* 标签输入框 wrapper */
+.tag-input-wrapper {
+  flex: 1 1 120px;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+#tag-input {
+  width: 100%;
+  border: none !important;
+  background: transparent !important;
+  padding: 2px 4px !important;
+  margin-bottom: 0 !important;
+  outline: none;
+  text-align: left;
+}
+
+#tag-input:focus {
+  box-shadow: none !important;
+}
+
+/* 标签输入框 placeholder 左对齐 */
+#tag-input::placeholder {
+  text-align: left;
+}

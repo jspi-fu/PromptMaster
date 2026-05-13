@@ -170,6 +170,139 @@ class InputBoxHandler {
           return;
         }
 
+        // COMMENT: Handle CodeMirror editors (e.g., 扣子)
+        const isCodeMirrorEditor =
+          (inputBox.classList && (inputBox.classList.contains('cm-content') || inputBox.classList.contains('cm-lineWrapping'))) ||
+          (typeof inputBox.closest === 'function' && (!!inputBox.closest('.cm-content') || !!inputBox.closest('.cm-lineWrapping')));
+        if (isCodeMirrorEditor) {
+          // COMMENT: For CodeMirror editors, try paste event first
+          if (!disableOverwrite) {
+            inputBox.innerHTML = '';
+          }
+          
+          inputBox.focus();
+          
+          const textToInsert = content + '  ';
+          
+          let inserted = false;
+          try {
+            const dt = new DataTransfer();
+            dt.setData('text/plain', textToInsert);
+            const pasteEvent = new ClipboardEvent('paste', {
+              clipboardData: dt,
+              bubbles: true,
+              cancelable: true,
+            });
+            inputBox.dispatchEvent(pasteEvent);
+            inserted = true;
+          } catch (_) {}
+          
+          if (!inserted) {
+            try {
+              inserted = document.execCommand('insertText', false, textToInsert);
+            } catch (_) {}
+          }
+          
+          if (!inserted) {
+            try {
+              inputBox.dispatchEvent(new InputEvent('beforeinput', {
+                inputType: 'insertText',
+                data: textToInsert,
+                bubbles: true,
+                cancelable: true,
+              }));
+              inputBox.dispatchEvent(new Event('input', { bubbles: true }));
+            } catch (_) {
+              if (disableOverwrite) {
+                inputBox.appendChild(document.createTextNode(textToInsert));
+              } else {
+                inputBox.textContent = textToInsert;
+              }
+              inputBox.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+          }
+          
+          const endRange = document.createRange();
+          endRange.selectNodeContents(inputBox);
+          endRange.collapse(false);
+          const sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(endRange);
+          
+          inputBox.dispatchEvent(new Event('change', { bubbles: true }));
+          PromptUIManager.hidePromptList(promptList);
+          return;
+        }
+
+        // COMMENT: Handle Slate editors (e.g., 千问) which respond well to execCommand/beforeinput
+        const isSlateEditor =
+          (inputBox.hasAttribute && (inputBox.hasAttribute('data-slate-node') || inputBox.hasAttribute('data-slate-editor'))) ||
+          (typeof inputBox.closest === 'function' && (!!inputBox.closest('[data-slate-node]') || !!inputBox.closest('[data-slate-editor]')));
+        if (isSlateEditor) {
+          // COMMENT: For Slate editors, first try to clear content if in overwrite mode
+          if (!disableOverwrite) {
+            inputBox.innerHTML = '';
+          }
+          
+          inputBox.focus();
+          
+          const textToInsert = content + '  ';
+          
+          // COMMENT: Try paste event first - often works well with Slate
+          let inserted = false;
+          try {
+            const dt = new DataTransfer();
+            dt.setData('text/plain', textToInsert);
+            const pasteEvent = new ClipboardEvent('paste', {
+              clipboardData: dt,
+              bubbles: true,
+              cancelable: true,
+            });
+            inputBox.dispatchEvent(pasteEvent);
+            inserted = true;
+          } catch (_) {}
+          
+          // COMMENT: Fallback to execCommand
+          if (!inserted) {
+            try {
+              inserted = document.execCommand('insertText', false, textToInsert);
+            } catch (_) {}
+          }
+          
+          // COMMENT: Last fallback - synthetic beforeinput/input
+          if (!inserted) {
+            try {
+              inputBox.dispatchEvent(new InputEvent('beforeinput', {
+                inputType: 'insertText',
+                data: textToInsert,
+                bubbles: true,
+                cancelable: true,
+              }));
+              inputBox.dispatchEvent(new Event('input', { bubbles: true }));
+            } catch (_) {
+              if (disableOverwrite) {
+                inputBox.appendChild(document.createTextNode(textToInsert));
+              } else {
+                inputBox.textContent = textToInsert;
+              }
+              inputBox.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+          }
+          
+          // COMMENT: Ensure caret ends up at the end after insertion
+          const endRange = document.createRange();
+          endRange.selectNodeContents(inputBox);
+          endRange.collapse(false);
+          const sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(endRange);
+          
+          // COMMENT: Notify any listeners the content changed and close the UI
+          inputBox.dispatchEvent(new Event('change', { bubbles: true }));
+          PromptUIManager.hidePromptList(promptList);
+          return;
+        }
+
         // COMMENT: Handle ProseMirror/Tiptap editors (e.g., Grok) which respond well to execCommand/beforeinput
         const isProseMirrorEditor =
           (inputBox.classList && inputBox.classList.contains('ProseMirror')) ||

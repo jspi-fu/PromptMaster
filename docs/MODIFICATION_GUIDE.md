@@ -173,55 +173,134 @@ settings.appendChild(Elements.createToggleRow({
 
 ### 文件位置
 - **全局样式**：`src/content.styles.js`
-- **主题颜色**：`src/content.styles.js`（`THEME_COLORS` 对象）
+- **主题颜色**：`src/content.styles.js`（`THEME_COLORS` 对象和 `:root` CSS 变量）
 - **侧边栏样式**：`src/sidepanel/styles.css`
+- **弹窗/模态框样式**：`src/content.styles.js`（全局选择器，不依赖于 `#opm-root`）
+
+### 主题系统架构
+
+当前采用 **CSS 变量 + 类名切换** 的混合方案：
+
+1. **CSS 变量集中定义**：所有主题颜色在 `content.styles.js` 的 `:root` 中定义，确保全局可访问
+2. **类名控制主题**：通过为元素添加 `opm-light` 或 `opm-dark` 类实现主题切换
+3. **动态无刷新切换**：`Theme.applyAll()` 会遍历所有带主题类的元素并更新其类名
 
 ### 修改步骤
 
 #### 修改主题颜色
 
-在 `src/content.styles.js` 中修改 `THEME_COLORS` 对象（约第 18-26 行）：
+在 `src/content.styles.js` 中修改 `THEME_COLORS` 对象（约第 18-30 行）：
 
 ```javascript
 var THEME_COLORS = window.THEME_COLORS || {
-  primary: '#3674B5',              // 主色调
+  primary: '#3674B5',              // 主色调（强调色）
   primaryGradientStart: '#3674B5', // 渐变起始色
   primaryGradientEnd: '#578FCA',    // 渐变结束色
-  hoverPrimary: '#205295',          // 悬停主色
-  darkBackground: '#0A2647',        // 深色背景
+  hoverPrimary: '#4A90D9',          // 悬停主色
+  darkBackground: '#0F0F0F',        // 深色背景（主色）
   lightBackground: '#F7FAFC',       // 浅色背景
-  darkBorder: '#144272',            // 深色边框
+  darkBorder: '#2A2A2A',            // 深色边框
   lightBorder: '#E2E8F0',           // 浅色边框
+  inputDarkBg: '#1A1A1A',           // 暗色输入框背景（辅色）
+  inputLightBg: '#FFFFFF',          // 浅色输入框背景
+  inputDarkText: '#E8E8E8',         // 暗色文字
+  inputLightText: '#2D3748',        // 浅色文字
   // ... 其他颜色
 };
 ```
 
+**注意**：修改 `THEME_COLORS` 后，`:root` 中的 CSS 变量会自动同步更新。
+
 #### 修改全局 CSS 样式
 
-在 `src/content.styles.js` 的 `injectGlobalStyles()` 函数中修改 CSS（约第 68-1013 行）：
+在 `src/content.styles.js` 的 `injectGlobalStyles()` 函数中修改 CSS（约第 56 行起）：
 
 ```javascript
 var injectGlobalStyles = window.injectGlobalStyles || function injectGlobalStyles() {
   const styleEl = document.createElement('style');
   styleEl.textContent = `
-    /* 在这里添加或修改 CSS 规则 */
-    #${SELECTORS.ROOT} {
+    /* COMMENT: 全局 CSS 变量，供弹窗等不在 #opm-root 内的元素使用 */
+    :root {
       --primary: ${THEME_COLORS.primary};
-      /* ... */
+      --dark-bg: ${THEME_COLORS.darkBackground};
+      --light-bg: ${THEME_COLORS.lightBackground};
+      /* ... 其他变量 */
     }
     
-    .opm-button {
-      /* 修改按钮样式 */
-      border-radius: 8px; /* 例如：修改圆角 */
+    /* 使用变量的示例 */
+    .opm-chat-settings-content.opm-dark {
+      background-color: var(--dark-bg);
+      color: var(--input-dark-text);
     }
   `;
   document.head.appendChild(styleEl);
 };
 ```
 
+**重要原则**：
+- 对于在 `#opm-root` 内的元素，使用 `#${SELECTORS.ROOT} .your-class` 选择器
+- 对于弹窗、模态框等可能在 `#opm-root` 外的元素，使用全局选择器 `.your-class`
+- 始终通过 `opm-light` / `opm-dark` 类来区分主题，而非硬编码颜色
+
+#### 为弹窗/模态框添加主题支持
+
+在创建弹窗元素时，务必添加主题类名：
+
+```javascript
+const modalContent = createEl('div', {
+  className: `opm-chat-settings-content opm-${getMode()}`,  // 关键：添加 opm-light 或 opm-dark
+  styles: {
+    width: '90%', maxWidth: '440px',
+    backgroundColor: 'var(--light-bg)',  // 使用 CSS 变量
+    // ...
+  }
+});
+```
+
+并在 `content.styles.js` 中定义对应的样式：
+
+```css
+/* 浅色模式 */
+.opm-chat-settings-content.opm-light {
+  background-color: var(--light-bg);
+  color: var(--input-light-text);
+}
+
+/* 深色模式 */
+.opm-chat-settings-content.opm-dark {
+  background-color: var(--dark-bg);
+  color: var(--input-dark-text);
+}
+```
+
 #### 修改侧边栏样式
 
-直接编辑 `src/sidepanel/styles.css` 文件。
+直接编辑 `src/sidepanel/styles.css` 文件。侧边栏同样使用 CSS 变量，与内容脚本保持一致：
+
+```css
+:root {
+  --primary: #3674b5;
+  --dark-bg: #0F0F0F;
+  --light-bg: #F7FAFC;
+  /* ... */
+}
+```
+
+#### 保护第三方图标颜色
+
+如果需要在暗色模式下保留图标的原始颜色（如 Gitee 的红色图标），添加专用类：
+
+```css
+/* 侧边栏图标 */
+.footer-icons.footer-icon-original {
+  filter: none !important;
+}
+
+/* 内容脚本中的社区链接图标 */
+.opm-community-link img {
+  filter: none;
+}
+```
 
 ---
 
@@ -701,6 +780,10 @@ A:
 | 存储核心 | `src/promptStorage.js` | 全部 |
 | 提示词生成器 | `src/content.js` | 第 379-1039 行 |
 | UI 组件 | `src/content.shared.js` | 第 340-386 行 |
+| 主题颜色常量 | `src/content.styles.js` | `THEME_COLORS` 对象 |
+| CSS 变量定义 | `src/content.styles.js` | `:root` 变量块 |
+| 侧边栏样式 | `src/sidepanel/styles.css` | 全部 |
+| 权限页样式 | `src/permissions/permissions_custom.css` | 全部 |
 
 ---
 
@@ -716,6 +799,34 @@ A:
 
 ---
 
-**最后更新**：2025-12-31
-**版本**：v2.6.2
+## 主题系统常见问题
+
+### Q: 修改主题颜色后弹窗/模态框颜色没有变化？
+A:
+1. 检查 CSS 变量是否定义在 `:root` 中，而非 `#opm-root` 内
+2. 检查弹窗元素是否添加了 `opm-light` 或 `opm-dark` 类
+3. 检查弹窗样式选择器是否使用全局选择器（不带 `#opm-root` 前缀）
+
+### Q: 暗色模式下图标颜色被覆盖？
+A:
+1. 为需要保留原始颜色的图标添加 `footer-icon-original` 类
+2. 在 CSS 中设置 `filter: none` 覆盖默认的 `invert(100%)`
+3. 检查是否有全局的 `img` 选择器应用了滤镜
+
+### Q: 主题热切换时部分元素颜色不更新？
+A:
+1. 确保元素使用 `opm-${getMode()}` 类名，而非硬编码颜色
+2. 使用 CSS 变量（如 `var(--dark-bg)`）而非具体的色值
+3. 检查 `Theme.applyAll()` 是否被正确调用
+
+### Q: 如何添加新的 CSS 变量？
+A:
+1. 在 `content.styles.js` 的 `:root` 块中添加变量定义
+2. 在 `sidepanel/styles.css` 的 `:root` 中同步添加相同变量
+3. 在对应的 `.opm-light` / `.opm-dark` 规则中使用该变量
+
+---
+
+**最后更新**：2026-05-13
+**版本**：v2.7.0
 

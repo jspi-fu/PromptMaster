@@ -403,43 +403,52 @@ body {
 /* Dark mode overrides consistent with main extension theme */
 @media (prefers-color-scheme: dark) {
   :root {
-    --primary-blue: #3674B5;
-    --primary-blue-dark: #0b498a; /* darker shade for hover */
-    --primary-blue-darker: #0b498a; /* active shade */
-    --light-bg: #2D3748; /* corresponds to theme dark background */
-    --dark-text: #E2E8F0; /* light gray text */
-    --muted-text: #A0AEC0; /* muted text color */
-    --border-color: #4A5568; /* dark border */
-    --white: #1A202C; /* base dark background */
+    /* 对齐主系统的变量命名 */
+    --primary: #3674B5;
+    --hover-primary: #4A90D9;
+    --dark-bg: #0F0F0F;
+    --dark-text: #E8E8E8;
+    --dark-text-secondary: #888888;
+    --dark-border: #2A2A2A;
+    --dark-input-bg: #1A1A1A;
+    --dark-input-border: #3A3A3A;
+    /* 保留旧变量名作为别名，兼容现有代码 */
+    --primary-blue: var(--primary);
+    --primary-blue-dark: var(--hover-primary);
+    --primary-blue-darker: var(--hover-primary);
+    --light-bg: var(--dark-input-bg);
+    --muted-text: var(--dark-text-secondary);
+    --border-color: var(--dark-input-border);
+    --white: var(--dark-bg);
   }
 
   /* Base background & text */
   body {
-    background-color: var(--white);
+    background-color: var(--dark-bg);
     color: var(--dark-text);
   }
 
   /* Hero / jumbotron background */
   .custom-jumbotron {
-    background-color: var(--light-bg);
+    background-color: var(--dark-input-bg);
   }
 
   /* Card / section borders */
   .custom-section-border {
-    border-color: var(--border-color);
+    border-color: var(--dark-input-border);
   }
 
   /* Primary pill buttons */
   .custom-button {
-    background-color: var(--primary-blue-dark);
-    border-color: var(--primary-blue-dark);
-    color: #E2E8F0; /* light text */
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: var(--dark-text); /* light text */
   }
   .custom-button:hover,
   .custom-button:focus {
-    background-color: var(--primary-blue-darker);
-    border-color: var(--primary-blue-darker);
-    color: #E2E8F0;
+    background-color: var(--hover-primary);
+    border-color: var(--hover-primary);
+    color: var(--dark-text);
   }
 
   /* Badge backgrounds */
