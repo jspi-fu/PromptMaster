@@ -728,8 +728,8 @@ html.force-dark footer.footer {
    ============================================================ */
 :root {
   /* 主色 */
-  --primary: #3674b5;
-  --hover-primary: #4b93e0;
+  --primary: #3A6EA5;
+  --hover-primary: #4B88C7;
 
   /* 浅色主题 */
   --light-bg: #F7FAFC;

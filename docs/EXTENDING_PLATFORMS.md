@@ -2,6 +2,8 @@
 
 本指南将详细说明如何为 Prompt Master 添加新的 AI 平台支持。通过遵循这些步骤，您可以让插件支持任何不在当前列表中的 AI 助手。
 
+> 如果您希望借助 AI 快速完成而不是手动调试，可以直接阅读[借助AI完成](#借助AI完成)章节。
+
 ## 目录
 
 1. [概述](#概述)
@@ -10,7 +12,7 @@
 4. [常见编辑器类型](#常见编辑器类型)
 5. [测试与调试](#测试与调试)
 6. [故障排除](#故障排除)
-7. [示例：添加新平台](#示例添加新平台)
+7. [借助AI完成](#借助AI完成)
 
 ## 概述
 
@@ -318,37 +320,46 @@ document.querySelector('可能的父元素')
 1. 刷新页面
 2. 检查 Service Worker 日志（`chrome://extensions/` → 查看 Service Worker）
 
-## 示例：添加新平台
+## 借助 AI 完成
 
-假设我们要添加一个名为 "AI Chat Pro" 的平台，URL 为 `https://aichat.pro`。
+以添加 "Kimi" 平台为例，URL 为 `https://www.kimi.com/`。
 
-### 步骤 1：分析网站
+### 步骤 1：找到输入框元素
 
-1. 访问 `https://aichat.pro`
-2. 打开开发者工具
-3. 检查输入框元素，发现：
-   - 元素：`<textarea id="message-input" placeholder="输入您的消息...">`
-   - 选择器：`#message-input`
+1. 访问 `https://www.kimi.com/`
+2. 右键打开开发者工具（或按 `F12`）
+3. 点击元素选择器工具（或按 `Ctrl+Shift+C` / `Cmd+Shift+C`）
+4. 点击页面上的输入框
+5. 在开发者工具中查看高亮的元素（注意，此元素应该包括 `contenteditable="true"` ）
+6. 右键点击该元素 → 复制 → 复制元素
+
+![step1](../assets/step1.png)
+![step2](../assets/step2.png)
 
 ### 步骤 2：添加配置
 
-在 `src/llm_providers.json` 中添加：
-
-```json
+打开任意 AI 助手，输入以下提示词：
+```markdown
+我需要在提示词管理器拓展中增加对Kimi平台 `https://www.kimi.com/` 的支持，其输入框元素为： 
+<div aria-multiline="false" aria-required="false" autocomplete="false" autocorrect="false" contenteditable="true" spellcheck="true" class="chat-input-editor" data-v-c4707df6="" data-lexical-editor="true" style="user-select: text; white-space: pre-wrap; word-break: break-word;" role="textbox"><p><br></p></div>
+我期望你的输出格式如下：
 {
-  "name": "AI Chat Pro",
-  "pattern": "*://aichat.pro/*",
-  "url": "https://aichat.pro",
-  "icon_url": "https://aichat.pro/favicon.ico",
-  "element_selector": "#message-input"
+  "name": "平台名称",
+  "pattern": "*://example.com/*",
+  "url": "https://example.com",
+  "icon_url": "https://example.com/favicon.ico",
+  "element_selector": "textarea"
 }
+不要有任何额外输出与解释。
 ```
+
+> 请根据实际情况修改提示词中的**平台名称、url、输入框元素**字段。
 
 ### 步骤 3：测试
 
 1. 重新加载扩展
-2. 在权限管理器中授予 `aichat.pro` 的权限
-3. 访问 `https://aichat.pro`
+2. 在权限管理器中授予 `Kimi` 的权限
+3. 访问 `https://www.kimi.com/`
 4. 打开提示词大师并测试插入功能
 
 ### 完整配置示例
@@ -358,11 +369,11 @@ document.querySelector('可能的父元素')
   "llm_providers": [
     // ... 现有提供商 ...
     {
-      "name": "AI Chat Pro",
-      "pattern": "*://aichat.pro/*",
-      "url": "https://aichat.pro",
-      "icon_url": "https://aichat.pro/favicon.ico",
-      "element_selector": "#message-input"
+      "name": "Kimi",
+      "pattern": "*://www.kimi.com/*",
+      "url": "https://www.kimi.com",
+      "icon_url": "https://www.kimi.com/favicon.ico",
+      "element_selector": "div.chat-input-editor[contenteditable='true']"
     }
   ]
 }

@@ -16,8 +16,8 @@
   /* Global constants (merged from content.constants.js) */
   // COMMENT: Use var and window assignments so subsequent injected files see these values.
   var THEME_COLORS = window.THEME_COLORS || {
-    primary: '#3674B5', primaryGradientStart: '#3674B5', primaryGradientEnd: '#578FCA',
-    hoverPrimary: '#4A90D9', darkBackground: '#0F0F0F', lightBackground: '#F7FAFC',
+    primary: '#3A6EA5', primaryGradientStart: '#3A6EA5', primaryGradientEnd: '#5788B3',
+    hoverPrimary: '#4B88C7', darkBackground: '#0F0F0F', lightBackground: '#F7FAFC',
     darkBorder: '#2A2A2A', lightBorder: '#E2E8F0',
     darkShadow: '0 4px 20px rgba(0,0,0,0.5)', lightShadow: '0 4px 20px rgba(0,0,0,0.15)',
     inputDarkBorder: '1px solid #3A3A3A', inputLightBorder: '1px solid #CBD5E0',

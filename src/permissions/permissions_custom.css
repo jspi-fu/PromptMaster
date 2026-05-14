@@ -3,9 +3,9 @@
 */
 
 :root {
-  --primary-blue: #3674B5;
-  --primary-blue-dark: #4488d1;
-  --primary-blue-darker: #3b86d6;
+  --primary-blue: #3A6EA5;
+  --primary-blue-dark: #4B88C7;
+  --primary-blue-darker: #4B88C7;
   --light-bg: #f8f9fa;
   --dark-text: #212529;
   --muted-text: #6c757d;
@@ -404,8 +404,8 @@ body {
 @media (prefers-color-scheme: dark) {
   :root {
     /* 对齐主系统的变量命名 */
-    --primary: #3674B5;
-    --hover-primary: #4A90D9;
+    --primary: #3A6EA5;
+    --hover-primary: #4B88C7;
     --dark-bg: #0F0F0F;
     --dark-text: #E8E8E8;
     --dark-text-secondary: #888888;
