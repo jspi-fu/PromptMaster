@@ -3,7 +3,7 @@
     "message": "提示词大师"
   },
   "extensionDescription": {
-    "message": "开源提示词管理器，拥有跨AI平台提示词管理、提示词生成、提示词市场等功能，支持 ChatGPT、Gemini、豆包、千问 等20个 AI 平台。"
+    "message": "开源提示词管理器，拥有跨AI平台提示词管理、提示词生成、提示词市场等功能，支持 ChatGPT、Gemini、豆包、千问 等24个 AI 平台。"
   },
   "openSidebar": {
     "message": "打开侧边栏"
@@ -400,6 +400,9 @@
   },
   "searchPlaceholder": {
     "message": "输入搜索"
+  },
+  "noSearchResults": {
+    "message": "未找到匹配的提示词"
   },
   "promptTitlePlaceholder": {
     "message": "提示词标题"

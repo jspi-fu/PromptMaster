@@ -401,6 +401,9 @@
   "searchPlaceholder": {
     "message": "Search"
   },
+  "noSearchResults": {
+    "message": "No matching prompts found"
+  },
   "promptTitlePlaceholder": {
     "message": "Prompt Title"
   },

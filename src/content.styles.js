@@ -410,8 +410,14 @@
       background-color: rgba(0,0,0,0.05);
       opacity: 1;
     }
+    #${SELECTORS.ROOT}.opm-dark .opm-tags-expand-btn {
+      color: var(--input-dark-text);
+    }
     #${SELECTORS.ROOT}.opm-dark .opm-tags-expand-btn:hover {
       background-color: rgba(255,255,255,0.1);
+    }
+    #${SELECTORS.ROOT} .opm-tags-expand-btn {
+      color: var(--input-light-text);
     }
     #${SELECTORS.ROOT}.opm-dark .opm-tags-filter-bar { border-bottom-color: rgba(255,255,255,0.12); }
     #${SELECTORS.ROOT} .opm-tag-pill-filter {

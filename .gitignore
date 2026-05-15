@@ -38,3 +38,4 @@ public/files/
 # Temporary files
 *.tmp
 *.temp 
+temp/

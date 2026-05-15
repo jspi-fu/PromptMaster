@@ -2321,12 +2321,15 @@
       const form = PromptUI.Views.createPromptForm({
         initialTitle: prompt.title,
         initialContent: prompt.content,
-        submitLabel: 'Save Changes',
+        submitLabel: '更新',
         onSubmit: async ({ title, content, tags }) => {
           const ps = await PromptStorageManager._ps();
           const update = { title, content };
           if (Array.isArray(tags)) update.tags = tags;
           await ps.updatePrompt(prompt.uuid, update);
+          PanelRouter.mount(PanelView.EDIT);
+        },
+        onCancel: () => {
           PanelRouter.mount(PanelView.EDIT);
         }
       });
@@ -2347,8 +2350,10 @@
         const tagInput = TagUI.createTagInput({ initialTags: Array.isArray(prompt.tags) ? prompt.tags : [] });
         const tagsBlock = createEl('div');
         tagsBlock.append(label, tagInput.element);
-        const saveBtn = form.querySelector('.opm-button');
-        if (saveBtn && saveBtn.parentNode) saveBtn.parentNode.insertBefore(tagsBlock, saveBtn);
+        const buttonsContainer = form.querySelector('.opm-button')?.parentNode;
+        if (buttonsContainer) buttonsContainer.parentNode.insertBefore(tagsBlock, buttonsContainer);
+        
+        const saveBtn = form.querySelector('.opm-button:nth-child(2)');
         if (saveBtn) {
           const newBtn = saveBtn.cloneNode(true);
           saveBtn.replaceWith(newBtn);

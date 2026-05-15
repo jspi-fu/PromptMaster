@@ -82,6 +82,64 @@ class InputBoxHandler {
   }
 
   /**
+   * 向富文本编辑器插入纯文本，优先保留换行。
+   * @param {HTMLElement} inputBox
+   * @param {string} textToInsert
+   * @returns {boolean}
+   */
+  static tryInsertRichText(inputBox, textToInsert) {
+    const hasLineBreak = textToInsert.includes('\n');
+    let inserted = false;
+
+    if (hasLineBreak) {
+      try {
+        const dataTransfer = new DataTransfer();
+        dataTransfer.setData('text/plain', textToInsert);
+        const pasteEvent = new ClipboardEvent('paste', {
+          clipboardData: dataTransfer,
+          bubbles: true,
+          cancelable: true,
+        });
+        inputBox.dispatchEvent(pasteEvent);
+        inserted = true;
+      } catch (_) {}
+    }
+
+    if (!inserted) {
+      try {
+        inserted = document.execCommand('insertText', false, textToInsert);
+      } catch (_) {}
+    }
+
+    if (!inserted) {
+      try {
+        inputBox.dispatchEvent(new InputEvent('beforeinput', {
+          inputType: hasLineBreak ? 'insertFromPaste' : 'insertText',
+          data: textToInsert,
+          bubbles: true,
+          cancelable: true,
+        }));
+        inputBox.dispatchEvent(new Event('input', { bubbles: true }));
+        inserted = true;
+      } catch (_) {}
+    }
+
+    return inserted;
+  }
+
+  /**
+   * 富文本插入失败时，退回到 innerText，避免换行被 textContent 吞掉。
+   * @param {HTMLElement} inputBox
+   * @param {string} textToInsert
+   * @param {boolean} appendMode
+   */
+  static fallbackInsertRichText(inputBox, textToInsert, appendMode) {
+    const existingText = appendMode ? (inputBox.innerText || '') : '';
+    inputBox.innerText = existingText + textToInsert;
+    inputBox.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  /**
    * Inserts a prompt into the detected input box.
    * @param {HTMLElement} inputBox - The input box element.
    * @param {string} content - The prompt content to insert.
@@ -137,23 +195,11 @@ class InputBoxHandler {
 
           // COMMENT: Primary path — let the editor handle text via execCommand
           const textToInsert = content + '  ';
-          const inserted = document.execCommand('insertText', false, textToInsert);
+          const inserted = InputBoxHandler.tryInsertRichText(inputBox, textToInsert);
 
           // COMMENT: Fallback — synthesize input pipeline events
           if (!inserted) {
-            try {
-              inputBox.dispatchEvent(new InputEvent('beforeinput', {
-                inputType: 'insertText',
-                data: textToInsert,
-                bubbles: true,
-                cancelable: true,
-              }));
-              inputBox.dispatchEvent(new Event('input', { bubbles: true }));
-            } catch (_) {
-              // COMMENT: Last resort — set textContent; editor may still override this
-              inputBox.textContent = textToInsert;
-              inputBox.dispatchEvent(new Event('input', { bubbles: true }));
-            }
+            InputBoxHandler.fallbackInsertRichText(inputBox, textToInsert, disableOverwrite);
           }
 
           // COMMENT: Ensure caret ends up at the end after insertion
@@ -183,43 +229,10 @@ class InputBoxHandler {
           inputBox.focus();
           
           const textToInsert = content + '  ';
-          
-          let inserted = false;
-          try {
-            const dt = new DataTransfer();
-            dt.setData('text/plain', textToInsert);
-            const pasteEvent = new ClipboardEvent('paste', {
-              clipboardData: dt,
-              bubbles: true,
-              cancelable: true,
-            });
-            inputBox.dispatchEvent(pasteEvent);
-            inserted = true;
-          } catch (_) {}
-          
+          const inserted = InputBoxHandler.tryInsertRichText(inputBox, textToInsert);
+
           if (!inserted) {
-            try {
-              inserted = document.execCommand('insertText', false, textToInsert);
-            } catch (_) {}
-          }
-          
-          if (!inserted) {
-            try {
-              inputBox.dispatchEvent(new InputEvent('beforeinput', {
-                inputType: 'insertText',
-                data: textToInsert,
-                bubbles: true,
-                cancelable: true,
-              }));
-              inputBox.dispatchEvent(new Event('input', { bubbles: true }));
-            } catch (_) {
-              if (disableOverwrite) {
-                inputBox.appendChild(document.createTextNode(textToInsert));
-              } else {
-                inputBox.textContent = textToInsert;
-              }
-              inputBox.dispatchEvent(new Event('input', { bubbles: true }));
-            }
+            InputBoxHandler.fallbackInsertRichText(inputBox, textToInsert, disableOverwrite);
           }
           
           const endRange = document.createRange();
@@ -247,46 +260,10 @@ class InputBoxHandler {
           inputBox.focus();
           
           const textToInsert = content + '  ';
-          
-          // COMMENT: Try paste event first - often works well with Slate
-          let inserted = false;
-          try {
-            const dt = new DataTransfer();
-            dt.setData('text/plain', textToInsert);
-            const pasteEvent = new ClipboardEvent('paste', {
-              clipboardData: dt,
-              bubbles: true,
-              cancelable: true,
-            });
-            inputBox.dispatchEvent(pasteEvent);
-            inserted = true;
-          } catch (_) {}
-          
-          // COMMENT: Fallback to execCommand
+          const inserted = InputBoxHandler.tryInsertRichText(inputBox, textToInsert);
+
           if (!inserted) {
-            try {
-              inserted = document.execCommand('insertText', false, textToInsert);
-            } catch (_) {}
-          }
-          
-          // COMMENT: Last fallback - synthetic beforeinput/input
-          if (!inserted) {
-            try {
-              inputBox.dispatchEvent(new InputEvent('beforeinput', {
-                inputType: 'insertText',
-                data: textToInsert,
-                bubbles: true,
-                cancelable: true,
-              }));
-              inputBox.dispatchEvent(new Event('input', { bubbles: true }));
-            } catch (_) {
-              if (disableOverwrite) {
-                inputBox.appendChild(document.createTextNode(textToInsert));
-              } else {
-                inputBox.textContent = textToInsert;
-              }
-              inputBox.dispatchEvent(new Event('input', { bubbles: true }));
-            }
+            InputBoxHandler.fallbackInsertRichText(inputBox, textToInsert, disableOverwrite);
           }
           
           // COMMENT: Ensure caret ends up at the end after insertion
@@ -323,39 +300,9 @@ class InputBoxHandler {
             document.execCommand('delete', false, null);
           }
           const textToInsert = content + '  ';
-          let inserted = false;
-          try {
-            inserted = document.execCommand('insertText', false, textToInsert);
-          } catch (_) {}
-          // COMMENT: Fallback to synthetic beforeinput/input or paste if needed
+          const inserted = InputBoxHandler.tryInsertRichText(inputBox, textToInsert);
           if (!inserted) {
-            try {
-              inputBox.dispatchEvent(new InputEvent('beforeinput', {
-                inputType: 'insertText',
-                data: textToInsert,
-                bubbles: true,
-                cancelable: true,
-              }));
-              inputBox.dispatchEvent(new Event('input', { bubbles: true }));
-            } catch (_) {
-              try {
-                const dt = new DataTransfer();
-                dt.setData('text/plain', textToInsert);
-                const pasteEvent = new ClipboardEvent('paste', {
-                  clipboardData: dt,
-                  bubbles: true,
-                  cancelable: true,
-                });
-                inputBox.dispatchEvent(pasteEvent);
-              } catch (_) {
-                if (disableOverwrite) {
-                  inputBox.appendChild(document.createTextNode(textToInsert));
-                } else {
-                  inputBox.textContent = textToInsert;
-                }
-                inputBox.dispatchEvent(new Event('input', { bubbles: true }));
-              }
-            }
+            InputBoxHandler.fallbackInsertRichText(inputBox, textToInsert, disableOverwrite);
           }
           // COMMENT: Ensure caret ends up at the end after insertion
           const endRange = document.createRange();

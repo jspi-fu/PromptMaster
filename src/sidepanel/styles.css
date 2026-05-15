@@ -1,10 +1,22 @@
 /* styles.css */
+html {
+  background-color: var(--light-bg);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
 @media (min-width:286px) {
   body {
     font-family: Helvetica, Verdana, Geneva, Tahoma, sans-serif;
     width: auto;
     height: auto; /* Allow page to grow and scroll */
     overflow-y: auto;
+    margin: 0;
     padding: 10px;
     padding-bottom: 0px;
     margin-bottom: 10px;
@@ -15,7 +27,14 @@
     min-width: 286px;
     /* Use flex to allow main content to grow */
     min-height: 100vh;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
     /* Ensure body can exceed viewport height and uses flex column */
+  }
+
+  body::-webkit-scrollbar {
+    width: 0;
+    height: 0;
   }
 
   h2,
@@ -116,7 +135,17 @@
 
   textarea {
     resize: vertical;
-    min-height: 70px;
+    min-height: 220px; /* 约 10 行文本高度，超出后再出现滚动条 */
+  }
+
+  #prompt-content {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  #prompt-content::-webkit-scrollbar {
+    width: 0;
+    height: 0;
   }
 
   ::placeholder {
@@ -239,6 +268,7 @@
     gap: 10px;
     align-items: center;
     margin-bottom: 15px;
+    background-color: inherit;
     grid-area: g-title;
     width: 100%;
     flex-direction: row;
@@ -516,6 +546,10 @@ html.force-dark .llm-pill.icon-only:hover .llm-pill-icon {
    Supports both system preference and forced dark mode
    ============================================================ */
 @media (prefers-color-scheme: dark) {
+  :root:not(.force-light) html {
+    background-color: var(--dark-bg);
+  }
+
   :root:not(.force-light) body {
     background-color: var(--dark-bg);
     color: var(--dark-text);
@@ -631,6 +665,10 @@ html.force-dark .llm-pill.icon-only:hover .llm-pill-icon {
 }
 
 /* COMMENT: Forced dark mode - applies when .force-dark is on html element */
+html.force-dark {
+  background-color: var(--dark-bg);
+}
+
 html.force-dark body {
   background-color: var(--dark-bg);
   color: var(--dark-text);
@@ -732,7 +770,7 @@ html.force-dark footer.footer {
   --hover-primary: #4B88C7;
 
   /* 浅色主题 */
-  --light-bg: #F7FAFC;
+  --light-bg: #FFFFFF;
   --light-text: #2D3748;
   --light-text-secondary: #64748b;
   --light-border: #E2E8F0;

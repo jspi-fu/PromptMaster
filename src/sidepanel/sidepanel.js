@@ -282,113 +282,358 @@ async function renderPermissionsGate() {
   }
 }
 
+// COMMENT: 创建单个提示词列表项
+function createPromptItem(prompt, index) {
+  const li = document.createElement('li');
+  const titleSpan = document.createElement('span');
+  titleSpan.textContent = prompt.title;
+  titleSpan.style.margin = '2px';
+  titleSpan.style.padding = '3px';
+  titleSpan.style.verticalAlign = 'middle';
+  titleSpan.style.display = 'inline-block';
+  li.appendChild(titleSpan);
+
+  // COMMENT: Copy button (revealed on hover)
+  const copyBtn = document.createElement('button');
+  const copyImg = document.createElement('img');
+  copyImg.src = '../icons/copy.png';
+  copyImg.alt = 'Copy';
+  copyImg.title = t('copyToClipboard');
+  copyImg.width = 14;
+  copyImg.height = 14;
+  copyImg.style.verticalAlign = 'middle';
+  copyBtn.style.display = 'none';
+  copyBtn.style.backgroundColor = '#ffffff00';
+  copyBtn.appendChild(copyImg);
+  copyBtn.addEventListener('click', async () => {
+    await navigator.clipboard.writeText(prompt.content);
+  });
+  li.appendChild(copyBtn);
+
+  // COMMENT: Edit button (revealed on hover)
+  const editBtn = document.createElement('button');
+  const editImg = document.createElement('img');
+  editImg.src = '../icons/edit-icon.png';
+  editImg.alt = 'Edit';
+  editImg.title = t('edit');
+  editImg.width = 14;
+  editImg.height = 14;
+  editImg.style.verticalAlign = 'middle';
+  editBtn.style.display = 'none';
+  editBtn.style.backgroundColor = '#ffffff00';
+  editBtn.appendChild(editImg);
+  editBtn.addEventListener('click', () => {
+    // COMMENT: Populate the form for editing
+    document.getElementById('prompt-title').value = prompt.title;
+    document.getElementById('prompt-content').value = prompt.content;
+    document.getElementById('prompt-index').value = index;
+
+    // Load tags
+    currentTags = prompt.tags ? [...prompt.tags] : [];
+    renderTags();
+
+    document.getElementById('submit-button').innerHTML = `<img src="../icons/add-icon.png" alt="${t('add')}" style="margin-right: 5px" /><span>${t('updatePrompt')}</span>`;
+    document.getElementById('cancel-edit-button').style.display = 'inline';
+  });
+  li.appendChild(editBtn);
+
+  // COMMENT: Delete button (revealed on hover)
+  const delBtn = document.createElement('button');
+  const delImg = document.createElement('img');
+  delImg.src = '../icons/delete.svg';
+  delImg.alt = 'Delete';
+  delImg.title = t('delete');
+  delImg.width = 18;
+  delImg.height = 18;
+  delImg.style.verticalAlign = 'middle';
+  delBtn.style.display = 'none';
+  delBtn.style.backgroundColor = '#ffffff00';
+  delBtn.appendChild(delImg);
+  delBtn.addEventListener('click', async () => {
+    if (!window.confirm(t('confirmDelete'))) return;
+    const current = await PromptStorage.getPrompts();
+    if (index < 0 || index >= current.length) return;
+    await PromptStorage.deletePrompt(current[index].uuid);
+  });
+  li.appendChild(delBtn);
+
+  // COMMENT: Hover interactions for action buttons
+  li.addEventListener('mouseenter', () => {
+    copyBtn.style.display = 'inline-block';
+    editBtn.style.display = 'inline-block';
+    delBtn.style.display = 'inline-block';
+  });
+  li.addEventListener('mouseleave', () => {
+    copyBtn.style.display = 'none';
+    editBtn.style.display = 'none';
+    delBtn.style.display = 'none';
+  });
+
+  return li;
+}
+
+// COMMENT: 使用 lucide 图标库创建 SVG 图标
+function createLucideIcon(name, size = 16) {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('width', size);
+  svg.setAttribute('height', size);
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('fill', 'none');
+  svg.setAttribute('stroke', 'currentColor');
+  svg.setAttribute('stroke-width', '2');
+  svg.setAttribute('stroke-linecap', 'round');
+  svg.setAttribute('stroke-linejoin', 'round');
+  svg.style.flexShrink = '0';
+
+  const paths = {
+    folder: [
+      { d: 'M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z' }
+    ],
+    'arrow-left': [
+      { d: 'm12 19-7-7 7-7' },
+      { d: 'M19 12H5' }
+    ],
+    'chevron-right': [
+      { d: 'm9 18 6-6-6-6' }
+    ]
+  };
+
+  const iconPaths = paths[name] || [];
+  iconPaths.forEach(p => {
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', p.d);
+    svg.appendChild(path);
+  });
+
+  return svg;
+}
+
+// COMMENT: 当前浏览的标签路径（空数组表示根目录）
+let currentTagPath = [];
+// COMMENT: 当前侧边栏搜索词
+let currentSearchTerm = '';
+// COMMENT: 缓存最新提示词，便于搜索时直接重绘
+let latestPrompts = [];
+
+// COMMENT: 模块级标签状态，提升至此以便 createPromptItem 内的编辑按钮可访问
+let currentTags = [];
+
+// COMMENT: 渲染已添加的标签 pill，操作 DOM 中的 tags-display 容器
+function renderTags() {
+  const tagsDisplay = document.getElementById('tags-display');
+  if (!tagsDisplay) return;
+  tagsDisplay.innerHTML = '';
+  currentTags.forEach((tag, index) => {
+    const tagPill = document.createElement('span');
+    tagPill.className = 'tag-pill';
+
+    const tagText = document.createElement('span');
+    tagText.textContent = tag;
+    tagPill.appendChild(tagText);
+
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'tag-remove';
+    removeBtn.textContent = '×';
+    removeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      currentTags.splice(index, 1);
+      renderTags();
+    });
+    tagPill.appendChild(removeBtn);
+
+    tagsDisplay.appendChild(tagPill);
+  });
+}
+
+// COMMENT: 创建“无搜索结果”提示项
+function createNoResultsItem() {
+  const li = document.createElement('li');
+  li.style.justifyContent = 'flex-start';
+  li.style.backgroundColor = 'transparent';
+  li.style.padding = '6px 0';
+  li.style.borderRadius = '0';
+  li.style.color = 'var(--light-text-secondary, #64748b)';
+  li.style.fontSize = '13px';
+  li.textContent = t('noSearchResults');
+  return li;
+}
+
+// COMMENT: 关键词检索同时匹配标题、内容和标签
+function matchesPromptSearch(prompt, searchTerm) {
+  const normalizedTerm = (searchTerm || '').trim().toLowerCase();
+  if (!normalizedTerm) return true;
+
+  const title = String(prompt?.title || '').toLowerCase();
+  const content = String(prompt?.content || '').toLowerCase();
+  const tags = Array.isArray(prompt?.tags)
+    ? prompt.tags.map(tag => String(tag).toLowerCase()).join(' ')
+    : '';
+
+  return title.includes(normalizedTerm)
+    || content.includes(normalizedTerm)
+    || tags.includes(normalizedTerm);
+}
+
 // COMMENT: Render the list of prompts in the sidepanel UI
 function displayPrompts(prompts) {
   const promptList = document.getElementById('prompt-list');
   const emptyState = document.getElementById('empty-state');
   const shortcut = document.getElementById('permissions-shortcut');
+  const visiblePrompts = Array.isArray(prompts)
+    ? prompts.filter(prompt => matchesPromptSearch(prompt, currentSearchTerm))
+    : [];
   promptList.innerHTML = '';
   if (!Array.isArray(prompts) || prompts.length === 0) {
-    // If permissions shortcut is visible, prefer it over empty-state
     const shortcutVisible = shortcut && shortcut.style.display !== 'none';
     if (emptyState) emptyState.style.display = shortcutVisible ? 'none' : 'block';
     return;
   }
   if (emptyState) emptyState.style.display = 'none';
+
+  if (currentSearchTerm.trim()) {
+    if (visiblePrompts.length === 0) {
+      promptList.appendChild(createNoResultsItem());
+      return;
+    }
+    visiblePrompts.forEach(prompt => {
+      const index = prompts.findIndex(item => item?.uuid === prompt?.uuid);
+      if (index !== -1) {
+        promptList.appendChild(createPromptItem(prompt, index));
+      }
+    });
+    return;
+  }
+
+  // COMMENT: 按标签分组
+  const tagged = new Map();
+  const untagged = [];
+
   prompts.forEach((prompt, index) => {
-    const li = document.createElement('li');
-    const titleSpan = document.createElement('span');
-    titleSpan.textContent = prompt.title;
-    titleSpan.style.margin = '2px';
-    titleSpan.style.padding = '3px';
-    titleSpan.style.verticalAlign = 'middle';
-    titleSpan.style.display = 'inline-block';
-    li.appendChild(titleSpan);
+    const tags = prompt.tags;
+    if (Array.isArray(tags) && tags.length > 0) {
+      tags.forEach(tag => {
+        if (!tagged.has(tag)) {
+          tagged.set(tag, []);
+        }
+        tagged.get(tag).push({ prompt, index });
+      });
+    } else {
+      untagged.push({ prompt, index });
+    }
+  });
 
-    // COMMENT: Copy button (revealed on hover)
-    const copyBtn = document.createElement('button');
-    const copyImg = document.createElement('img');
-    copyImg.src = '../icons/copy.png';
-    copyImg.alt = 'Copy';
-    copyImg.title = t('copyToClipboard');
-    copyImg.width = 14;
-    copyImg.height = 14;
-    copyImg.style.verticalAlign = 'middle';
-    copyBtn.style.display = 'none';
-    copyBtn.style.backgroundColor = '#ffffff00';
-    copyBtn.appendChild(copyImg);
-    copyBtn.addEventListener('click', async () => {
-      await navigator.clipboard.writeText(prompt.content);
-    });
-    li.appendChild(copyBtn);
+  // COMMENT: 如果当前在标签文件夹内部
+  if (currentTagPath.length > 0) {
+    const currentTag = currentTagPath[currentTagPath.length - 1];
 
-    // COMMENT: Edit button (revealed on hover)
-    const editBtn = document.createElement('button');
-    const editImg = document.createElement('img');
-    editImg.src = '../icons/edit-icon.png';
-    editImg.alt = 'Edit';
-    editImg.title = t('edit');
-    editImg.width = 14;
-    editImg.height = 14;
-    editImg.style.verticalAlign = 'middle';
-    editBtn.style.display = 'none';
-    editBtn.style.backgroundColor = '#ffffff00';
-    editBtn.appendChild(editImg);
-    editBtn.addEventListener('click', () => {
-      // COMMENT: Populate the form for editing
-      document.getElementById('prompt-title').value = prompt.title;
-      document.getElementById('prompt-content').value = prompt.content;
-      document.getElementById('prompt-index').value = index;
-      
-      // Load tags
-      currentTags = prompt.tags ? [...prompt.tags] : [];
-      renderTags();
-      
-      document.getElementById('submit-button').innerHTML = `<img src="../icons/add-icon.png" alt="${t('add')}" style="margin-right: 5px" /><span>${t('updatePrompt')}</span>`;
-      document.getElementById('cancel-edit-button').style.display = 'inline';
-    });
-    li.appendChild(editBtn);
+    // COMMENT: 返回上一级按钮
+    const backItem = document.createElement('li');
+    backItem.className = 'tag-back-item';
+    backItem.style.cursor = 'pointer';
+    backItem.style.backgroundColor = 'transparent';
+    backItem.style.padding = '6px 0';
+    backItem.style.marginBottom = '4px';
+    backItem.style.borderRadius = '0';
+    backItem.style.color = 'var(--primary)';
+    backItem.style.fontWeight = '500';
+    backItem.style.fontSize = '13px';
+    backItem.style.display = 'flex';
+    backItem.style.alignItems = 'center';
+    backItem.style.gap = '6px';
 
-    // COMMENT: Delete button (revealed on hover)
-    const delBtn = document.createElement('button');
-    const delImg = document.createElement('img');
-    delImg.src = '../icons/delete.svg';
-    delImg.alt = 'Delete';
-    delImg.title = t('delete');
-    delImg.width = 18;
-    delImg.height = 18;
-    delImg.style.verticalAlign = 'middle';
-    delBtn.style.display = 'none';
-    delBtn.style.backgroundColor = '#ffffff00';
-    delBtn.appendChild(delImg);
-    delBtn.addEventListener('click', async () => {
-      if (!window.confirm(t('confirmDelete'))) return;
-      const current = await PromptStorage.getPrompts();
-      if (index < 0 || index >= current.length) return;
-      await PromptStorage.deletePrompt(current[index].uuid);
-    });
-    li.appendChild(delBtn);
+    const backIcon = createLucideIcon('arrow-left', 16);
+    backItem.appendChild(backIcon);
 
-    // COMMENT: Hover interactions for action buttons
-    li.addEventListener('mouseenter', () => {
-      copyBtn.style.display = 'inline-block';
-      editBtn.style.display = 'inline-block';
-      delBtn.style.display = 'inline-block';
-    });
-    li.addEventListener('mouseleave', () => {
-      copyBtn.style.display = 'none';
-      editBtn.style.display = 'none';
-      delBtn.style.display = 'none';
+    const backLabel = document.createElement('span');
+    backLabel.textContent = t('back') || '返回';
+    backLabel.style.flexGrow = '1';
+    backItem.appendChild(backLabel);
+
+    backItem.addEventListener('click', () => {
+      currentTagPath.pop();
+      displayPrompts(prompts);
     });
 
-    document.getElementById('prompt-list').appendChild(li);
+    promptList.appendChild(backItem);
+
+    // COMMENT: 显示当前标签名称
+    const tagTitle = document.createElement('li');
+    tagTitle.style.backgroundColor = 'transparent';
+    tagTitle.style.padding = '2px 0 6px';
+    tagTitle.style.borderRadius = '0';
+    tagTitle.style.color = 'var(--primary)';
+    tagTitle.style.fontWeight = '600';
+    tagTitle.style.fontSize = '14px';
+    tagTitle.style.display = 'flex';
+    tagTitle.style.alignItems = 'center';
+    tagTitle.style.gap = '6px';
+
+    const folderIcon = createLucideIcon('folder', 18);
+    tagTitle.appendChild(folderIcon);
+
+    const tagName = document.createElement('span');
+    tagName.textContent = currentTag;
+    tagTitle.appendChild(tagName);
+
+    promptList.appendChild(tagTitle);
+
+    // COMMENT: 渲染该标签下的提示词
+    const items = tagged.get(currentTag) || [];
+    items.forEach(({ prompt, index }) => {
+      promptList.appendChild(createPromptItem(prompt, index));
+    });
+
+    return;
+  }
+
+  // COMMENT: 根目录：先渲染无标签的提示词
+  untagged.forEach(({ prompt, index }) => {
+    promptList.appendChild(createPromptItem(prompt, index));
+  });
+
+  // COMMENT: 再渲染标签文件夹
+  const sortedTags = Array.from(tagged.keys()).sort((a, b) => a.localeCompare(b));
+  sortedTags.forEach(tag => {
+    const tagFolder = document.createElement('li');
+    tagFolder.className = 'tag-folder-item';
+    tagFolder.style.cursor = 'pointer';
+    tagFolder.style.backgroundColor = 'transparent';
+    tagFolder.style.padding = '6px 0';
+    tagFolder.style.marginTop = '4px';
+    tagFolder.style.borderRadius = '0';
+    tagFolder.style.color = 'var(--primary)';
+    tagFolder.style.fontWeight = '600';
+    tagFolder.style.fontSize = '13px';
+    tagFolder.style.display = 'flex';
+    tagFolder.style.alignItems = 'center';
+    tagFolder.style.gap = '6px';
+
+    const folderIcon = createLucideIcon('folder', 16);
+    tagFolder.appendChild(folderIcon);
+
+    const tagLabel = document.createElement('span');
+    tagLabel.textContent = tag;
+    tagLabel.style.flexGrow = '1';
+    tagLabel.style.textAlign = 'left';
+    tagFolder.appendChild(tagLabel);
+
+    const arrowIcon = createLucideIcon('chevron-right', 16);
+    arrowIcon.style.opacity = '0.6';
+    tagFolder.appendChild(arrowIcon);
+
+    tagFolder.addEventListener('click', () => {
+      currentTagPath.push(tag);
+      displayPrompts(prompts);
+    });
+
+    promptList.appendChild(tagFolder);
   });
 }
 
 // COMMENT: Load prompts from storage and render them
 async function loadPrompts() {
-  const prompts = await PromptStorage.getPrompts();
-  displayPrompts(prompts);
+  latestPrompts = await PromptStorage.getPrompts();
+  displayPrompts(latestPrompts);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -404,44 +649,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const exportBtn = document.getElementById('export-btn');
   const importBtn = document.getElementById('import-btn');
   const importFile = document.getElementById('import-file');
+  const promptSearchInput = document.getElementById('prompt-search');
   // COMMENT: Info banner elements for close/dismiss behavior
   const infoBanner = document.getElementById('info-banner');
   const infoBannerClose = document.getElementById('info-banner-close');
   
-  // Tag elements
+  // COMMENT: 标签相关 DOM 引用（currentTags 与 renderTags 已提升至模块级）
   const tagsContainer = document.getElementById('tags-container');
-  const tagsDisplay = document.getElementById('tags-display');
   const tagInput = document.getElementById('tag-input');
-  
-  // Current tags
-  let currentTags = [];
 
-  // Function to render tags
-  function renderTags() {
-    tagsDisplay.innerHTML = '';
-    currentTags.forEach((tag, index) => {
-      const tagPill = document.createElement('span');
-      tagPill.className = 'tag-pill';
-      
-      const tagText = document.createElement('span');
-      tagText.textContent = tag;
-      tagPill.appendChild(tagText);
-      
-      const removeBtn = document.createElement('button');
-      removeBtn.className = 'tag-remove';
-      removeBtn.textContent = '×';
-      removeBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        currentTags.splice(index, 1);
-        renderTags();
-      });
-      tagPill.appendChild(removeBtn);
-      
-      tagsDisplay.appendChild(tagPill);
-    });
-  }
-
-  // Function to add a tag
+  // COMMENT: 添加标签（去重、去空白）
   function addTag(tagName) {
     const trimmedTag = tagName.trim();
     if (trimmedTag && !currentTags.includes(trimmedTag)) {
@@ -450,7 +667,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Function to clear tags
+  // COMMENT: 清空所有标签
   function clearTags() {
     currentTags = [];
     renderTags();
@@ -484,6 +701,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if (e.target !== tagInput && !e.target.classList.contains('tag-remove')) {
         tagInput.focus();
       }
+    });
+  }
+
+  if (promptSearchInput) {
+    promptSearchInput.addEventListener('input', (event) => {
+      currentSearchTerm = event.target.value || '';
+      displayPrompts(latestPrompts);
     });
   }
 

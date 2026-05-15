@@ -320,7 +320,7 @@ document.querySelector('可能的父元素')
 1. 刷新页面
 2. 检查 Service Worker 日志（`chrome://extensions/` → 查看 Service Worker）
 
-## 借助 AI 完成
+## 借助AI完成
 
 以添加 "Kimi" 平台为例，URL 为 `https://www.kimi.com/`。
 

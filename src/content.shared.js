@@ -570,7 +570,7 @@
       };
 
       const Views = {
-        createPromptForm({ initialTitle = '', initialContent = '', submitLabel = 'Save', onSubmit }) {
+        createPromptForm({ initialTitle = '', initialContent = '', submitLabel = 'Save', onSubmit, onCancel }) {
           const form = createEl('div', { className: `opm-form-container opm-create-form opm-${getMode()}`, styles: { padding: '0', display: 'flex', flexDirection: 'column', gap: '4px' } });
           const titleIn = createEl('input', { attributes: { placeholder: chrome.i18n.getMessage('promptTitlePlaceholder') }, className: `opm-input-field opm-${getMode()}`, styles: { borderRadius: '4px' } });
           const contentArea = createEl('textarea', {
@@ -580,14 +580,33 @@
           });
           titleIn.value = initialTitle;
           contentArea.value = initialContent;
-          const saveBtn = createEl('button', { innerHTML: submitLabel, className: `opm-button opm-${getMode()}` });
+
+          const btnContainer = createEl('div', { styles: { display: 'flex', gap: '8px' } });
+          
+          const cancelBtn = createEl('button', { 
+            innerHTML: '取消', 
+            className: `opm-button opm-${getMode()}`, 
+            styles: { backgroundColor: '#9CA3AF', flex: '1' } 
+          });
+          cancelBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            if (typeof onCancel === 'function') onCancel();
+          });
+
+          const saveBtn = createEl('button', { 
+            innerHTML: submitLabel, 
+            className: `opm-button opm-${getMode()}`, 
+            styles: { flex: '1' } 
+          });
           saveBtn.addEventListener('click', async e => {
             e.stopPropagation();
             const t = titleIn.value.trim(), c = contentArea.value.trim();
             if (!t || !c) { alert(chrome.i18n.getMessage('fillTitleAndContent')); return; }
             if (typeof onSubmit === 'function') await onSubmit({ title: t, content: c });
           });
-          form.append(titleIn, contentArea, saveBtn);
+
+          btnContainer.append(cancelBtn, saveBtn);
+          form.append(titleIn, contentArea, btnContainer);
           form.addEventListener('click', e => e.stopPropagation());
           return form;
         },
