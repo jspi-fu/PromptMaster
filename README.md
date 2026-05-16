@@ -1,7 +1,7 @@
 ![Cover](assets/cover.png)
 <div align="center">
   <a href="https://gitee.com/ye_sheng0839/prompt-master/stargazers"><img src="https://gitee.com/ye_sheng0839/prompt-master/badge/star.svg?theme=dark" alt="Stars"></a>
-  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg" alt="License"></a>
   <a href="https://microsoftedge.microsoft.com/addons/detail/promptmaster/decdbjbmghcogkbpjpfknillkabahdni"><img src="https://img.shields.io/badge/Microsoft_Edge-0078D7?style=flat&logo=microsoft-edge&logoColor=white" alt="Edge Add-ons"></a>
 </div>
 
@@ -86,10 +86,9 @@
 
 ## 许可证
 
-本插件使用[MIT](LICENSE)协议，欢迎任何形式的贡献！
+本插件使用[CC BY 4.0](LICENSE)协议，欢迎任何形式的贡献！
 
 ## 致谢
 
 - 本项目基于[Open Prompt Manager](https://github.com/jonathanbertholet/promptmanager)进行重构、汉化、功能升级与性能优化，感谢原始开发团队提供的优秀模板，项目中的打赏通道将永远留给他们！
 - 感谢由[Lyra 4D](https://lyraprompt.com/)提供的优质提示词策略与评分机制！
-- 部分功能与bug修复已向原始项目提交PR

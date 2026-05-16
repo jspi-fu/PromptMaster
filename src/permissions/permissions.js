@@ -74,10 +74,10 @@ document.addEventListener('DOMContentLoaded', function () {
           // Button 1: Start with Best Practices (Import -> Open)
           document.getElementById('get-started-best-practices-btn').addEventListener('click', async () => {
             try {
-              const importUrl = 'https://gitee.com/ye_sheng0839/prompt-master/raw/main/%E9%A2%84%E8%AE%BE%E6%8F%90%E7%A4%BA%E8%AF%8D.json';
+              const importUrl = chrome.runtime.getURL('/default-prompts.json');
               const response = await fetch(importUrl);
               if (response.ok) {
-                const text = await response.text();
+                const text = await response.json();
                 await importPrompts(text);
                 console.log('Successfully imported default prompts.');
               } else {
