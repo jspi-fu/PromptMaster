@@ -20,7 +20,7 @@ const LEGACY_KEY = 'prompts';                     // kept in sync for old code
 const promptsCache = {
   data: null,
   timestamp: 0,
-  TTL_MS: 500
+  TTL_MS: 3000
 };
 
 const invalidateCache = () => {
@@ -281,8 +281,25 @@ export async function setTagsForPrompt(promptUuid, tags = []) {
 }
 
 // ---------- import / export helpers ----------
+
+/**
+ * COMMENT: 返回格式化的提示词 JSON 字符串。
+ * 不执行 DOM 操作（因为 service worker 中没有 document），UI 层负责触发下载。
+ */
+export async function exportPromptsJSON() {
+  return JSON.stringify(await getPrompts(), null, 2);
+}
+
+/**
+ * COMMENT: 向后兼容——在有 document 的环境中直接下载。
+ * service worker 应调用 exportPromptsJSON() 并通过消息传递给 UI 层。
+ */
 export async function exportPrompts() {
-  const json = JSON.stringify(await getPrompts(), null, 2);
+  const json = await exportPromptsJSON();
+  if (typeof document === 'undefined') {
+    console.warn('[PromptStorage] exportPrompts called in non-DOM context; use exportPromptsJSON() instead.');
+    return json;
+  }
   const blob = new Blob([json], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');

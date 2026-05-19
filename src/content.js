@@ -405,7 +405,7 @@
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          padding: '12px 16px',
+          padding: '8px 12px',
           borderBottom: `1px solid ${dark ? THEME_COLORS.darkBorder : THEME_COLORS.lightBorder}`,
           position: 'relative'
         }
@@ -484,10 +484,10 @@
         styles: {
           flex: '1 1 auto',
           overflowY: 'auto',
-          padding: '16px',
+          padding: '12px',
           display: 'flex',
           flexDirection: 'column',
-          gap: '16px',
+          gap: '12px',
           minHeight: '0'
         }
       });
@@ -496,11 +496,11 @@
       const inputArea = createEl('div', {
         className: `opm-chat-input-area opm-${getMode()}`,
         styles: {
-          padding: '12px 16px',
+          padding: '8px 12px',
           borderTop: `1px solid ${dark ? THEME_COLORS.darkBorder : THEME_COLORS.lightBorder}`,
           display: 'flex',
           gap: '8px',
-          alignItems: 'flex-end'
+          alignItems: 'center'
         }
       });
 
@@ -523,7 +523,9 @@
           resize: 'none',
           outline: 'none',
           maxHeight: '120px',
-          overflowY: 'auto'
+          overflowY: 'auto',
+          height: 'auto',
+          minHeight: '36px'
         }
       });
       // COMMENT: 输入框滚动条默认隐藏（仅在滚动时短暂显示），与面板其他区域保持一致
@@ -1049,6 +1051,8 @@
       const text = input.value.trim();
       if (!text) return;
       input.value = '';
+      // 重置输入框高度
+      input.style.height = 'auto';
       addMessage(messagesContainer, 'user', text, false);
       sendMessage(text);
     });
@@ -1895,7 +1899,7 @@
       const bottomMenu = panel.querySelector('.opm-bottom-menu');
       if (bottomMenu) bottomMenu.style.display = visible ? 'flex' : 'none';
       // COMMENT: Panel reserves space for the absolute bottom menu; remove it when hidden.
-      panel.style.paddingBottom = visible ? '64px' : '0px';
+      panel.style.paddingBottom = visible ? '48px' : '0px';
     }
 
     // COMMENT: Centralized prompt items filter used by search input
@@ -1919,8 +1923,57 @@
           } catch (_) { matchesTag = false; }
         }
         item.style.display = (matchesSearch && matchesTag) ? 'flex' : 'none';
+        // COMMENT: 更新搜索匹配预览
+        const previewEl = item.querySelector('.opm-search-preview');
+        if (previewEl) {
+          if (value && matchesSearch) {
+            const previewHtml = PromptUIManager._buildSearchPreviewHtml(value, item.dataset.title, item.dataset.contentRaw, item.dataset.tagsRaw);
+            if (previewHtml) {
+              previewEl.innerHTML = previewHtml;
+              previewEl.style.display = '';
+            } else {
+              previewEl.style.display = 'none';
+            }
+          } else {
+            previewEl.style.display = 'none';
+          }
+        }
       });
       PromptUIManager.selectedSearchIndex = -1;
+    }
+
+    // COMMENT: 生成搜索匹配预览HTML，高亮匹配字符
+    // NOTE: 逻辑与 utils.js::buildSearchPreviewHtml 相同，因 content.js 以 IIFE 注入无法 import ES module。
+    static _buildSearchPreviewHtml(searchTerm, titleLower, contentRaw, tagsRaw) {
+      if (!searchTerm) return '';
+      // COMMENT: 标题匹配时无需预览
+      if (titleLower?.includes(searchTerm)) return '';
+      const esc = s => s.replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+      const escTerm = esc(searchTerm);
+      const MAX_SNIPPET = 80;
+      let source = '';
+      let matchIndex = -1;
+      const contentLower = (contentRaw || '').toLowerCase();
+      const tagsLower = (tagsRaw || '').toLowerCase();
+      if (contentLower.includes(searchTerm)) {
+        source = contentRaw;
+        matchIndex = contentLower.indexOf(searchTerm);
+      } else if (tagsLower.includes(searchTerm)) {
+        source = tagsRaw;
+        matchIndex = tagsLower.indexOf(searchTerm);
+      }
+      if (matchIndex < 0) return '';
+      const halfLen = Math.floor((MAX_SNIPPET - searchTerm.length) / 2);
+      let start = Math.max(0, matchIndex - halfLen);
+      let end = Math.min(source.length, matchIndex + searchTerm.length + halfLen);
+      let snippet = source.substring(start, end);
+      if (start > 0) snippet = '...' + snippet;
+      if (end < source.length) snippet = snippet + '...';
+      const escaped = esc(snippet);
+      return escaped.replace(
+        new RegExp(escTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'),
+        m => `<mark>${m}</mark>`
+      );
     }
 
     // COMMENT: Ensure every scrollable region only shows scrollbars while in motion.

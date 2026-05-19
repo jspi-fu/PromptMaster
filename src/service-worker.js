@@ -228,8 +228,8 @@ async function checkProviderPermissions() {
 
     return providersMap;
   } catch (error) {
-    console.error('Error checking permissions:', error);
-    return null; // Return null or an empty object {} to indicate failure
+    console.error('[PromptManager] Error checking permissions:', error);
+    return {}; // Return empty object so callers can safely iterate
   }
 }
 

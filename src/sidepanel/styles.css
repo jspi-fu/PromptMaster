@@ -223,6 +223,25 @@ html::-webkit-scrollbar {
     font-size: 14px;
   }
 
+  /* COMMENT: 搜索匹配预览样式 */
+  .search-match-preview {
+    font-size: 12px;
+    color: #94a3b8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    margin-left: 2px;
+    line-height: 1.4;
+  }
+
+  .search-match-preview mark {
+    background-color: rgba(250, 204, 21, 0.35);
+    color: inherit;
+    padding: 0;
+    border-radius: 2px;
+  }
+
   #prompt-list button {
     margin-left: 5px;
     margin-top: 3px;
@@ -601,6 +620,13 @@ html.force-dark .llm-pill.icon-only:hover .llm-pill-icon {
   :root:not(.force-light) #prompt-list button:hover {
     background-color: var(--dark-hover-bg);
   }
+  /* COMMENT: 暗色模式下搜索匹配预览样式 */
+  :root:not(.force-light) .search-match-preview {
+    color: #64748b;
+  }
+  :root:not(.force-light) .search-match-preview mark {
+    background-color: rgba(250, 204, 21, 0.25);
+  }
 
     /* Info banner unified dark theme */
     :root:not(.force-light) .info-banner {
@@ -709,6 +735,13 @@ html.force-dark #prompt-list li {
 }
 html.force-dark #prompt-list button:hover {
   background-color: var(--dark-hover-bg);
+}
+/* COMMENT: 强制暗色模式下搜索匹配预览样式 */
+html.force-dark .search-match-preview {
+  color: #64748b;
+}
+html.force-dark .search-match-preview mark {
+  background-color: rgba(250, 204, 21, 0.25);
 }
 html.force-dark .info-banner {
   background-color: var(--dark-card-bg);

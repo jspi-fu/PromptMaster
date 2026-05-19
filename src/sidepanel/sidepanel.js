@@ -4,6 +4,7 @@
 import * as PromptStorage from '../promptStorage.js';
 import { exportPrompts, importPrompts } from '../importExport.js';
 import { initI18n, t } from '../i18n.js';
+import { buildSearchPreviewHtml } from '../utils.js';
 
 // COMMENT: Track forced dark mode state to sync with floating mode
 let isDarkModeForced = false;
@@ -21,7 +22,7 @@ async function loadThemePreference() {
     isDarkModeForced = result.forceDarkMode === true;
     applyTheme();
   } catch (err) {
-    // Ignore errors
+    console.warn('[PromptManager] Failed to load theme preference:', err);
   }
 }
 
@@ -282,16 +283,46 @@ async function renderPermissionsGate() {
   }
 }
 
+// COMMENT: 创建搜索匹配预览元素，展示匹配的片段并高亮关键词
+// 核心逻辑复用 utils.js 的 buildSearchPreviewHtml
+function createSearchMatchPreview(searchTerm, prompt) {
+  const normalizedTerm = (searchTerm || '').trim().toLowerCase();
+  if (!normalizedTerm) return null;
+
+  const title = String(prompt?.title || '').toLowerCase();
+  const content = String(prompt?.content || '');
+  const tags = Array.isArray(prompt?.tags) ? prompt.tags.join(', ') : '';
+
+  const html = buildSearchPreviewHtml(normalizedTerm, title, content, tags);
+  if (!html) return null;
+
+  const preview = document.createElement('div');
+  preview.className = 'search-match-preview';
+  preview.innerHTML = html;
+  return preview;
+}
+
 // COMMENT: 创建单个提示词列表项
-function createPromptItem(prompt, index) {
+function createPromptItem(prompt, index, searchTerm) {
   const li = document.createElement('li');
+  // COMMENT: 标题+预览的纵向容器
+  const textWrap = document.createElement('div');
+  textWrap.style.flex = '1';
+  textWrap.style.minWidth = '0';
   const titleSpan = document.createElement('span');
   titleSpan.textContent = prompt.title;
   titleSpan.style.margin = '2px';
   titleSpan.style.padding = '3px';
   titleSpan.style.verticalAlign = 'middle';
   titleSpan.style.display = 'inline-block';
-  li.appendChild(titleSpan);
+  textWrap.appendChild(titleSpan);
+
+  // COMMENT: 搜索模式下显示匹配内容预览
+  const preview = createSearchMatchPreview(searchTerm, prompt);
+  if (preview) {
+    textWrap.appendChild(preview);
+  }
+  li.appendChild(textWrap);
 
   // COMMENT: Copy button (revealed on hover)
   const copyBtn = document.createElement('button');
@@ -498,7 +529,7 @@ function displayPrompts(prompts) {
     visiblePrompts.forEach(prompt => {
       const index = prompts.findIndex(item => item?.uuid === prompt?.uuid);
       if (index !== -1) {
-        promptList.appendChild(createPromptItem(prompt, index));
+        promptList.appendChild(createPromptItem(prompt, index, currentSearchTerm));
       }
     });
     return;

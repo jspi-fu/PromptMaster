@@ -311,7 +311,7 @@
       padding-bottom: 10px; /* reserve space for bottom menu; ensure last item fully visible above it */
       display: flex; /* allow children (list items container or forms) to flex */
       flex-direction: column;
-      padding-bottom: 64px; /* COMMENT: increase reserved space to avoid overlap with bottom menu */
+      padding-bottom: 48px; /* COMMENT: increase reserved space to avoid overlap with bottom menu */
     }
     #${SELECTORS.ROOT} .opm-prompt-list.opm-visible {
       opacity: 1;
@@ -528,6 +528,31 @@
     #${SELECTORS.ROOT} .opm-prompt-list-item.opm-dark:hover {
       background-color: #2d3748;
       transform: translateY(-2px);
+    }
+    /* COMMENT: 搜索匹配预览样式 */
+    #${SELECTORS.ROOT} .opm-search-preview {
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+      line-height: 1.4;
+      margin-top: 1px;
+    }
+    #${SELECTORS.ROOT} .opm-search-preview.opm-light {
+      color: #94a3b8;
+    }
+    #${SELECTORS.ROOT} .opm-search-preview.opm-dark {
+      color: #64748b;
+    }
+    #${SELECTORS.ROOT} .opm-search-preview mark {
+      background-color: rgba(250, 204, 21, 0.35);
+      color: inherit;
+      padding: 0;
+      border-radius: 2px;
+    }
+    #${SELECTORS.ROOT} .opm-search-preview.opm-dark mark {
+      background-color: rgba(250, 204, 21, 0.25);
     }
     /* Drag-and-drop placeholder to displace items during reordering */
     #${SELECTORS.ROOT} .opm-drop-placeholder {

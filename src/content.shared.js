@@ -275,11 +275,22 @@
               }
             }
           });
-          const text = createEl('div', { styles: { flex: '1' } });
+          // COMMENT: 标题+预览的纵向容器
+          const textWrap = createEl('div', { styles: { flex: '1', minWidth: '0' } });
+          const text = createEl('div');
           text.textContent = prompt.title;
-          item.appendChild(text);
+          textWrap.appendChild(text);
+          // COMMENT: 搜索匹配预览元素（默认隐藏）
+          const preview = createEl('div', {
+            className: `opm-search-preview opm-${getMode()}`,
+            styles: { display: 'none' }
+          });
+          textWrap.appendChild(preview);
+          item.appendChild(textWrap);
           item.dataset.title = prompt.title.toLowerCase();
           item.dataset.content = prompt.content.toLowerCase();
+          item.dataset.contentRaw = prompt.content;
+          item.dataset.tagsRaw = Array.isArray(prompt.tags) ? prompt.tags.join(', ') : '';
           item.dataset.tags = Array.isArray(prompt.tags) ? prompt.tags.map(t => String(t).toLowerCase()).join(' ') : '';
           item.dataset.tagsList = JSON.stringify(Array.isArray(prompt.tags) ? prompt.tags.map(t => String(t).toLowerCase()) : []);
           return item;
@@ -305,6 +316,8 @@
           item.dataset.index = idx;
           item.dataset.title = prompt.title.toLowerCase();
           item.dataset.content = prompt.content.toLowerCase();
+          item.dataset.contentRaw = prompt.content;
+          item.dataset.tagsRaw = Array.isArray(prompt.tags) ? prompt.tags.join(', ') : '';
           item.dataset.tags = Array.isArray(prompt.tags) ? prompt.tags.map(t => String(t).toLowerCase()).join(' ') : '';
           item.dataset.tagsList = JSON.stringify(Array.isArray(prompt.tags) ? prompt.tags.map(t => String(t).toLowerCase()) : []);
 
@@ -336,10 +349,16 @@
 
           reorder?.wireItem(item, idx, dragHandle);
 
-          const info = createEl('div', { styles: { display: 'flex', flexDirection: 'column', flex: '1', gap: '2px' } });
+          const info = createEl('div', { styles: { display: 'flex', flexDirection: 'column', flex: '1', gap: '2px', minWidth: '0' } });
           const text = createEl('div', { styles: { flex: '0 0 auto' } });
           text.textContent = prompt.title;
           info.appendChild(text);
+          // COMMENT: 搜索匹配预览元素（默认隐藏，由 filterPromptItems 控制显隐与内容）
+          const preview = createEl('div', {
+            className: `opm-search-preview opm-${getMode()}`,
+            styles: { display: 'none' }
+          });
+          info.appendChild(preview);
 
           const actions = createEl('div', { className: 'opm-edit-only', styles: { display: 'flex', gap: '4px', flex: '0 0 auto' } });
           const editIcon = Elements.createIconButton('edit', (e) => { e.stopPropagation(); window.PromptUIManager.showEditForm(prompt); });
@@ -681,7 +700,7 @@
               tagsHost.replaceWith(bar);
               window.PromptUIManager.filterByTag(selected);
               window.ScrollVisibilityManager?.observe(bar);
-            } catch (_) { tagsHost.style.display = 'none'; }
+            } catch (err) { console.warn('[PromptManager] Tags bar init failed:', err); tagsHost.style.display = 'none'; }
           })();
           return content;
         },
@@ -710,7 +729,15 @@
             tagsBlock.append(label, tagInput.element);
           }
 
-          const saveBtn = createEl('button', { innerHTML: chrome.i18n.getMessage('addPrompt'), className: `opm-button opm-${getMode()}` });
+          const btnContainer = createEl('div', { styles: { display: 'flex', gap: '8px', marginTop: '4px' } });
+
+          const cancelBtn = createEl('button', { innerHTML: chrome.i18n.getMessage('cancel'), className: `opm-button opm-${getMode()}`, styles: { backgroundColor: '#9CA3AF', flex: '1' } });
+          cancelBtn.addEventListener('click', async e => {
+            e.stopPropagation();
+            window.PanelRouter.mount(window.PanelView.LIST);
+          });
+
+          const saveBtn = createEl('button', { innerHTML: chrome.i18n.getMessage('addPrompt'), className: `opm-button opm-${getMode()}`, styles: { flex: '1' } });
           saveBtn.addEventListener('click', async e => {
             e.stopPropagation();
             const t = titleIn.value.trim(), c = contentArea.value.trim();
@@ -721,9 +748,11 @@
             window.PanelRouter.mount(window.PanelView.LIST);
           });
 
+          btnContainer.append(cancelBtn, saveBtn);
+
           form.append(titleIn, contentArea);
           if (tagsBlock) form.append(tagsBlock);
-          form.append(saveBtn);
+          form.append(btnContainer);
           form.addEventListener('click', e => e.stopPropagation());
           return form;
         },
@@ -1107,7 +1136,8 @@
               tagsHost.replaceWith(bar);
               window.ScrollVisibilityManager?.observe(bar);
               window.PromptUIManager.filterByTag(selected);
-            } catch (_) {
+            } catch (err) {
+              console.warn('[PromptManager] Edit view tags bar init failed:', err);
               tagsHost.style.display = 'none';
             }
           })();
