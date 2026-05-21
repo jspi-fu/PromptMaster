@@ -16,6 +16,50 @@ export function escapeHTML(s) {
 }
 
 /**
+ * COMMENT: 计算搜索匹配度评分。
+ * 权重：标题 > 标签 > 内容。精确/前缀匹配加分，位置靠前加分。
+ *
+ * @param {string} searchTerm  搜索关键词（已小写化）
+ * @param {string} title       标题（小写）
+ * @param {string} tags        标签（小写，空格分隔）
+ * @param {string} content     内容（小写）
+ * @returns {number} 匹配分数，不匹配返回 0
+ */
+export function computeMatchScore(searchTerm, title, tags, content) {
+  if (!searchTerm) return 0;
+  let score = 0;
+
+  // Title match (highest weight)
+  const titleIdx = title.indexOf(searchTerm);
+  if (titleIdx !== -1) {
+    let s = 100;
+    if (titleIdx === 0) s *= 1.5; // prefix bonus
+    if (title === searchTerm) s *= 2; // exact bonus
+    s *= Math.max(0.2, 1 - titleIdx / 100); // position decay
+    score += s;
+  }
+
+  // Tags match (medium weight)
+  const tagsIdx = tags.indexOf(searchTerm);
+  if (tagsIdx !== -1) {
+    let s = 50;
+    if (tagsIdx === 0 || tags[tagsIdx - 1] === ' ') s *= 1.3; // word-start bonus
+    s *= Math.max(0.3, 1 - tagsIdx / 100);
+    score += s;
+  }
+
+  // Content match (lowest weight)
+  const contentIdx = content.indexOf(searchTerm);
+  if (contentIdx !== -1) {
+    let s = 10;
+    s *= Math.max(0.5, 1 - contentIdx / 500);
+    score += s;
+  }
+
+  return score;
+}
+
+/**
  * COMMENT: 生成搜索匹配预览 HTML 片段。
  * 在标题匹配时不返回预览（标题本身已展示）。
  * 优先匹配内容，其次匹配标签。

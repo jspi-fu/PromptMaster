@@ -345,6 +345,8 @@
       padding-top: 4px;
       padding-bottom: 24px; /* COMMENT: extra space so the last item is not obscured by bottom menu */
       flex: 1 1 auto; /* ensure items take available space and scroll internally */
+      display: flex;
+      flex-direction: column;
     }
     #${SELECTORS.ROOT} .opm-prompt-list-items.opm-light {
       background-color: var(--light-bg);
@@ -925,6 +927,125 @@
     }
     #${SELECTORS.ROOT}.opm-dark .opm-chat-save-prompt:hover {
       background-color: var(--dark-hover-bg);
+    }
+
+    /* Markdown rendered content styles */
+    #${SELECTORS.ROOT} .opm-chat-content p {
+      margin: 0 0 8px 0;
+    }
+    #${SELECTORS.ROOT} .opm-chat-content p:last-child {
+      margin-bottom: 0;
+    }
+    #${SELECTORS.ROOT} .opm-chat-content code {
+      background-color: rgba(0, 0, 0, 0.06);
+      padding: 1px 4px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+    #${SELECTORS.ROOT}.opm-dark .opm-chat-content code {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    #${SELECTORS.ROOT} .opm-chat-content pre {
+      background-color: #f6f8fa;
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin: 8px 0;
+      overflow-x: auto;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    #${SELECTORS.ROOT}.opm-dark .opm-chat-content pre {
+      background-color: #161b22;
+    }
+    #${SELECTORS.ROOT} .opm-chat-content pre code {
+      background: none;
+      padding: 0;
+      border-radius: 0;
+      font-size: inherit;
+    }
+    #${SELECTORS.ROOT} .opm-chat-content ul,
+    #${SELECTORS.ROOT} .opm-chat-content ol {
+      margin: 4px 0;
+      padding-left: 20px;
+    }
+    #${SELECTORS.ROOT} .opm-chat-content li {
+      margin: 2px 0;
+    }
+    #${SELECTORS.ROOT} .opm-chat-content blockquote {
+      border-left: 3px solid var(--primary);
+      margin: 8px 0;
+      padding: 4px 12px;
+      color: #64748b;
+      background-color: rgba(0, 0, 0, 0.02);
+      border-radius: 0 6px 6px 0;
+    }
+    #${SELECTORS.ROOT}.opm-dark .opm-chat-content blockquote {
+      color: #94a3b8;
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+    #${SELECTORS.ROOT} .opm-chat-content h1,
+    #${SELECTORS.ROOT} .opm-chat-content h2,
+    #${SELECTORS.ROOT} .opm-chat-content h3,
+    #${SELECTORS.ROOT} .opm-chat-content h4,
+    #${SELECTORS.ROOT} .opm-chat-content h5,
+    #${SELECTORS.ROOT} .opm-chat-content h6 {
+      margin: 12px 0 4px 0;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+    #${SELECTORS.ROOT} .opm-chat-content h1:first-child,
+    #${SELECTORS.ROOT} .opm-chat-content h2:first-child,
+    #${SELECTORS.ROOT} .opm-chat-content h3:first-child,
+    #${SELECTORS.ROOT} .opm-chat-content h4:first-child,
+    #${SELECTORS.ROOT} .opm-chat-content h5:first-child,
+    #${SELECTORS.ROOT} .opm-chat-content h6:first-child {
+      margin-top: 0;
+    }
+    #${SELECTORS.ROOT} .opm-chat-content h1 { font-size: 1.3em; }
+    #${SELECTORS.ROOT} .opm-chat-content h2 { font-size: 1.2em; }
+    #${SELECTORS.ROOT} .opm-chat-content h3 { font-size: 1.1em; }
+    #${SELECTORS.ROOT} .opm-chat-content table {
+      border-collapse: collapse;
+      margin: 8px 0;
+      font-size: 12px;
+      width: 100%;
+    }
+    #${SELECTORS.ROOT} .opm-chat-content th,
+    #${SELECTORS.ROOT} .opm-chat-content td {
+      border: 1px solid #e2e8f0;
+      padding: 6px 10px;
+      text-align: left;
+    }
+    #${SELECTORS.ROOT}.opm-dark .opm-chat-content th,
+    #${SELECTORS.ROOT}.opm-dark .opm-chat-content td {
+      border-color: var(--dark-border);
+    }
+    #${SELECTORS.ROOT} .opm-chat-content th {
+      background-color: #f8fafc;
+      font-weight: 600;
+    }
+    #${SELECTORS.ROOT}.opm-dark .opm-chat-content th {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+    #${SELECTORS.ROOT} .opm-chat-content hr {
+      border: none;
+      border-top: 1px solid #e2e8f0;
+      margin: 12px 0;
+    }
+    #${SELECTORS.ROOT}.opm-dark .opm-chat-content hr {
+      border-top-color: var(--dark-border);
+    }
+    #${SELECTORS.ROOT} .opm-chat-content a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+    #${SELECTORS.ROOT} .opm-chat-content a:hover {
+      text-decoration: underline;
+    }
+    #${SELECTORS.ROOT} .opm-chat-content img {
+      max-width: 100%;
+      border-radius: 6px;
     }
 
     #${SELECTORS.ROOT} .opm-chat-input-area {

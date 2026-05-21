@@ -4,7 +4,7 @@
 import * as PromptStorage from '../promptStorage.js';
 import { exportPrompts, importPrompts } from '../importExport.js';
 import { initI18n, t } from '../i18n.js';
-import { buildSearchPreviewHtml } from '../utils.js';
+import { buildSearchPreviewHtml, computeMatchScore } from '../utils.js';
 
 // COMMENT: Track forced dark mode state to sync with floating mode
 let isDarkModeForced = false;
@@ -526,6 +526,12 @@ function displayPrompts(prompts) {
       promptList.appendChild(createNoResultsItem());
       return;
     }
+    const term = currentSearchTerm.trim().toLowerCase();
+    visiblePrompts.sort((a, b) => {
+      const scoreA = computeMatchScore(term, (a.title || '').toLowerCase(), (Array.isArray(a.tags) ? a.tags.map(t => String(t).toLowerCase()).join(' ') : ''), (a.content || '').toLowerCase());
+      const scoreB = computeMatchScore(term, (b.title || '').toLowerCase(), (Array.isArray(b.tags) ? b.tags.map(t => String(t).toLowerCase()).join(' ') : ''), (b.content || '').toLowerCase());
+      return scoreB - scoreA;
+    });
     visiblePrompts.forEach(prompt => {
       const index = prompts.findIndex(item => item?.uuid === prompt?.uuid);
       if (index !== -1) {

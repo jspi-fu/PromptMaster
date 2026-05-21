@@ -870,6 +870,12 @@
       });
     }, 300);
 
+    // Configure marked for Markdown rendering
+    const renderMarkdown = (text) => {
+      if (typeof marked === 'undefined' || !marked.parse) return text.replace(/\n/g, '<br>');
+      return marked.parse(text, { gfm: true, breaks: true });
+    };
+
     // Add message to chat
     const addMessage = (container, role, content, isStreaming = false) => {
       const dark = isDarkMode();
@@ -892,7 +898,7 @@
 
       const contentDiv = createEl('div', {
         className: 'opm-chat-content',
-        innerHTML: content.replace(/\n/g, '<br>')
+        innerHTML: role === 'assistant' ? renderMarkdown(content) : content.replace(/\n/g, '<br>')
       });
 
       let cursor = null;
@@ -978,7 +984,7 @@
           const data = await response.json();
           const assistantMessage = data.choices?.[0]?.message?.content || '无响应';
           messages.push({ role: 'assistant', content: assistantMessage });
-          contentDiv.innerHTML = assistantMessage.replace(/\n/g, '<br>');
+          contentDiv.innerHTML = renderMarkdown(assistantMessage);
           persistHistory();
           messagesContainer.scrollTop = messagesContainer.scrollHeight;
           return;
@@ -998,14 +1004,8 @@
 
           const cursorEl = contentDiv.querySelector('.opm-chat-stream-cursor');
           if (cursorEl) cursorEl.remove();
-          // COMMENT: 使用 textContent + 手动处理换行，避免频繁 innerHTML 解析
-          const textNode = document.createTextNode(acc);
-          contentDiv.textContent = '';
-          const lines = acc.split(/\n/);
-          for (let i = 0; i < lines.length; i++) {
-            if (i > 0) contentDiv.appendChild(createEl('br'));
-            if (lines[i]) contentDiv.appendChild(document.createTextNode(lines[i]));
-          }
+          // COMMENT: 使用 marked.parse() 渲染 Markdown
+          contentDiv.innerHTML = renderMarkdown(acc);
           const nextCursor = createEl('span', {
             className: 'opm-chat-stream-cursor',
             innerHTML: '▊',
@@ -1057,12 +1057,7 @@
         const cursorEl = contentDiv.querySelector('.opm-chat-stream-cursor');
         if (cursorEl) cursorEl.remove();
         // COMMENT: 最终渲染（无光标）
-        const lines = acc.split(/\n/);
-        contentDiv.textContent = '';
-        for (let i = 0; i < lines.length; i++) {
-          if (i > 0) contentDiv.appendChild(createEl('br'));
-          if (lines[i]) contentDiv.appendChild(document.createTextNode(lines[i]));
-        }
+        contentDiv.innerHTML = renderMarkdown(acc);
 
         const assistantMessage = acc || chrome.i18n.getMessage('noResponse');
         messages.push({ role: 'assistant', content: assistantMessage });
@@ -1951,7 +1946,39 @@
       if (!container) return;
       // Combine with active tag filter if present
       const activeTag = (PromptUIManager.activeTagFilter || 'all').toLowerCase();
-      Array.from(container.children).forEach(item => {
+
+      // COMMENT: Compute match score for sorting (title > tags > content)
+      const computeScore = (searchTerm, title, tags, content) => {
+        if (!searchTerm) return 0;
+        let score = 0;
+        const titleIdx = title.indexOf(searchTerm);
+        if (titleIdx !== -1) {
+          let s = 100;
+          if (titleIdx === 0) s *= 1.5;
+          if (title === searchTerm) s *= 2;
+          s *= Math.max(0.2, 1 - titleIdx / 100);
+          score += s;
+        }
+        const tagsIdx = tags.indexOf(searchTerm);
+        if (tagsIdx !== -1) {
+          let s = 50;
+          if (tagsIdx === 0 || tags[tagsIdx - 1] === ' ') s *= 1.3;
+          s *= Math.max(0.3, 1 - tagsIdx / 100);
+          score += s;
+        }
+        const contentIdx = content.indexOf(searchTerm);
+        if (contentIdx !== -1) {
+          let s = 10;
+          s *= Math.max(0.5, 1 - contentIdx / 500);
+          score += s;
+        }
+        return score;
+      };
+
+      // First pass: compute scores and determine visibility
+      const items = Array.from(container.children);
+      const scoredItems = [];
+      items.forEach(item => {
         const matchesSearch = value === ''
           || item.dataset.title?.includes(value)
           || item.dataset.content?.includes(value)
@@ -1964,7 +1991,14 @@
             matchesTag = Array.isArray(tagList) && tagList.includes(activeTag);
           } catch (_) { matchesTag = false; }
         }
-        item.style.display = (matchesSearch && matchesTag) ? 'flex' : 'none';
+        const visible = matchesSearch && matchesTag;
+        item.style.display = visible ? 'flex' : 'none';
+        if (visible && value) {
+          const score = computeScore(value, item.dataset.title || '', item.dataset.tags || '', item.dataset.content || '');
+          scoredItems.push({ item, score });
+        } else {
+          scoredItems.push({ item, score: 0 });
+        }
         // COMMENT: 更新搜索匹配预览
         const previewEl = item.querySelector('.opm-search-preview');
         if (previewEl) {
@@ -1981,6 +2015,19 @@
           }
         }
       });
+
+      // COMMENT: Apply CSS order to sort by match score (higher score = lower order = appears first)
+      if (value) {
+        scoredItems.sort((a, b) => b.score - a.score);
+        scoredItems.forEach((item, index) => {
+          item.item.style.order = index;
+        });
+      } else {
+        scoredItems.forEach(item => {
+          item.item.style.order = '';
+        });
+      }
+
       PromptUIManager.selectedSearchIndex = -1;
     }
 

@@ -47,7 +47,8 @@
                 "utils.js",
                 "llm_providers.json",
                 "default-prompts.json",
-                "system.md"
+                "system.md",
+                "marked.min.js"
             ],
             "matches": [
                 "<all_urls>"

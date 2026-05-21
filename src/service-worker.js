@@ -89,6 +89,7 @@ async function injectScriptsIfNeeded(tabId, tabUrl) {
         "inputBoxHandler.js",
         "content.styles.js",
         "content.shared.js",
+        "marked.min.js",
         "content.js"
       ]
     });
