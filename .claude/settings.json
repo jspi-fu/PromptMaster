@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "files=$(echo $CLAUDE_FILE_PATHS | tr ' ' '\\n' | grep '\\.js$' | tr '\\n' ' '); if [ -n \"$files\" ]; then cd \"$CLAUDE_PROJECT_DIR\" && npx eslint --fix $files 2>/dev/null; fi"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo $CLAUDE_FILE_PATHS | grep -qE '(manifest\\.json|default-prompts\\.json|manifest\\.prod\\.json)' && echo '⚠️ 此文件由构建流程管理，请使用 npm run build:prod 或手动编辑' && exit 1 || exit 0"
+          }
+        ]
+      }
+    ]
+  }
+}

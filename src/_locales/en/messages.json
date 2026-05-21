@@ -627,5 +627,13 @@
   },
   "infoFeatures": {
     "message": "Features"
+  },
+  "promptInserted": {
+    "message": "Inserted: $TITLE$",
+    "placeholders": {
+      "title": {
+        "content": "$1"
+      }
+    }
   }
 }

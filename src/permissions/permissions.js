@@ -1,6 +1,46 @@
 import { importPrompts } from '../promptStorage.js';
 import { t, initI18n } from '../i18n.js';
 
+/**
+ * Show a toast notification instead of alert()
+ */
+function showToast(message, duration = 3000) {
+  const existing = document.querySelector('.pm-toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.className = 'pm-toast';
+  toast.textContent = message;
+  Object.assign(toast.style, {
+    position: 'fixed',
+    bottom: '24px',
+    left: '50%',
+    transform: 'translateX(-50%) translateY(20px)',
+    backgroundColor: '#fff',
+    color: '#333',
+    padding: '10px 20px',
+    borderRadius: '8px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+    fontSize: '14px',
+    zIndex: '2147483647',
+    opacity: '0',
+    transition: 'opacity 0.3s ease, transform 0.3s ease',
+    pointerEvents: 'none',
+    maxWidth: '90vw',
+    textAlign: 'center'
+  });
+  document.body.appendChild(toast);
+  requestAnimationFrame(() => {
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+  });
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(-50%) translateY(20px)';
+    setTimeout(() => toast.remove(), 300);
+  }, duration);
+}
+
 // This script is injected into the page to manage permissions for AI providers
 // It retrieves the providers map from storage and creates elements for each provider
 document.addEventListener('DOMContentLoaded', function () {
@@ -178,7 +218,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 // Persist change; UI will refresh via storage.onChanged listener
                 chrome.storage.local.set({ aiProvidersMap: providersMap });
               } else {
-                alert(t('permissionDenied'));
+                showToast(t('permissionDenied'));
               }
             });
           };
@@ -235,7 +275,7 @@ document.addEventListener('DOMContentLoaded', function () {
           .filter(Boolean);
 
         if (allPatterns.length === 0) {
-          alert(t('noProviderPatterns'));
+          showToast(t('noProviderPatterns'));
           return;
         }
 
@@ -276,12 +316,12 @@ document.addEventListener('DOMContentLoaded', function () {
               chrome.storage.local.set({ aiProvidersMap: updated });
             });
           } else {
-            alert(t('permissionDenied'));
+            showToast(t('permissionDenied'));
           }
         });
       } catch (error) {
         console.error('Failed to grant all permissions:', error);
-        alert(t('permissionError', [error.message]));
+        showToast(t('permissionError', [error.message]));
       }
     });
   }

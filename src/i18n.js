@@ -56,6 +56,14 @@ export function initI18n() {
         }
     });
 
+    // 处理 data-i18n-text（与 data-i18n 相同，用于 info.html 等场景）
+    document.querySelectorAll('[data-i18n-text]').forEach(el => {
+        const key = el.getAttribute('data-i18n-text');
+        if (key) {
+            el.textContent = t(key);
+        }
+    });
+
     // 处理 innerHTML（谨慎使用，仅用于包含链接等复杂内容的元素）
     document.querySelectorAll('[data-i18n-html]').forEach(el => {
         const key = el.getAttribute('data-i18n-html');

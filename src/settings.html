@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 
 <head>
-  <title>信息</title>
+  <title data-i18n="info">信息</title>
   <!-- Link to the main stylesheet for consistent styling -->
   <link rel="stylesheet" href="sidepanel/styles.css">
   <meta charset="UTF-8">
@@ -11,49 +11,43 @@
 <body>
   <div class="title">
     <img class="icon" src="icons/icon128.png" alt="Extension Icon" style="width: 22px; height: 22px;">
-    <h2>信息</h2>
+    <h2 data-i18n="info">信息</h2>
   </div>
 
   <!--Keyboard shortcut-->
   <div id="empty-state" class="shortcut-container">
-    <h3>键盘导航与快捷键</h3>
+    <h3 data-i18n="keyboardNavigation">键盘导航与快捷键</h3>
     <p style="display: flex; align-items: center; margin: 8px 0;">
-      <span style="background-color: #0077B6; color: white; padding: 4px 8px; border-radius: 4px; margin-right: 10px;">
-        悬停/点击
-      </span>
-      <span>打开提示词列表按钮</span>
+      <span style="background-color: #0077B6; color: white; padding: 4px 8px; border-radius: 4px; margin-right: 10px;"
+        data-i18n="hoverClick">悬停/点击</span>
+      <span data-i18n="openPromptList">打开提示词列表按钮</span>
     </p>
     <p style="display: flex; align-items: center; margin: 8px 0;">
       <span style="background-color: #0077B6; color: white; padding: 4px 8px; border-radius: 4px; margin-right: 10px;">
-        ⌘ + ⇧ + P 或 Ctrl + M
-      </span>
-      <span>打开/关闭提示词列表</span>
+        ⌘ + ⇧ + P / Ctrl + M </span>
+      <span data-i18n="openClosePromptList">打开/关闭提示词列表</span>
     </p>
     <p style="display: flex; align-items: center; margin: 8px 0;">
-      <span
-        style="background-color: #0077B6; color: white; padding: 4px 8px; border-radius: 4px; margin-right: 10px;">↑↓</span>
-      <span>导航提示词列表</span>
+      <span style="background-color: #0077B6; color: white; padding: 4px 8px; border-radius: 4px; margin-right: 10px;">↑↓</span>
+      <span data-i18n="navigatePromptList">导航提示词列表</span>
     </p>
     <p style="display: flex; align-items: center; margin: 8px 0;">
-      <span
-        style="background-color: #0077B6; color: white; padding: 4px 8px; border-radius: 4px; margin-right: 10px;">Enter</span>
-      <span>选择提示词</span>
+      <span style="background-color: #0077B6; color: white; padding: 4px 8px; border-radius: 4px; margin-right: 10px;">Enter</span>
+      <span data-i18n="selectPrompt">选择提示词</span>
     </p>
     <p style="display: flex; align-items: center; margin: 8px 0;">
-      <span
-        style="background-color: #0077B6; color: white; padding: 4px 8px; border-radius: 4px; margin-right: 10px;">Esc</span>
-      <span>关闭提示词大师</span>
+      <span style="background-color: #0077B6; color: white; padding: 4px 8px; border-radius: 4px; margin-right: 10px;">Esc</span>
+      <span data-i18n="closePromptMaster">关闭提示词大师</span>
     </p>
   </div>
 
-  <h3 style="margin-bottom: 2px;">可选权限、热角模式、侧边栏！</h3>
-  <p>希望您喜欢！</p>
+  <h3 style="margin-bottom: 2px;" data-i18n="optionalPermissions">可选权限、热角模式、侧边栏！</h3>
+  <p data-i18n="hopeYouLike">希望您喜欢！</p>
 
+  <h3 style="margin-bottom: 2px;" data-i18n="featureRequests">功能请求</h3>
+  <p><span data-i18n="contactMe">在</span> <a href="https://gitee.com/ye_sheng0839" target="_blank">Gitee</a> <span data-i18n="contactMeEnd">上联系我</span></p>
 
-  <h3 style="margin-bottom: 2px;">功能请求</h3>
-  <p>在 <a href="https://gitee.com/ye_sheng0839" target="_blank">Gitee</a> 上联系我</p>
-
-  <a href="/sidepanel/index.html"><button class="main" style="margin-top: 10px;">返回</button></a>
+  <a href="/sidepanel/index.html"><button class="main" style="margin-top: 10px;" data-i18n="back">返回</button></a>
 
   <!-- Add script import -->
   <script type="module" src="settings.js"></script>

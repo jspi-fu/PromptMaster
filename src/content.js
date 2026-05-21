@@ -196,6 +196,48 @@
   window.createEl = createEl;
 
   /* ---------------------------------------------------------------------------
+   * Toast notification utility
+   * -------------------------------------------------------------------------*/
+  const showToast = (message, duration = 2000) => {
+    const toast = createEl('div', {
+      className: 'opm-toast',
+      styles: {
+        position: 'fixed',
+        bottom: '24px',
+        left: '50%',
+        transform: 'translateX(-50%) translateY(20px)',
+        backgroundColor: isDarkMode() ? '#333' : '#fff',
+        color: isDarkMode() ? '#eee' : '#333',
+        padding: '10px 20px',
+        borderRadius: '8px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        fontSize: '14px',
+        zIndex: '2147483647',
+        opacity: '0',
+        transition: 'opacity 0.3s ease, transform 0.3s ease',
+        pointerEvents: 'none',
+        maxWidth: '90vw',
+        textAlign: 'center',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis'
+      },
+      innerHTML: message
+    });
+    document.body.appendChild(toast);
+    requestAnimationFrame(() => {
+      toast.style.opacity = '1';
+      toast.style.transform = 'translateX(-50%) translateY(0)';
+    });
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(-50%) translateY(20px)';
+      setTimeout(() => toast.remove(), 300);
+    }, duration);
+  };
+  window.showToast = showToast;
+
+  /* ---------------------------------------------------------------------------
    * [01] Utility: debounce
    * Provides a simple debounce wrapper to coalesce rapid successive calls.
    * Example: const debouncedFn = debounce(() => console.log('run'), 300);
@@ -2700,6 +2742,7 @@
       const listEl = qs(`#${SELECTORS.PROMPT_LIST}`);
       if (vars.length === 0) {
         await InputBoxHandler.insertPrompt(inputBox, prompt.content, listEl);
+        showToast(chrome.i18n.getMessage('promptInserted', [prompt.title || '']));
         PromptUIManager.hidePromptList(listEl);
         return;
       }
@@ -2710,6 +2753,7 @@
         onSubmit: async values => {
           const processed = state.processor.replaceVariables(prompt.content, values);
           await InputBoxHandler.insertPrompt(inputBox, processed, qs(`#${SELECTORS.PROMPT_LIST}`));
+          showToast(chrome.i18n.getMessage('promptInserted', [prompt.title || '']));
           const activeList = qs(`#${SELECTORS.PROMPT_LIST}`);
           if (activeList) PromptUIManager.hidePromptList(activeList);
           setTimeout(() => {

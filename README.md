@@ -83,6 +83,7 @@
   - 输出位置：`dist/prompt-manager-chrome.zip` 和 `dist/prompt-manager-edge.zip`
 - **添加新平台**：见 [EXTENDING_PLATFORMS.md](docs/EXTENDING_PLATFORMS.md)
 - **架构文档**：见 [DOCUMENTATION.md](docs/DOCUMENTATION.md)
+- **使用 Claude code 修改代码**：将项目内的 `.claude` 目录一同拉取到本地
 
 ## 许可证
 

@@ -627,5 +627,13 @@
   },
   "infoFeatures": {
     "message": "功能"
+  },
+  "promptInserted": {
+    "message": "已插入: $TITLE$",
+    "placeholders": {
+      "title": {
+        "content": "$1"
+      }
+    }
   }
 }

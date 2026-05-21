@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(npm install *)",
+      "Bash(npx eslint *)"
+    ]
+  }
+}

@@ -1,7 +1,6 @@
 // settings.js
-// COMMENT: Settings page script - currently minimal as main settings are in content UI
+import { initI18n } from './i18n.js';
 
-console.log('settings.js loaded');
-
-// COMMENT: Settings page is primarily informational; main settings UI is in content script
-// If buttons are added to settings.html in the future, add their handlers here
+document.addEventListener('DOMContentLoaded', () => {
+  initI18n();
+});

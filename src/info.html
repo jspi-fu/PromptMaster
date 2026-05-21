@@ -81,10 +81,15 @@
     gap: 6px;
   }
 
-  .pm-link:hover,
+  .pm-link:hover {
+    text-decoration: underline;
+  }
+
   .pm-link:focus {
     text-decoration: underline;
-    outline: none;
+    outline: 2px solid var(--primary, #3674B5);
+    outline-offset: 2px;
+    border-radius: 2px;
   }
 
   @media (max-width: 360px) {
