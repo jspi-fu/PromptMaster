@@ -21,6 +21,7 @@ yarn.lock
 .gitignore
 blogwrite/
 .trae/
+.claude/
 
 # Debug logs
 debug.log
@@ -39,4 +40,3 @@ public/files/
 *.tmp
 *.temp 
 temp/
-CLAUDE.md
