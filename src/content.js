@@ -1677,7 +1677,7 @@
       active: true,
       id: 'info-banner-v2', // Change ID to re-show to users who dismissed it
       html: `<span>
-      <strong>更新:</strong> 选中文本可右键保存为提示词 & 提示词生成功能! </br></br>
+      <strong>更新:</strong> 能够根据内容进行搜索!鼠标悬停可以预览提示词内容~ </br>
     </span>`
     };
 
@@ -1937,6 +1937,70 @@
       if (bottomMenu) bottomMenu.style.display = visible ? 'flex' : 'none';
       // COMMENT: Panel reserves space for the absolute bottom menu; remove it when hidden.
       panel.style.paddingBottom = visible ? '48px' : '0px';
+    }
+
+    // COMMENT: Hover preview panel management
+    static _previewTimer = null;
+    static _previewPanel = null;
+
+    static showPreview(itemEl, content) {
+      PromptUIManager.hidePreview();
+      if (!content) return;
+
+      PromptUIManager._previewTimer = setTimeout(() => {
+        const panel = document.createElement('div');
+        panel.className = `opm-preview-panel opm-${getMode()}`;
+        panel.textContent = content;
+
+        document.body.appendChild(panel);
+        PromptUIManager._previewPanel = panel;
+
+        // Position the panel near the item
+        const itemRect = itemEl.getBoundingClientRect();
+        const panelWidth = Math.min(400, window.innerWidth - 20);
+        panel.style.width = panelWidth + 'px';
+
+        // Measure after appending to get actual height
+        const panelHeight = panel.offsetHeight;
+        const spaceBelow = window.innerHeight - itemRect.bottom;
+        const spaceAbove = itemRect.top;
+
+        // Vertical: prefer below, fallback to above
+        if (spaceBelow >= panelHeight + 8) {
+          panel.style.top = (itemRect.bottom + 6) + 'px';
+        } else if (spaceAbove >= panelHeight + 8) {
+          panel.style.top = (itemRect.top - panelHeight - 6) + 'px';
+        } else {
+          // Not enough space either way, place below with scroll
+          panel.style.top = (itemRect.bottom + 6) + 'px';
+          panel.style.maxHeight = (spaceBelow - 12) + 'px';
+        }
+
+        // Horizontal: align with item, clamp to viewport
+        let left = itemRect.left;
+        if (left + panelWidth > window.innerWidth - 10) {
+          left = window.innerWidth - panelWidth - 10;
+        }
+        if (left < 10) left = 10;
+        panel.style.left = left + 'px';
+
+        // Close on click
+        panel.addEventListener('click', (e) => {
+          e.stopPropagation();
+          PromptUIManager.hidePreview();
+        });
+      }, 500);
+    }
+
+    static hidePreview() {
+      if (PromptUIManager._previewTimer) {
+        clearTimeout(PromptUIManager._previewTimer);
+        PromptUIManager._previewTimer = null;
+      }
+      if (PromptUIManager._previewPanel) {
+        PromptUIManager._previewPanel.remove();
+        PromptUIManager._previewPanel = null;
+      }
     }
 
     // COMMENT: Centralized prompt items filter used by search input

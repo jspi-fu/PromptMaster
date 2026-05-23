@@ -1,4 +1,4 @@
-## 提示词大师（Prompt Master）— 架构与开发者指南 (v2.7.2)
+## 提示词大师（Prompt Master）— 架构与开发者指南 (v2.7.3)
 
 本文档解释了 `src` 目录中 Chrome 扩展的结构、端到端工作原理以及主要逻辑所在位置。涵盖后台/Service Worker 编排、内容脚本和 UI 层、存储/版本管理、权限引导、侧边栏应用以及提供商集成，并补充“提示词生成器”的实现与数据流。
 
@@ -28,7 +28,7 @@
 {
     "manifest_version": 3,
     "name": "提示词大师",
-    "version": "2.7.2",
+    "version": "2.7.3",
     "permissions": ["sidePanel","storage","tabs","scripting","activeTab","contextMenus"],
     "side_panel": { "default_path": "sidepanel/index.html" },
     "background": { "service_worker": "service-worker.js", "type": "module" },
@@ -161,8 +161,9 @@ UI 注入支持两种模式：
 
 - **OpenAI 兼容接口**：通过本机配置的 `chatApiKey` / `chatBaseUrl` / `chatModelName` 调用 `POST {baseUrl}/chat/completions`。
 - **stream 流式输出**：请求使用 `stream: true`，并解析 SSE 数据行（`data: {...}` / `data: [DONE]`），边接收边更新气泡内容。
-- **模型回复一键保存为提示词**：每条非流式完成的 assistant 回复会带“保存为提示词”按钮，点击后跳转到 CREATE 表单并预填内容。
-- **对话上下文本地持久化**：对话历史存储在 `chrome.storage.local` 的键 `pm_chat_history_v1` 下，直到用户点击“重置”才清空。用于在面板重建/页面刷新后恢复上下文。
+- **Markdown 渲染**：助手回复支持完整的 Markdown 渲染（标题、代码块、列表、表格、引用等），使用 `marked.min.js`（v14.0.0）解析。用户消息保持纯文本换行。
+- **模型回复一键保存为提示词**：每条非流式完成的 assistant 回复会带”保存为提示词”按钮，点击后跳转到 CREATE 表单并预填内容。
+- **对话上下文本地持久化**：对话历史存储在 `chrome.storage.local` 的键 `pm_chat_history_v1` 下，直到用户点击”重置”才清空。用于在面板重建/页面刷新后恢复上下文。
 - **取消闲置自动收回**：通过全局开关 `window.PROMPT_DISABLE_AUTO_CLOSE = true` 禁用面板的自动关闭计时器，避免对话中途被收起。
 
 ## 站点输入检测和插入 (`inputBoxHandler.js`)
@@ -254,11 +255,38 @@ const handleProviderClick = function (event) {
 - `content.styles.js` 在单个根（`#opm-root`）下将所有 CSS 注入到页面，具有浅色/深色变体。
 - 当前默认策略为：**滚动条永久隐藏**（仅保留滚动能力），以保持 UI 视觉更简洁。
 - 内容 UI 和侧边栏共享一致的颜色系统。
-- **CSS 变量系统**：所有主题颜色通过 CSS 自定义属性（变量）集中管理，定义在 `:root` 作用域以确保全局可访问（包括弹窗等不在 `#opm-root` 内的元素）。
+- **CSS 变量系统**：所有主题颜色通过 CSS 自定义属性（变量）集中管理，定义在 `:root` 作用域以确保全局可访问（包括弹窗等不在 `#opm-root` 内的元素）。变量分为以下类别：
+  - 主题色：`--primary`, `--hover-primary`, `--primary-alpha-hover/focus/active`
+  - 背景色：`--light-bg`, `--dark-bg`, `--light-surface`, `--dark-surface`, `--light-card-bg`, `--dark-card-bg`
+  - 文字色：`--light-text`, `--dark-text`, `--light-text-secondary`, `--dark-text-secondary`
+  - 边框色：`--light-border`, `--dark-border`
+  - 输入框：`--input-light-bg`, `--input-dark-bg`, `--input-light-border`, `--input-dark-border`
+  - 标签：`--tag-selected-bg`, `--tag-selected-border`
+  - 搜索高亮：`--search-highlight`, `--search-highlight-dark`
 - **暗色主题配色**：主色为黑色 (`#0F0F0F`)，辅色为灰色系 (`#1A1A1A`, `#2A2A2A`, `#252525`)，强调色为蓝色 (`#3674B5`)。
 - **图标颜色保护**：第三方图标（如 Gitee）保留原始颜色，不应用主题滤镜；仅内部 SVG 图标根据主题自动调整。
 - **动态主题切换**：通过为元素添加/移除 `opm-light` / `opm-dark` 类实现无刷新主题切换，所有颜色通过 CSS 变量自动更新。
 - 图标通过主题感知的 CSS 过滤器着色。
+
+## 搜索增强
+
+搜索功能支持按匹配度评分排序，权重为：标题 > 标签 > 内容。
+
+- **评分函数**：`computeMatchScore()` 在 `utils.js` 中定义，供侧边栏和浮动面板共用。
+- **评分规则**：
+  - 标题匹配：100 分（精确匹配 ×2，前缀匹配 ×1.5，位置衰减）
+  - 标签匹配：50 分（词首匹配加分）
+  - 内容匹配：10 分（位置衰减）
+- **侧边栏实现**：`sidepanel.js` 中 `displayPrompts()` 对过滤后的结果按评分降序排序。
+- **浮动面板实现**：`content.js` 中 `filterPromptItems()` 计算分数后通过 CSS `order` 属性重排 DOM 元素。
+
+## 提示词预览面板
+
+悬停提示词列表项 500ms 后弹出完整内容预览面板。
+
+- **实现位置**：`content.js`（`PromptUIManager.showPreview/hidePreview`）和 `sidepanel.js`（`showPreviewPanel/hidePreviewPanel`）。
+- **定位策略**：使用 `position: fixed`，优先显示在列表项下方，空间不足时显示在上方，水平位置自动对齐。
+- **样式**：`.opm-preview-panel`（浮动面板）/ `.preview-panel`（侧边栏），支持亮/暗主题，带淡入动画和滚动条。
 
 ## 键盘、热角和引导
 
@@ -288,28 +316,33 @@ const handleProviderClick = function (event) {
 
 ## 值得注意的细节和小注意事项
 
-- 后台注入路径检查 URL 模式和权限，但在所有边缘情况下并不严格防止双重注入。代码首先尝试通过 `executeScript(func: ...)` 进行小的“探测”；如果需要，考虑更强的幂等性保护。
-- **外部点击处理 (Outside Click Handling)**: 为解决主要 UI 面板在各类 Portal 元素（如标签建议列表）交互时意外关闭的问题，`OutsideClickCloser` 现在监听 `mousedown` 事件而非 `click`。这提供了更稳健的“意图检测”，防止了事件冒泡带来的误判。
+- 后台注入路径检查 URL 模式和权限，但在所有边缘情况下并不严格防止双重注入。代码首先尝试通过 `executeScript(func: ...)` 进行小的”探测”；如果需要，考虑更强的幂等性保护。
+- **外部点击处理 (Outside Click Handling)**: 为解决主要 UI 面板在各类 Portal 元素（如标签建议列表）交互时意外关闭的问题，`OutsideClickCloser` 现在监听 `mousedown` 事件而非 `click`。这提供了更稳健的”意图检测”，防止了事件冒泡带来的误判。
 - **UI 样式微调**: 针对标签建议列表在浅色模式下的文本可见性问题进行了修复，强制指定了高对比度文本颜色。
 - **CSS 变量全局化**: 主题颜色变量从 `#opm-root` 作用域迁移至 `:root`，确保模型配置弹窗等不在主容器内的元素能正确继承主题颜色，避免透明背景问题。
-- **社区链接颜色修复**: "支持我们的工作"区域的颜色现在通过 `opm-light` / `opm-dark` 类自动切换，确保在主题热切换时颜色同步更新。
+- **社区链接颜色修复**: “支持我们的工作”区域的颜色现在通过 `opm-light` / `opm-dark` 类自动切换，确保在主题热切换时颜色同步更新。
 - **侧边栏图标保护**: 侧边栏页脚图标（Gitee 等）添加 `footer-icon-original` 类，避免在暗色模式下被 `invert(100%)` 滤镜覆盖原始颜色。
+- **Markdown 渲染**: CHAT 视图使用 `marked.min.js`（v14.0.0）渲染助手回复，支持 GFM（GitHub Flavored Markdown）和换行符转换。`marked.min.js` 通过 `web_accessible_resources` 暴露，并在 `service-worker.js` 注入链中位于 `content.js` 之前。
+- **搜索排序**: 浮动面板的搜索排序使用 CSS `order` 属性重排 DOM 元素，需要容器具有 `display: flex; flex-direction: column` 样式。
+- **提示词预览**: 预览面板使用 `position: fixed` 定位，点击预览面板会关闭它（`stopPropagation` 防止触发列表项的 click 事件）。
 - `settings.js` 仍存在历史遗留逻辑（与当前主 UI/侧边栏的导入导出路径不一致）。建议以 `content.shared.js` 的 Settings 视图与侧边栏为准，逐步清理未使用入口。
-- `llm_providers.json` 包含两个名为“Google AI Studio”的条目；无害，但如果您计划在其他地方渲染唯一名称列表，可以通过名称去重。
+- `llm_providers.json` 包含两个名为”Google AI Studio”的条目；无害，但如果您计划在其他地方渲染唯一名称列表，可以通过名称去重。
 
 ## 按文件快速映射
 
-- `manifest.json`: MV3 配置、侧边栏、可选源、WARs。
-- `service-worker.js`: 安装/引导、权限扫描和更新、脚本注入、上下文菜单。
-- `content.styles.js`: 主题令牌、选择器、面板和列表 CSS、导出的 `injectGlobalStyles`。
-- `content.js`: UI 框架、路由、键盘、标签系统、管理器、中介器、变量表单。
+- `manifest.json`: MV3 配置、侧边栏、可选源、WARs（包括 `marked.min.js`）。
+- `service-worker.js`: 安装/引导、权限扫描和更新、脚本注入（包括 `marked.min.js`）、上下文菜单。
+- `content.styles.js`: 主题令牌（35+ CSS 变量）、选择器、面板和列表 CSS、Markdown 样式、导出的 `injectGlobalStyles`。
+- `content.js`: UI 框架、路由、键盘、标签系统、管理器、中介器、变量表单、Markdown 渲染（`renderMarkdown`）、搜索评分排序、预览面板管理。
+- `content.shared.js`: 共享 UI 组件、提示词列表项（含悬停预览事件）、标签系统。
+- `marked.min.js`: Markdown 解析库（v14.0.0），通过 UMD 暴露为 `window.marked`。
 - `inputBoxHandler.js`: 强大的站点检测、contentEditable 和 `textarea` 的插入、追加 vs 覆盖。
 - `promptStorage.js`: 版本化存储、规范化/迁移、CRUD、标签、文件夹、导入/导出、更改事件。
 - `llm_providers.json` / `llm_providers.js`: 提供商注册表和运行时加载器。
-- `sidepanel/index.html|sidepanel.js|styles.css`: 独立的提示词大师面板。
+- `sidepanel/index.html|sidepanel.js|styles.css`: 独立的提示词大师面板（含搜索排序、悬停预览）。
 - `permissions/permissions.html|permissions.js|permissions_custom.css`: 权限管理 UI。
 - `importExport.js`: 到 `promptStorage` 导入/导出的薄桥接。
-- `utils.js`: `generateUUID` 辅助函数。
+- `utils.js`: `generateUUID`、`computeMatchScore`、`buildSearchPreviewHtml` 辅助函数。
 - `info.html`、`changelog.html`: 获取到内容面板视图（HELP/CHANGELOG）中。
 
 ---

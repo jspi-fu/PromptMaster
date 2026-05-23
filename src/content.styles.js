@@ -70,28 +70,55 @@
     styleEl.textContent = `
     /* COMMENT: 全局 CSS 变量，供弹窗等不在 #opm-root 内的元素使用 */
     :root {
+      /* 主题色 */
       --primary: ${THEME_COLORS.primary};
       --primary-gradient-start: ${THEME_COLORS.primaryGradientStart};
       --primary-gradient-end: ${THEME_COLORS.primaryGradientEnd};
       --hover-primary: ${THEME_COLORS.hoverPrimary};
-      --dark-bg: ${THEME_COLORS.darkBackground};
+      /* 主色透明度变体 */
+      --primary-alpha-hover: rgba(54, 116, 181, 0.08);
+      --primary-alpha-focus: rgba(54, 116, 181, 0.12);
+      --primary-alpha-active: rgba(54, 116, 181, 0.25);
+      /* 背景色 */
       --light-bg: ${THEME_COLORS.lightBackground};
-      --dark-border: ${THEME_COLORS.darkBorder};
+      --dark-bg: ${THEME_COLORS.darkBackground};
+      --light-surface: #f1f5f9;
+      --light-surface-alt: #f8fafc;
+      --dark-surface: #1e293b;
+      --dark-surface-alt: #334155;
+      --light-card-bg: #ffffff;
+      --dark-card-bg: #1A1A1A;
+      --light-hover-bg: #e2e8f0;
+      --dark-hover-bg: #252525;
+      --code-light-bg: #f6f8fa;
+      --code-dark-bg: #161b22;
+      /* 边框 */
       --light-border: ${THEME_COLORS.lightBorder};
-      --dark-shadow: ${THEME_COLORS.darkShadow};
+      --dark-border: ${THEME_COLORS.darkBorder};
+      /* 阴影 */
       --light-shadow: ${THEME_COLORS.lightShadow};
-      --input-dark-border: ${THEME_COLORS.inputDarkBorder};
-      --input-light-border: ${THEME_COLORS.inputLightBorder};
-      --input-dark-bg: ${THEME_COLORS.inputDarkBg};
-      --input-light-bg: ${THEME_COLORS.inputLightBg};
-      --input-dark-text: ${THEME_COLORS.inputDarkText};
-      --input-light-text: ${THEME_COLORS.inputLightText};
-      /* 扩展暗色主题变量 */
+      --dark-shadow: ${THEME_COLORS.darkShadow};
+      /* 文字色 */
+      --light-text: #1e293b;
+      --light-text-secondary: #64748b;
+      --light-text-tertiary: #94a3b8;
+      --dark-text: ${THEME_COLORS.inputDarkText};
       --dark-text-secondary: #888888;
       --dark-text-tertiary: #AAAAAA;
+      /* 输入框 */
+      --input-light-border: ${THEME_COLORS.inputLightBorder};
+      --input-dark-border: ${THEME_COLORS.inputDarkBorder};
+      --input-light-bg: ${THEME_COLORS.inputLightBg};
+      --input-dark-bg: ${THEME_COLORS.inputDarkBg};
+      --input-light-text: ${THEME_COLORS.inputLightText};
+      --input-dark-text: ${THEME_COLORS.inputDarkText};
       --dark-input-border: #3A3A3A;
-      --dark-hover-bg: #252525;
-      --dark-card-bg: #1A1A1A;
+      /* 标签 */
+      --tag-selected-bg: #E6F0FF;
+      --tag-selected-border: #BBD3FF;
+      /* 搜索高亮 */
+      --search-highlight: rgba(250, 204, 21, 0.35);
+      --search-highlight-dark: rgba(250, 204, 21, 0.25);
     }
     #${SELECTORS.ROOT} {
       --transition-speed: 0.3s;
@@ -205,11 +232,11 @@
     }
     
     #${SELECTORS.ROOT} .opm-toggle-switch.opm-light {
-      background-color: #cbd5e0;
+      background-color: var(--light-text-tertiary);
     }
-    
+
     #${SELECTORS.ROOT} .opm-toggle-switch.opm-dark {
-      background-color: #4a5568;
+      background-color: var(--dark-text-secondary);
     }
     
     #${SELECTORS.ROOT} .opm-toggle-switch.active.opm-light {
@@ -433,7 +460,7 @@
       cursor: pointer;
       flex: 0 0 auto;
       user-select: none;
-      background-color: #FFFFFF;
+      background-color: var(--light-card-bg);
       color: var(--input-light-text);
     }
     #${SELECTORS.ROOT}.opm-dark .opm-tag-pill-filter {
@@ -443,8 +470,8 @@
     }
     /* Selected state for tag pill */
     #${SELECTORS.ROOT} .opm-tag-pill-filter[aria-pressed="true"] {
-      background-color: #E6F0FF;
-      border-color: #BBD3FF;
+      background-color: var(--tag-selected-bg);
+      border-color: var(--tag-selected-border);
     }
     #${SELECTORS.ROOT}.opm-dark .opm-tag-pill-filter[aria-pressed="true"] {
       background-color: var(--dark-hover-bg);
@@ -524,11 +551,11 @@
       padding: 6px 12px;
     }
     #${SELECTORS.ROOT} .opm-prompt-list-item.opm-light:hover {
-      background-color: #e2e8f0;
+      background-color: var(--light-hover-bg);
       transform: translateY(-2px);
     }
     #${SELECTORS.ROOT} .opm-prompt-list-item.opm-dark:hover {
-      background-color: #2d3748;
+      background-color: var(--dark-surface);
       transform: translateY(-2px);
     }
     /* COMMENT: 搜索匹配预览样式 */
@@ -542,20 +569,64 @@
       margin-top: 1px;
     }
     #${SELECTORS.ROOT} .opm-search-preview.opm-light {
-      color: #94a3b8;
+      color: var(--light-text-tertiary);
     }
     #${SELECTORS.ROOT} .opm-search-preview.opm-dark {
-      color: #64748b;
+      color: var(--light-text-secondary);
     }
     #${SELECTORS.ROOT} .opm-search-preview mark {
-      background-color: rgba(250, 204, 21, 0.35);
+      background-color: var(--search-highlight);
       color: inherit;
       padding: 0;
       border-radius: 2px;
     }
     #${SELECTORS.ROOT} .opm-search-preview.opm-dark mark {
-      background-color: rgba(250, 204, 21, 0.25);
+      background-color: var(--search-highlight-dark);
     }
+
+    /* Prompt hover preview panel */
+    .opm-preview-panel {
+      position: fixed;
+      z-index: 2147483647;
+      max-height: 300px;
+      max-width: 400px;
+      min-width: 200px;
+      overflow-y: auto;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.08);
+      animation: opm-preview-fadein 0.15s ease-out;
+      pointer-events: auto;
+    }
+    .opm-preview-panel.opm-light {
+      background-color: var(--light-card-bg);
+      color: var(--light-text);
+      border: 1px solid var(--light-border);
+    }
+    .opm-preview-panel.opm-dark {
+      background-color: var(--dark-surface);
+      color: var(--light-border);
+      border: 1px solid var(--dark-surface-alt);
+    }
+    .opm-preview-panel::-webkit-scrollbar {
+      width: 5px;
+    }
+    .opm-preview-panel::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.15);
+      border-radius: 3px;
+    }
+    .opm-preview-panel.opm-dark::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+    }
+    @keyframes opm-preview-fadein {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     /* Drag-and-drop placeholder to displace items during reordering */
     #${SELECTORS.ROOT} .opm-drop-placeholder {
       border: 1px dashed var(--light-border);
@@ -703,11 +774,11 @@
       transform: translateY(-2px);
     }
     #${SELECTORS.ROOT} .opm-prompt-list-item.opm-light.opm-keyboard-selected {
-      background-color: #e2e8f0;
+      background-color: var(--light-hover-bg);
       transform: translateY(-2px);
     }
     #${SELECTORS.ROOT} .opm-prompt-list-item.opm-dark.opm-keyboard-selected {
-      background-color: #2d3748;
+      background-color: var(--dark-surface);
       transform: translateY(-2px);
     }
     #${SELECTORS.ROOT}:not(.opm-edit-mode-active) .opm-edit-only {
@@ -885,10 +956,10 @@
     }
     #${SELECTORS.ROOT} .opm-chat-message.opm-chat-assistant {
       align-self: flex-start;
-      background-color: #f1f5f9;
-      color: #1e293b;
+      background-color: var(--light-surface);
+      color: var(--light-text);
       border-radius: 18px 18px 18px 2px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--light-border);
     }
     #${SELECTORS.ROOT}.opm-dark .opm-chat-message.opm-chat-assistant {
       background-color: var(--dark-card-bg);
@@ -903,8 +974,8 @@
       right: -10px;
       width: 24px;
       height: 24px;
-      background-color: #fff;
-      border: 1px solid #e2e8f0;
+      background-color: var(--light-card-bg);
+      border: 1px solid var(--light-border);
       border-radius: 50%;
       display: none;
       align-items: center;
@@ -923,7 +994,7 @@
     }
     #${SELECTORS.ROOT} .opm-chat-save-prompt:hover {
       transform: scale(1.1);
-      background-color: #f8fafc;
+      background-color: var(--light-surface-alt);
     }
     #${SELECTORS.ROOT}.opm-dark .opm-chat-save-prompt:hover {
       background-color: var(--dark-hover-bg);
@@ -947,7 +1018,7 @@
       background-color: rgba(255, 255, 255, 0.1);
     }
     #${SELECTORS.ROOT} .opm-chat-content pre {
-      background-color: #f6f8fa;
+      background-color: var(--code-light-bg);
       border-radius: 8px;
       padding: 10px 12px;
       margin: 8px 0;
@@ -956,7 +1027,7 @@
       line-height: 1.45;
     }
     #${SELECTORS.ROOT}.opm-dark .opm-chat-content pre {
-      background-color: #161b22;
+      background-color: var(--code-dark-bg);
     }
     #${SELECTORS.ROOT} .opm-chat-content pre code {
       background: none;
@@ -976,12 +1047,12 @@
       border-left: 3px solid var(--primary);
       margin: 8px 0;
       padding: 4px 12px;
-      color: #64748b;
+      color: var(--light-text-secondary);
       background-color: rgba(0, 0, 0, 0.02);
       border-radius: 0 6px 6px 0;
     }
     #${SELECTORS.ROOT}.opm-dark .opm-chat-content blockquote {
-      color: #94a3b8;
+      color: var(--light-text-tertiary);
       background-color: rgba(255, 255, 255, 0.03);
     }
     #${SELECTORS.ROOT} .opm-chat-content h1,
@@ -1013,7 +1084,7 @@
     }
     #${SELECTORS.ROOT} .opm-chat-content th,
     #${SELECTORS.ROOT} .opm-chat-content td {
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--light-border);
       padding: 6px 10px;
       text-align: left;
     }
@@ -1022,7 +1093,7 @@
       border-color: var(--dark-border);
     }
     #${SELECTORS.ROOT} .opm-chat-content th {
-      background-color: #f8fafc;
+      background-color: var(--light-surface-alt);
       font-weight: 600;
     }
     #${SELECTORS.ROOT}.opm-dark .opm-chat-content th {
@@ -1030,7 +1101,7 @@
     }
     #${SELECTORS.ROOT} .opm-chat-content hr {
       border: none;
-      border-top: 1px solid #e2e8f0;
+      border-top: 1px solid var(--light-border);
       margin: 12px 0;
     }
     #${SELECTORS.ROOT}.opm-dark .opm-chat-content hr {
@@ -1087,8 +1158,8 @@
     /* Shadcn-style Modal - 使用全局选择器，因为弹窗不在 #opm-root 内 */
     .opm-chat-settings-content {
       border-radius: 12px;
-      border: 1px solid #e2e8f0;
-      background-color: #fff;
+      border: 1px solid var(--light-border);
+      background-color: var(--light-card-bg);
       box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     }
     .opm-chat-settings-content.opm-dark {
@@ -1098,7 +1169,7 @@
     }
     .opm-chat-settings-header {
       padding: 16px 20px;
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid var(--light-surface);
     }
     .opm-chat-settings-header.opm-dark {
       border-bottom-color: var(--dark-border);
@@ -1106,14 +1177,14 @@
     .opm-chat-settings-title {
       font-size: 18px;
       font-weight: 600;
-      color: #0f172a;
+      color: var(--light-text);
     }
     .opm-chat-settings-title.opm-dark {
       color: var(--input-dark-text);
     }
     .opm-chat-settings-desc {
       font-size: 13px;
-      color: #64748b;
+      color: var(--light-text-secondary);
       margin-top: 4px;
     }
     .opm-chat-settings-desc.opm-dark {
@@ -1124,7 +1195,7 @@
     }
     .opm-chat-settings-footer {
       padding: 16px 20px;
-      border-top: 1px solid #f1f5f9;
+      border-top: 1px solid var(--light-surface);
       display: flex;
       justify-content: flex-end;
       gap: 8px;
@@ -1138,7 +1209,7 @@
     .opm-chat-settings-label {
       font-size: 13px;
       font-weight: 500;
-      color: #334155;
+      color: var(--dark-surface-alt);
       margin-bottom: 6px;
       display: block;
     }
@@ -1149,11 +1220,11 @@
       width: 100%;
       padding: 8px 12px;
       border-radius: 6px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--light-border);
       font-size: 13px;
       transition: all 0.2s ease;
-      background-color: #ffffff;
-      color: #0f172a;
+      background-color: var(--light-card-bg);
+      color: var(--light-text);
     }
     .opm-chat-settings-input:focus {
       outline: none;
@@ -1179,26 +1250,26 @@
       border: 1px solid transparent;
     }
     .opm-chat-settings-btn-primary {
-      background-color: #0f172a;
+      background-color: var(--light-text);
       color: #fff;
     }
     .opm-chat-settings-btn-primary:hover {
-      background-color: #1e293b;
+      background-color: var(--dark-surface);
     }
     .opm-chat-settings-btn-primary.opm-dark {
       background-color: var(--input-dark-text);
       color: var(--dark-bg);
     }
     .opm-chat-settings-btn-primary.opm-dark:hover {
-      background-color: #FFFFFF;
+      background-color: var(--light-card-bg);
     }
     .opm-chat-settings-btn-outline {
-      background-color: #fff;
-      border-color: #e2e8f0;
-      color: #0f172a;
+      background-color: var(--light-card-bg);
+      border-color: var(--light-border);
+      color: var(--light-text);
     }
     .opm-chat-settings-btn-outline:hover {
-      background-color: #f8fafc;
+      background-color: var(--light-surface-alt);
     }
     .opm-chat-settings-btn-outline.opm-dark {
       background-color: transparent;
@@ -1215,7 +1286,7 @@
       color: var(--dark-text-secondary);
     }
     .opm-chat-settings-test-btn.opm-light {
-      color: #64748b;
+      color: var(--light-text-secondary);
     }
   `;
     document.head.appendChild(styleEl);

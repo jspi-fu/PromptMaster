@@ -302,6 +302,65 @@ function createSearchMatchPreview(searchTerm, prompt) {
   return preview;
 }
 
+// COMMENT: Hover preview panel management for sidepanel
+let _previewTimer = null;
+let _previewPanel = null;
+
+function showPreviewPanel(li, content) {
+  hidePreviewPanel();
+  if (!content) return;
+
+  _previewTimer = setTimeout(() => {
+    const isDark = document.documentElement.classList.contains('force-dark');
+    const panel = document.createElement('div');
+    panel.className = `preview-panel ${isDark ? 'dark' : 'light'}`;
+    panel.textContent = content;
+
+    document.body.appendChild(panel);
+    _previewPanel = panel;
+
+    const itemRect = li.getBoundingClientRect();
+    const panelWidth = Math.min(400, window.innerWidth - 20);
+    panel.style.width = panelWidth + 'px';
+
+    const panelHeight = panel.offsetHeight;
+    const spaceBelow = window.innerHeight - itemRect.bottom;
+    const spaceAbove = itemRect.top;
+
+    if (spaceBelow >= panelHeight + 8) {
+      panel.style.top = (itemRect.bottom + 6) + 'px';
+    } else if (spaceAbove >= panelHeight + 8) {
+      panel.style.top = (itemRect.top - panelHeight - 6) + 'px';
+    } else {
+      panel.style.top = (itemRect.bottom + 6) + 'px';
+      panel.style.maxHeight = (spaceBelow - 12) + 'px';
+    }
+
+    let left = itemRect.left;
+    if (left + panelWidth > window.innerWidth - 10) {
+      left = window.innerWidth - panelWidth - 10;
+    }
+    if (left < 10) left = 10;
+    panel.style.left = left + 'px';
+
+    panel.addEventListener('click', (e) => {
+      e.stopPropagation();
+      hidePreviewPanel();
+    });
+  }, 500);
+}
+
+function hidePreviewPanel() {
+  if (_previewTimer) {
+    clearTimeout(_previewTimer);
+    _previewTimer = null;
+  }
+  if (_previewPanel) {
+    _previewPanel.remove();
+    _previewPanel = null;
+  }
+}
+
 // COMMENT: 创建单个提示词列表项
 function createPromptItem(prompt, index, searchTerm) {
   const li = document.createElement('li');
@@ -388,16 +447,18 @@ function createPromptItem(prompt, index, searchTerm) {
   });
   li.appendChild(delBtn);
 
-  // COMMENT: Hover interactions for action buttons
+  // COMMENT: Hover interactions for action buttons and preview
   li.addEventListener('mouseenter', () => {
     copyBtn.style.display = 'inline-block';
     editBtn.style.display = 'inline-block';
     delBtn.style.display = 'inline-block';
+    showPreviewPanel(li, prompt.content);
   });
   li.addEventListener('mouseleave', () => {
     copyBtn.style.display = 'none';
     editBtn.style.display = 'none';
     delBtn.style.display = 'none';
+    hidePreviewPanel();
   });
 
   return li;

@@ -3,14 +3,32 @@
 */
 
 :root {
-  --primary-blue: #3A6EA5;
-  --primary-blue-dark: #4B88C7;
-  --primary-blue-darker: #4B88C7;
-  --light-bg: #f8f9fa;
-  --dark-text: #212529;
-  --muted-text: #6c757d;
-  --border-color: #dee2e6;
-  --white: #ffffff;
+  /* 主色（新命名） */
+  --primary: #3A6EA5;
+  --hover-primary: #4B88C7;
+
+  /* 浅色主题 */
+  --light-bg: #F7FAFC;
+  --light-text: #1e293b;
+  --light-text-secondary: #64748b;
+  --light-border: #E2E8F0;
+  --light-card-bg: #ffffff;
+
+  /* 暗色主题（预定义，供暗色模式覆盖） */
+  --dark-bg: #0F0F0F;
+  --dark-text: #E8E8E8;
+  --dark-text-secondary: #888888;
+  --dark-border: #2A2A2A;
+  --dark-input-bg: #1A1A1A;
+  --dark-input-border: #3A3A3A;
+
+  /* 旧变量名别名，兼容现有代码 */
+  --primary-blue: var(--primary);
+  --primary-blue-dark: var(--hover-primary);
+  --primary-blue-darker: var(--hover-primary);
+  --muted-text: var(--light-text-secondary);
+  --border-color: var(--light-border);
+  --white: var(--light-card-bg);
 }
 
 body {

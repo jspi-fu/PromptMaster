@@ -13,6 +13,8 @@
 7. [修改输入框处理逻辑](#7-修改输入框处理逻辑)
 8. [修改提示词生成器配置](#8-修改提示词生成器配置)
 9. [添加新的 UI 组件](#9-添加新的-ui-组件)
+10. [自定义搜索排序](#10-自定义搜索排序)
+11. [自定义提示词预览面板](#11-自定义提示词预览面板)
 
 ---
 
@@ -210,6 +212,46 @@ var THEME_COLORS = window.THEME_COLORS || {
 ```
 
 **注意**：修改 `THEME_COLORS` 后，`:root` 中的 CSS 变量会自动同步更新。
+
+#### CSS 变量完整列表
+
+项目使用 35+ 个 CSS 变量，分为以下类别：
+
+**主题色**：
+- `--primary`：主色调
+- `--hover-primary`：悬停主色
+- `--primary-alpha-hover/focus/active`：主色透明度变体
+
+**背景色**：
+- `--light-bg` / `--dark-bg`：页面背景
+- `--light-surface` / `--dark-surface`：表面色（卡片、区块）
+- `--light-surface-alt` / `--dark-surface-alt`：次级表面色
+- `--light-card-bg` / `--dark-card-bg`：卡片背景
+- `--light-hover-bg` / `--dark-hover-bg`：悬停背景
+- `--code-light-bg` / `--code-dark-bg`：代码块背景
+
+**文字色**：
+- `--light-text` / `--dark-text`：主文字
+- `--light-text-secondary` / `--dark-text-secondary`：次要文字
+- `--light-text-tertiary` / `--dark-text-tertiary`：三级文字
+
+**边框色**：
+- `--light-border` / `--dark-border`：边框
+
+**输入框**：
+- `--input-light-bg` / `--input-dark-bg`：输入框背景
+- `--input-light-border` / `--input-dark-border`：输入框边框
+- `--input-light-text` / `--input-dark-text`：输入框文字
+
+**标签**：
+- `--tag-selected-bg`：标签选中背景
+- `--tag-selected-border`：标签选中边框
+
+**搜索高亮**：
+- `--search-highlight`：搜索匹配高亮（亮色模式）
+- `--search-highlight-dark`：搜索匹配高亮（暗色模式）
+
+**修改颜色时**，只需修改 `:root` 块中的变量定义，所有使用该变量的元素会自动更新。
 
 #### 修改全局 CSS 样式
 
@@ -827,6 +869,116 @@ A:
 
 ---
 
+## 10. 自定义搜索排序
+
+### 文件位置
+- **评分函数**：`src/utils.js`（`computeMatchScore()`）
+- **侧边栏排序**：`src/sidepanel/sidepanel.js`（`displayPrompts()`）
+- **浮动面板排序**：`src/content.js`（`PromptUIManager.filterPromptItems()`）
+
+### 评分规则
+
+当前评分权重：
+- 标题匹配：100 分
+- 标签匹配：50 分
+- 内容匹配：10 分
+
+精确匹配 ×2，前缀匹配 ×1.5，位置靠前分值更高。
+
+### 修改评分权重
+
+在 `src/utils.js` 的 `computeMatchScore()` 函数中修改：
+
+```javascript
+export function computeMatchScore(searchTerm, title, tags, content) {
+  if (!searchTerm) return 0;
+  let score = 0;
+
+  // 标题匹配（权重 100）
+  const titleIdx = title.indexOf(searchTerm);
+  if (titleIdx !== -1) {
+    let s = 100;  // 修改此值调整标题权重
+    if (titleIdx === 0) s *= 1.5;
+    if (title === searchTerm) s *= 2;
+    s *= Math.max(0.2, 1 - titleIdx / 100);
+    score += s;
+  }
+
+  // 标签匹配（权重 50）
+  const tagsIdx = tags.indexOf(searchTerm);
+  if (tagsIdx !== -1) {
+    let s = 50;  // 修改此值调整标签权重
+    // ...
+  }
+
+  // 内容匹配（权重 10）
+  const contentIdx = content.indexOf(searchTerm);
+  if (contentIdx !== -1) {
+    let s = 10;  // 修改此值调整内容权重
+    // ...
+  }
+
+  return score;
+}
+```
+
+**注意**：浮动面板中的 `content.js` 有一份相同的内联实现（因 IIFE 无法 import ES module），修改时需同步更新两处。
+
+---
+
+## 11. 自定义提示词预览面板
+
+### 文件位置
+- **浮动面板预览**：`src/content.js`（`PromptUIManager.showPreview/hidePreview`）
+- **侧边栏预览**：`src/sidepanel/sidepanel.js`（`showPreviewPanel/hidePreviewPanel`）
+- **样式**：`src/content.styles.js`（`.opm-preview-panel`）和 `src/sidepanel/styles.css`（`.preview-panel`）
+
+### 修改延迟时间
+
+默认延迟 500ms，在 `showPreview()` 函数中修改：
+
+```javascript
+PromptUIManager._previewTimer = setTimeout(() => {
+  // ... 创建预览面板
+}, 500);  // 修改此值（毫秒）
+```
+
+### 修改预览面板样式
+
+在 `content.styles.js` 中修改 `.opm-preview-panel` 样式：
+
+```css
+.opm-preview-panel {
+  max-height: 300px;  /* 最大高度 */
+  max-width: 400px;   /* 最大宽度 */
+  min-width: 200px;   /* 最小宽度 */
+  padding: 12px 14px; /* 内边距 */
+  border-radius: 10px; /* 圆角 */
+  font-size: 13px;    /* 字体大小 */
+}
+```
+
+### 修改定位策略
+
+在 `showPreview()` 函数中修改定位逻辑：
+
+```javascript
+// 垂直定位：优先下方，空间不足时上方
+if (spaceBelow >= panelHeight + 8) {
+  panel.style.top = (itemRect.bottom + 6) + 'px';
+} else if (spaceAbove >= panelHeight + 8) {
+  panel.style.top = (itemRect.top - panelHeight - 6) + 'px';
+}
+
+// 水平定位：与列表项对齐
+let left = itemRect.left;
+if (left + panelWidth > window.innerWidth - 10) {
+  left = window.innerWidth - panelWidth - 10;
+}
+```
+
+---
+
 **最后更新**：2026-05-13
-**版本**：v2.7.2
+**版本**：v2.7.3
 
