@@ -737,6 +737,7 @@
     };
 
     const mount = async (view, context = undefined) => {
+      PromptUIManager.hidePreview();
       const definition = VIEW_DEFINITIONS[view];
       if (!definition) return;
       if (definition.requiresContext && !context) {
@@ -1942,47 +1943,57 @@
     // COMMENT: Hover preview panel management
     static _previewTimer = null;
     static _previewPanel = null;
+    static _previewSourceItem = null;
+    static _previewHideTimer = null;
 
     static showPreview(itemEl, content) {
       PromptUIManager.hidePreview();
       if (!content) return;
 
+      PromptUIManager._previewSourceItem = itemEl;
       PromptUIManager._previewTimer = setTimeout(() => {
         const panel = document.createElement('div');
         panel.className = `opm-preview-panel opm-${getMode()}`;
         panel.textContent = content;
+        panel.style.whiteSpace = 'pre-wrap';
 
         document.body.appendChild(panel);
         PromptUIManager._previewPanel = panel;
 
-        // Position the panel near the item
-        const itemRect = itemEl.getBoundingClientRect();
-        const panelWidth = Math.min(400, window.innerWidth - 20);
-        panel.style.width = panelWidth + 'px';
+        // Position: fixed size, left of the main panel with gap
+        const mainPanel = qs(`#${SELECTORS.PROMPT_LIST}`);
+        const mainRect = mainPanel ? mainPanel.getBoundingClientRect() : null;
+        const panelW = 280;
+        const panelH = mainRect ? mainRect.height : 450;
+        const gap = 14;
+        panel.style.width = panelW + 'px';
+        panel.style.height = panelH + 'px';
 
-        // Measure after appending to get actual height
-        const panelHeight = panel.offsetHeight;
-        const spaceBelow = window.innerHeight - itemRect.bottom;
-        const spaceAbove = itemRect.top;
-
-        // Vertical: prefer below, fallback to above
-        if (spaceBelow >= panelHeight + 8) {
-          panel.style.top = (itemRect.bottom + 6) + 'px';
-        } else if (spaceAbove >= panelHeight + 8) {
-          panel.style.top = (itemRect.top - panelHeight - 6) + 'px';
+        let top, left;
+        if (mainRect && mainRect.width > 0) {
+          top = mainRect.top;
+          left = mainRect.left - panelW - gap;
+          if (left < 4) {
+            left = mainRect.right + gap;
+          }
         } else {
-          // Not enough space either way, place below with scroll
-          panel.style.top = (itemRect.bottom + 6) + 'px';
-          panel.style.maxHeight = (spaceBelow - 12) + 'px';
+          const itemRect = itemEl.getBoundingClientRect();
+          top = itemRect.top;
+          left = itemRect.left - panelW - gap;
         }
+        panel.style.top = Math.max(4, top) + 'px';
+        panel.style.left = Math.max(4, left) + 'px';
 
-        // Horizontal: align with item, clamp to viewport
-        let left = itemRect.left;
-        if (left + panelWidth > window.innerWidth - 10) {
-          left = window.innerWidth - panelWidth - 10;
-        }
-        if (left < 10) left = 10;
-        panel.style.left = left + 'px';
+        // Keep preview open when hovering over the panel itself
+        panel.addEventListener('mouseenter', () => {
+          if (PromptUIManager._previewHideTimer) {
+            clearTimeout(PromptUIManager._previewHideTimer);
+            PromptUIManager._previewHideTimer = null;
+          }
+        });
+        panel.addEventListener('mouseleave', () => {
+          PromptUIManager._delayedHidePreview();
+        });
 
         // Close on click
         panel.addEventListener('click', (e) => {
@@ -1992,7 +2003,15 @@
       }, 500);
     }
 
-    static hidePreview() {
+    static _delayedHidePreview() {
+      if (PromptUIManager._previewHideTimer) clearTimeout(PromptUIManager._previewHideTimer);
+      PromptUIManager._previewHideTimer = setTimeout(() => {
+        PromptUIManager._previewHideTimer = null;
+        PromptUIManager._removePreviewPanel();
+      }, 100);
+    }
+
+    static _removePreviewPanel() {
       if (PromptUIManager._previewTimer) {
         clearTimeout(PromptUIManager._previewTimer);
         PromptUIManager._previewTimer = null;
@@ -2000,6 +2019,22 @@
       if (PromptUIManager._previewPanel) {
         PromptUIManager._previewPanel.remove();
         PromptUIManager._previewPanel = null;
+      }
+      PromptUIManager._previewSourceItem = null;
+    }
+
+    static hidePreview() {
+      if (PromptUIManager._previewHideTimer) {
+        clearTimeout(PromptUIManager._previewHideTimer);
+        PromptUIManager._previewHideTimer = null;
+      }
+      PromptUIManager._removePreviewPanel();
+    }
+
+    static onPreviewSourceItemEnter() {
+      if (PromptUIManager._previewHideTimer) {
+        clearTimeout(PromptUIManager._previewHideTimer);
+        PromptUIManager._previewHideTimer = null;
       }
     }
 
@@ -2519,6 +2554,7 @@
     }
 
     static async showEditForm(prompt /*, index */) {
+      PromptUIManager.hidePreview();
       const list = qs(`#${SELECTORS.PROMPT_LIST}`);
       if (!list) return;
       PromptUIManager.resetPromptListContainer();

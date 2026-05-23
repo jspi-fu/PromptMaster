@@ -246,12 +246,9 @@ html::-webkit-scrollbar {
   .preview-panel {
     position: fixed;
     z-index: 2147483647;
-    max-height: 300px;
-    max-width: 400px;
-    min-width: 200px;
     overflow-y: auto;
-    padding: 12px 14px;
-    border-radius: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
     font-size: 13px;
     line-height: 1.6;
     white-space: pre-wrap;
@@ -281,8 +278,8 @@ html::-webkit-scrollbar {
     background: rgba(255, 255, 255, 0.15);
   }
   @keyframes preview-fadein {
-    from { opacity: 0; transform: translateY(4px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateX(-4px); }
+    to { opacity: 1; transform: translateX(0); }
   }
 
   #prompt-list button {

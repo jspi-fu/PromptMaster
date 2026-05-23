@@ -328,6 +328,7 @@
       min-height: 450px;
       max-height: 450px;
       overflow: hidden; /* prevent bottom menu from being pushed outside */
+      text-align: left;
     }
     /* Dedicated scrollable content container inside the panel */
     #${SELECTORS.ROOT} #${SELECTORS.PANEL_CONTENT} {
@@ -549,6 +550,7 @@
       display: flex;
       align-items: center;
       padding: 6px 12px;
+      text-align: left;
     }
     #${SELECTORS.ROOT} .opm-prompt-list-item.opm-light:hover {
       background-color: var(--light-hover-bg);
@@ -588,12 +590,9 @@
     .opm-preview-panel {
       position: fixed;
       z-index: 2147483647;
-      max-height: 300px;
-      max-width: 400px;
-      min-width: 200px;
       overflow-y: auto;
-      padding: 12px 14px;
-      border-radius: 10px;
+      padding: 10px 12px;
+      border-radius: var(--border-radius, 8px);
       font-size: 13px;
       line-height: 1.6;
       white-space: pre-wrap;
@@ -601,6 +600,8 @@
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.08);
       animation: opm-preview-fadein 0.15s ease-out;
       pointer-events: auto;
+      text-align: left;
+      backdrop-filter: blur(12px);
     }
     .opm-preview-panel.opm-light {
       background-color: var(--light-card-bg);
@@ -623,8 +624,8 @@
       background: rgba(255, 255, 255, 0.15);
     }
     @keyframes opm-preview-fadein {
-      from { opacity: 0; transform: translateY(4px); }
-      to { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; transform: translateX(-4px); }
+      to { opacity: 1; transform: translateX(0); }
     }
 
     /* Drag-and-drop placeholder to displace items during reordering */

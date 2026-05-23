@@ -272,10 +272,11 @@
               mouseenter: () => {
                 document.querySelectorAll(`#${SELECTORS.ROOT} .opm-prompt-list-item`).forEach(i => i.classList.remove('opm-keyboard-selected'));
                 PromptUIManager.cancelCloseTimer();
+                PromptUIManager.onPreviewSourceItemEnter();
                 PromptUIManager.showPreview(item, prompt.content);
               },
               mouseleave: () => {
-                PromptUIManager.hidePreview();
+                PromptUIManager._delayedHidePreview();
               }
             }
           });
@@ -314,10 +315,11 @@
               mouseenter: () => {
                 document.querySelectorAll(`#${SELECTORS.ROOT} .opm-prompt-list-item`).forEach(i => i.classList.remove('opm-keyboard-selected'));
                 PromptUIManager.cancelCloseTimer();
+                PromptUIManager.onPreviewSourceItemEnter();
                 PromptUIManager.showPreview(item, prompt.content);
               },
               mouseleave: () => {
-                PromptUIManager.hidePreview();
+                PromptUIManager._delayedHidePreview();
               }
             }
           });

@@ -305,43 +305,52 @@ function createSearchMatchPreview(searchTerm, prompt) {
 // COMMENT: Hover preview panel management for sidepanel
 let _previewTimer = null;
 let _previewPanel = null;
+let _previewSourceItem = null;
+let _previewHideTimer = null;
 
 function showPreviewPanel(li, content) {
   hidePreviewPanel();
   if (!content) return;
 
+  _previewSourceItem = li;
   _previewTimer = setTimeout(() => {
     const isDark = document.documentElement.classList.contains('force-dark');
     const panel = document.createElement('div');
     panel.className = `preview-panel ${isDark ? 'dark' : 'light'}`;
     panel.textContent = content;
+    panel.style.whiteSpace = 'pre-wrap';
 
     document.body.appendChild(panel);
     _previewPanel = panel;
 
-    const itemRect = li.getBoundingClientRect();
-    const panelWidth = Math.min(400, window.innerWidth - 20);
-    panel.style.width = panelWidth + 'px';
+    // Fixed size, left of the list with gap
+    const panelW = 350;
+    const panelH = window.innerHeight - 16;
+    const gap = 14;
+    panel.style.width = panelW + 'px';
+    panel.style.height = panelH + 'px';
+    panel.style.top = '8px';
 
-    const panelHeight = panel.offsetHeight;
-    const spaceBelow = window.innerHeight - itemRect.bottom;
-    const spaceAbove = itemRect.top;
+    const listEl = document.getElementById('prompt-list');
+    const listRect = listEl ? listEl.getBoundingClientRect() : null;
+    const refLeft = listRect ? listRect.left : li.getBoundingClientRect().left;
 
-    if (spaceBelow >= panelHeight + 8) {
-      panel.style.top = (itemRect.bottom + 6) + 'px';
-    } else if (spaceAbove >= panelHeight + 8) {
-      panel.style.top = (itemRect.top - panelHeight - 6) + 'px';
+    if (refLeft >= panelW + gap + 4) {
+      panel.style.left = (refLeft - panelW - gap) + 'px';
     } else {
-      panel.style.top = (itemRect.bottom + 6) + 'px';
-      panel.style.maxHeight = (spaceBelow - 12) + 'px';
+      const refRight = listRect ? listRect.right : li.getBoundingClientRect().right;
+      panel.style.left = (refRight + gap) + 'px';
     }
 
-    let left = itemRect.left;
-    if (left + panelWidth > window.innerWidth - 10) {
-      left = window.innerWidth - panelWidth - 10;
-    }
-    if (left < 10) left = 10;
-    panel.style.left = left + 'px';
+    panel.addEventListener('mouseenter', () => {
+      if (_previewHideTimer) {
+        clearTimeout(_previewHideTimer);
+        _previewHideTimer = null;
+      }
+    });
+    panel.addEventListener('mouseleave', () => {
+      delayedHidePreviewPanel();
+    });
 
     panel.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -350,7 +359,15 @@ function showPreviewPanel(li, content) {
   }, 500);
 }
 
-function hidePreviewPanel() {
+function delayedHidePreviewPanel() {
+  if (_previewHideTimer) clearTimeout(_previewHideTimer);
+  _previewHideTimer = setTimeout(() => {
+    _previewHideTimer = null;
+    removePreviewPanel();
+  }, 100);
+}
+
+function removePreviewPanel() {
   if (_previewTimer) {
     clearTimeout(_previewTimer);
     _previewTimer = null;
@@ -358,6 +375,22 @@ function hidePreviewPanel() {
   if (_previewPanel) {
     _previewPanel.remove();
     _previewPanel = null;
+  }
+  _previewSourceItem = null;
+}
+
+function hidePreviewPanel() {
+  if (_previewHideTimer) {
+    clearTimeout(_previewHideTimer);
+    _previewHideTimer = null;
+  }
+  removePreviewPanel();
+}
+
+function onPreviewSourceItemEnter() {
+  if (_previewHideTimer) {
+    clearTimeout(_previewHideTimer);
+    _previewHideTimer = null;
   }
 }
 
@@ -413,6 +446,7 @@ function createPromptItem(prompt, index, searchTerm) {
   editBtn.style.backgroundColor = '#ffffff00';
   editBtn.appendChild(editImg);
   editBtn.addEventListener('click', () => {
+    hidePreviewPanel();
     // COMMENT: Populate the form for editing
     document.getElementById('prompt-title').value = prompt.title;
     document.getElementById('prompt-content').value = prompt.content;
@@ -452,13 +486,14 @@ function createPromptItem(prompt, index, searchTerm) {
     copyBtn.style.display = 'inline-block';
     editBtn.style.display = 'inline-block';
     delBtn.style.display = 'inline-block';
+    onPreviewSourceItemEnter();
     showPreviewPanel(li, prompt.content);
   });
   li.addEventListener('mouseleave', () => {
     copyBtn.style.display = 'none';
     editBtn.style.display = 'none';
     delBtn.style.display = 'none';
-    hidePreviewPanel();
+    delayedHidePreviewPanel();
   });
 
   return li;
