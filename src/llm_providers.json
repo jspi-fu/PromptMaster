@@ -4,7 +4,7 @@
       "name": "Qwen",
       "pattern": "*://chat.qwen.ai/*",
       "url": "https://chat.qwen.ai",
-      "icon_url": "../icons/qwen-icon.png",
+      "icon_url": "https://bsyimg.luoca.net/imgtc/20260524/5e6e865cd591656880ea8a88b03fb308.webp",
       "element_selector": "textarea"
     },
     {
@@ -18,14 +18,14 @@
       "name": "豆包",
       "pattern": "*://*.doubao.com/*",
       "url": "https://www.doubao.com",
-      "icon_url": "../icons/doubao-icon.png",
+      "icon_url": "https://bsyimg.luoca.net/imgtc/20260524/14ceb3a3ce87ef8496275557bebfb12a.webp",
       "element_selector": "textarea"
     },
     {
       "name": "DeepSeek",
       "pattern": "*://chat.deepseek.com/*",
       "url": "https://chat.deepseek.com",
-      "icon_url": "../icons/deepseek-icon.png",
+      "icon_url": "https://bsyimg.luoca.net/imgtc/20260524/039bf83326b7f109bf6818d93b4d7d2c.webp",
       "element_selector": "textarea"
     },
     {
@@ -95,28 +95,28 @@
       "name": "Grok",
       "pattern": "*://grok.com/*",
       "url": "https://grok.com",
-      "icon_url": "../icons/grok-icon.png",
+      "icon_url": "https://bsyimg.luoca.net/imgtc/20260524/d1b04245f44aaa225c0edadb42094ba2.webp",
       "element_selector": "div.ProseMirror[contenteditable='true']"
     },
     {
       "name": "Mistral Le Chat",
       "pattern": "*://chat.mistral.ai/*",
       "url": "https://chat.mistral.ai",
-      "icon_url": "../icons/mistral.png",
+      "icon_url": "https://bsyimg.luoca.net/imgtc/20260524/77d8ed730548d72dc406fcd7f7bb9042.webp",
       "element_selector": "[data-placeholder=\"Ask Le Chat anything\"]"
     },
     {
       "name": "OpenAI Playground",
       "pattern": "*://platform.openai.com/*",
       "url": "https://platform.openai.com/chat",
-      "icon_url": "../icons/openai-pg-icon.png",
+      "icon_url": "https://bsyimg.luoca.net/imgtc/20260524/6ab08d95f8b3f2940a6114451bdd48b2.webp",
       "element_selector": "#root textarea"
     },
     {
       "name": "ChatLLM",
       "pattern": "*://apps.abacus.ai/chatllm/*",
       "url": "https://apps.abacus.ai",
-      "icon_url": "../icons/chatllm.png",
+      "icon_url": "https://bsyimg.luoca.net/imgtc/20260524/d0e9c2ce08677f39a2f2d9b9113f2f24.webp",
       "element_selector": "textarea[placeholder=\"Write something...\"]"
     },
     {
@@ -130,35 +130,35 @@
       "name": "Perplexity AI",
       "pattern": "*://www.perplexity.ai/*",
       "url": "https://www.perplexity.ai",
-      "icon_url": "../icons/perplexity-icon.png",
+      "icon_url": "https://bsyimg.luoca.net/imgtc/20260524/fdab70441ccab7cc72bc912c4830f014.webp",
       "element_selector": "#ask-input"
     },
     {
       "name": "LMArena",
       "pattern": "*://lmarena.ai/*",
       "url": "https://lmarena.ai",
-      "icon_url": "../icons/lmarena-icon.png",
+      "icon_url": "https://bsyimg.luoca.net/imgtc/20260524/8acbc0b65aeeef59be7875c0c55e7fd8.webp",
       "element_selector": "textarea[name=\"message\"]"
     },
     {
       "name": "Minimax",
       "pattern": "*://agent.minimaxi.com/*",
       "url": "https://agent.minimaxi.com/",
-      "icon_url": "../icons/minimax.svg",
+      "icon_url": "https://bsyimg.luoca.net/imgtc/20260524/77555f82f63884a0146f6de7fe1e654b.webp",
       "element_selector": ".tiptap.ProseMirror.tiptap-editor"
     },
     {
       "name": "扣子",
       "pattern": "*://www.coze.cn/*",
       "url": "https://www.coze.cn/",
-      "icon_url": "../icons/coze.svg",
+      "icon_url": "https://bsyimg.luoca.net/imgtc/20260524/ffa10f275fc0ddfd5fa96365483d426a.webp",
       "element_selector": ".cm-content.cm-lineWrapping"
     },
     {
       "name": "Xiaomi MiMo",
       "pattern": "*://aistudio.xiaomimimo.com/*",
       "url": "https://aistudio.xiaomimimo.com/",
-      "icon_url": "../icons/xiaomimimo.svg",
+      "icon_url": "https://bsyimg.luoca.net/imgtc/20260524/028d64d8c6675d1430f7e7c3702c7842.webp",
       "element_selector": "textarea"
     },
     {

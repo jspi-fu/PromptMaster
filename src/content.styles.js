@@ -588,7 +588,7 @@
 
     /* Prompt hover preview panel */
     .opm-preview-panel {
-      position: fixed;
+      position: absolute;
       z-index: 2147483647;
       overflow-y: auto;
       padding: 10px 12px;
@@ -609,7 +609,7 @@
       border: 1px solid var(--light-border);
     }
     .opm-preview-panel.opm-dark {
-      background-color: var(--dark-surface);
+      background-color: #000000;
       color: var(--light-border);
       border: 1px solid var(--dark-surface-alt);
     }

@@ -1957,10 +1957,17 @@
         panel.textContent = content;
         panel.style.whiteSpace = 'pre-wrap';
 
-        document.body.appendChild(panel);
+        // COMMENT: 将预览面板放入 button-container 中，与 prompt-list 共享同一个定位上下文（button-container），
+        // 使用 absolute 定位确保在所有平台上相对位置一致，避免宿主页面 CSS 干扰
+        const btnContainer = PromptUIManager.state.buttonContainer || PromptUIManager.state.hotCornerContainer;
+        if (btnContainer) {
+          btnContainer.appendChild(panel);
+        } else {
+          document.body.appendChild(panel);
+        }
         PromptUIManager._previewPanel = panel;
 
-        // Position: fixed size, left of the main panel with gap
+        // Position: absolute 相对于 button-container 定位
         const mainPanel = qs(`#${SELECTORS.PROMPT_LIST}`);
         const mainRect = mainPanel ? mainPanel.getBoundingClientRect() : null;
         const panelW = 280;
@@ -1968,21 +1975,40 @@
         const gap = 14;
         panel.style.width = panelW + 'px';
         panel.style.height = panelH + 'px';
+        panel.style.position = 'absolute';
 
-        let top, left;
-        if (mainRect && mainRect.width > 0) {
-          top = mainRect.top;
-          left = mainRect.left - panelW - gap;
-          if (left < 4) {
-            left = mainRect.right + gap;
+        // 计算相对于 button-container 的位置
+        // prompt-list 是 absolute, bottom: 50px, right: 0, width: 280px
+        // 预览面板在 prompt-list 左侧，顶部对齐
+        const btnRect = btnContainer ? btnContainer.getBoundingClientRect() : null;
+        let right, bottom;
+        if (mainRect && btnRect && mainRect.width > 0) {
+          // 预览面板右边缘 = prompt-list 左边缘 - gap，相对于 button-container 右边缘
+          right = (btnRect.right - mainRect.left) + gap;
+          // 预览面板底边缘与 prompt-list 底边缘对齐，相对于 button-container 底边缘
+          bottom = btnRect.bottom - mainRect.bottom;
+          // 如果左侧空间不足（预览面板会超出视口左侧），放到右侧
+          const previewLeftEdge = mainRect.left - panelW - gap;
+          if (previewLeftEdge < 4) {
+            right = (btnRect.right - mainRect.right) - gap - panelW;
+            // 确保右侧也不超出视口
+            const previewRightEdge = mainRect.right + gap + panelW;
+            if (previewRightEdge > window.innerWidth - 4) {
+              // 两侧都不够，缩小宽度并放在左侧
+              right = (btnRect.right - mainRect.left) + gap;
+              const maxWidth = mainRect.left - gap - 4;
+              if (maxWidth > 100) {
+                panel.style.width = maxWidth + 'px';
+              }
+            }
           }
         } else {
           const itemRect = itemEl.getBoundingClientRect();
-          top = itemRect.top;
-          left = itemRect.left - panelW - gap;
+          right = (btnRect ? btnRect.right : 0) - itemRect.left + gap;
+          bottom = (btnRect ? btnRect.bottom : 0) - itemRect.top;
         }
-        panel.style.top = Math.max(4, top) + 'px';
-        panel.style.left = Math.max(4, left) + 'px';
+        panel.style.right = right + 'px';
+        panel.style.bottom = bottom + 'px';
 
         // Keep preview open when hovering over the panel itself
         panel.addEventListener('mouseenter', () => {
@@ -2498,7 +2524,7 @@
         const rowsAttr = listMode ? '1' : (splitMode ? '3' : '6');
         const inputField = createEl('textarea', {
           // COMMENT: Rows tuned per mode and clear placeholder
-          attributes: { rows: rowsAttr, placeholder: `${displayLabel} value` },
+          attributes: { rows: rowsAttr, placeholder: `请输入实际的"${displayLabel}"` },
           className: `opm-textarea-field opm-${getMode()}`,
           // COMMENT: Let the textarea expand within its row. In split mode, disable manual resize to preserve equal distribution.
           // COMMENT: Minimum height ~ one line; when there are many variables and space runs out, the container scrolls.
