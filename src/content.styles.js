@@ -126,34 +126,7 @@
       --font-family: 'Roboto', sans-serif;
     }
     
-    /* COMMENT: Scrollbars remain hidden until ScrollVisibilityManager marks activity */
-    #${SELECTORS.ROOT} .opm-scrollable {
-      scrollbar-width: none;
-      scrollbar-color: transparent transparent;
-    }
-    #${SELECTORS.ROOT} .opm-scrollable::-webkit-scrollbar {
-      width: 0;
-      height: 0;
-      background: transparent;
-    }
-    #${SELECTORS.ROOT} .opm-scrollable.opm-scroll-active {
-      scrollbar-width: auto !important;
-      scrollbar-color: ${THEME_COLORS.primary}90 transparent !important;
-    }
-    #${SELECTORS.ROOT} .opm-scrollable.opm-scroll-active::-webkit-scrollbar {
-      width: 10px;
-      height: 10px;
-    }
-    #${SELECTORS.ROOT} .opm-scrollable.opm-scroll-active::-webkit-scrollbar-thumb {
-      background-color: ${THEME_COLORS.primary}90;
-      border-radius: 8px;
-    }
-    #${SELECTORS.ROOT} .opm-scrollable.opm-scroll-active::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
     /* COMMENT: 用户偏好——滚动条永久隐藏（仅保留滚动功能，不显示任何滑动栏） */
-    /* COMMENT: 这里需要覆盖上面的 “opm-scroll-active” 显示滚动条逻辑，因此使用 !important */
     #${SELECTORS.ROOT} .opm-scrollable {
       scrollbar-width: none !important; /* Firefox */
       -ms-overflow-style: none !important; /* IE/旧 Edge */
@@ -163,17 +136,6 @@
       width: 0 !important;
       height: 0 !important;
       background: transparent !important;
-    }
-    #${SELECTORS.ROOT} .opm-scrollable.opm-scroll-active {
-      scrollbar-width: none !important;
-      scrollbar-color: transparent transparent !important;
-    }
-    #${SELECTORS.ROOT} .opm-scrollable.opm-scroll-active::-webkit-scrollbar {
-      width: 0 !important;
-      height: 0 !important;
-    }
-    #${SELECTORS.ROOT} .opm-scrollable.opm-scroll-active::-webkit-scrollbar-thumb {
-      background-color: transparent !important;
     }
     
     /* COMMENT: 聊天输入框滚动条永久隐藏（用户输入区域不显示任何滚动条） */

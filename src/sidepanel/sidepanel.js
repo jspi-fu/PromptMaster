@@ -2,7 +2,7 @@
 
 // COMMENT: Use unified prompt storage for all prompt operations
 import * as PromptStorage from '../promptStorage.js';
-import { exportPrompts, importPrompts } from '../importExport.js';
+import { exportPrompts, importPrompts } from '../promptStorage.js';
 import { initI18n, t } from '../i18n.js';
 import { buildSearchPreviewHtml, computeMatchScore } from '../utils.js';
 
@@ -96,44 +96,34 @@ function setCollapsibleOpen(collapsibleEl, open) {
 
 // COMMENT: Build a providers map from storage or compute a fallback by reading llm_providers.json and checking current permissions
 async function getProvidersMapOrFallback() {
-  return new Promise(async (resolve) => {
-    try {
-      // First, try the canonical storage source (populated by service worker on install/changes)
-      chrome.storage.local.get(['aiProvidersMap'], async (result) => {
-        if (result && result.aiProvidersMap && Object.keys(result.aiProvidersMap).length > 0) {
-          resolve(result.aiProvidersMap);
-          return;
-        }
-        // Fallback: compute from llm_providers.json + current chrome.permissions
-        try {
-          const response = await fetch(chrome.runtime.getURL('llm_providers.json'));
-          const data = await response.json();
-          const list = Array.isArray(data?.llm_providers) ? data.llm_providers : [];
-          const computedEntries = await Promise.all(list.map(async (p) => {
-            const pattern = p.pattern;
-            let permitted = false;
-            try {
-              permitted = await chrome.permissions.contains({ origins: [pattern] });
-            } catch (e) {
-              permitted = false;
-            }
-            return [p.name, {
-              hasPermission: permitted ? 'Yes' : 'No',
-              urlPattern: p.pattern,
-              url: p.url,
-              iconUrl: p.icon_url
-            }];
-          }));
-          const computedMap = Object.fromEntries(computedEntries);
-          resolve(computedMap);
-        } catch (e) {
-          resolve({});
-        }
-      });
-    } catch (e) {
-      resolve({});
-    }
+  // 优先从 storage 读取（由 service worker 维护）
+  const stored = await new Promise(resolve => {
+    chrome.storage.local.get(['aiProvidersMap'], resolve);
   });
+  if (stored?.aiProvidersMap && Object.keys(stored.aiProvidersMap).length > 0) {
+    return stored.aiProvidersMap;
+  }
+  // 回退：从 llm_providers.json 计算
+  try {
+    const response = await fetch(chrome.runtime.getURL('llm_providers.json'));
+    const data = await response.json();
+    const list = Array.isArray(data?.llm_providers) ? data.llm_providers : [];
+    const computedEntries = await Promise.all(list.map(async (p) => {
+      let permitted = false;
+      try {
+        permitted = await chrome.permissions.contains({ origins: [p.pattern] });
+      } catch (_) {}
+      return [p.name, {
+        hasPermission: permitted ? 'Yes' : 'No',
+        urlPattern: p.pattern,
+        url: p.url,
+        iconUrl: p.icon_url
+      }];
+    }));
+    return Object.fromEntries(computedEntries);
+  } catch (_) {
+    return {};
+  }
 }
 
 // COMMENT: Render the LLMs section with "Activated" and "Available" pills, reflecting storage status and permissions behavior
@@ -1001,6 +991,6 @@ document.addEventListener('DOMContentLoaded', () => {
   importBtn.addEventListener('click', () => importFile.click());
   importFile.addEventListener('change', event => {
     const file = event.target.files[0];
-    if (file) importPrompts(file);
+    if (file) importPrompts(file).catch(err => console.error('[PromptManager] Import failed:', err));
   });
 });

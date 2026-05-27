@@ -16,7 +16,7 @@
 - `src/sidepanel/*`: 侧边栏 UI（表单/列表、导入/导出、权限门控、响应式样式）。
 - `src/permissions/*`: 权限管理器 UI；请求可选源；写入 `aiProvidersMap`。
 - `src/info.html` 和 `src/changelog.html`: 由内容脚本获取的面板内内容。
-- `src/importExport.js` + `src/utils.js`: 导入/导出桥接；UUID 辅助函数。
+- `src/utils.js`: UUID 辅助函数、搜索匹配评分、搜索预览 HTML 构建。
 - `src/icons/*`: 在 UI 中引用的视觉资源。
 
 ## Manifest 和生命周期
@@ -341,7 +341,6 @@ const handleProviderClick = function (event) {
 - `llm_providers.json` / `llm_providers.js`: 提供商注册表和运行时加载器。
 - `sidepanel/index.html|sidepanel.js|styles.css`: 独立的提示词大师面板（含搜索排序、悬停预览）。
 - `permissions/permissions.html|permissions.js|permissions_custom.css`: 权限管理 UI。
-- `importExport.js`: 到 `promptStorage` 导入/导出的薄桥接。
 - `utils.js`: `generateUUID`、`computeMatchScore`、`buildSearchPreviewHtml` 辅助函数。
 - `info.html`、`changelog.html`: 获取到内容面板视图（HELP/CHANGELOG）中。
 

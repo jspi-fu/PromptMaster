@@ -15,23 +15,30 @@
  * Class to handle input box detection and interactions on supported websites.
  */
 class InputBoxHandler {
+  // COMMENT: 缓存 providers 数据，避免每次 getInputBox 都 fetch
+  static _providersCache = null;
+
+  static async _getProviders() {
+    if (InputBoxHandler._providersCache) return InputBoxHandler._providersCache;
+    try {
+      const response = await fetch(chrome.runtime.getURL('llm_providers.json'));
+      if (response.ok) {
+        const data = await response.json();
+        InputBoxHandler._providersCache = data.llm_providers || [];
+      }
+    } catch (error) {
+      console.error('Failed to load llm_providers.json:', error);
+      InputBoxHandler._providersCache = [];
+    }
+    return InputBoxHandler._providersCache;
+  }
+
   /**
    * Detects and retrieves the input box from supported websites.
    * @returns {HTMLElement|null} The input box element or null if not found.
    */
   static async getInputBox() {
-
-    // Try to get providers from the JSON file
-    let providers = [];
-    try {
-      const response = await fetch(chrome.runtime.getURL('llm_providers.json'));
-      if (response.ok) {
-        const data = await response.json();
-        providers = data.llm_providers || [];
-      }
-    } catch (error) {
-      console.error('Failed to load llm_providers.json:', error);
-    }
+    const providers = await InputBoxHandler._getProviders();
 
     // Dynamic matching using llm_providers.json
     for (const provider of providers) {
@@ -140,6 +147,30 @@ class InputBoxHandler {
   }
 
   /**
+   * COMMENT: 通用富文本编辑器插入逻辑（CodeMirror/Slate/ProseMirror 等）
+   * @param {HTMLElement} inputBox
+   * @param {string} textToInsert
+   * @param {boolean} disableOverwrite
+   */
+  static _insertIntoRichEditor(inputBox, textToInsert, disableOverwrite) {
+    if (!disableOverwrite) {
+      inputBox.innerHTML = '';
+    }
+    inputBox.focus();
+    const inserted = InputBoxHandler.tryInsertRichText(inputBox, textToInsert);
+    if (!inserted) {
+      InputBoxHandler.fallbackInsertRichText(inputBox, textToInsert, disableOverwrite);
+    }
+    const endRange = document.createRange();
+    endRange.selectNodeContents(inputBox);
+    endRange.collapse(false);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(endRange);
+    inputBox.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+
+  /**
    * Inserts a prompt into the detected input box.
    * @param {HTMLElement} inputBox - The input box element.
    * @param {string} content - The prompt content to insert.
@@ -156,7 +187,7 @@ class InputBoxHandler {
       // COMMENT: Read setting that controls append vs overwrite behavior
       const disableOverwrite = await new Promise(resolve => {
         chrome.storage.local.get('disableOverwrite', data => {
-          // COMMENT: 默认开启“追加模式”；仅当用户显式设置为 false 时才关闭
+          // COMMENT: 默认开启”追加模式”；仅当用户显式设置为 false 时才关闭
           if (chrome.runtime?.lastError) { resolve(true); return; }
           if (data && Object.prototype.hasOwnProperty.call(data, 'disableOverwrite')) {
             resolve(Boolean(data.disableOverwrite));
@@ -170,7 +201,7 @@ class InputBoxHandler {
         // COMMENT: Handle rich editors (e.g., Perplexity uses Lexical under #ask-input)
         // COMMENT: Lexical ignores direct DOM mutations but responds to execCommand/InputEvents
         const isLexicalEditor = inputBox.getAttribute('data-lexical-editor') === 'true'
-          || !!inputBox.closest('[data-lexical-editor="true"]')
+          || !!inputBox.closest('[data-lexical-editor=”true”]')
           || inputBox.id === 'ask-input';
 
         if (isLexicalEditor) {
@@ -178,31 +209,24 @@ class InputBoxHandler {
           const selection = window.getSelection();
           const range = document.createRange();
           if (disableOverwrite) {
-            // COMMENT: Append — place caret at the end
             range.selectNodeContents(inputBox);
             range.collapse(false);
           } else {
-            // COMMENT: Overwrite — select all content so insertion replaces it
             range.selectNodeContents(inputBox);
           }
           selection.removeAllRanges();
           selection.addRange(range);
 
-          // COMMENT: Overwrite requires clearing selection before insertion
           if (!disableOverwrite) {
             document.execCommand('delete', false, null);
           }
 
-          // COMMENT: Primary path — let the editor handle text via execCommand
           const textToInsert = content + '  ';
           const inserted = InputBoxHandler.tryInsertRichText(inputBox, textToInsert);
-
-          // COMMENT: Fallback — synthesize input pipeline events
           if (!inserted) {
             InputBoxHandler.fallbackInsertRichText(inputBox, textToInsert, disableOverwrite);
           }
 
-          // COMMENT: Ensure caret ends up at the end after insertion
           const endRange = document.createRange();
           endRange.selectNodeContents(inputBox);
           endRange.collapse(false);
@@ -210,109 +234,25 @@ class InputBoxHandler {
           sel.removeAllRanges();
           sel.addRange(endRange);
 
-          // COMMENT: Notify any listeners the content changed
           inputBox.dispatchEvent(new Event('change', { bubbles: true }));
           PromptUIManager.hidePromptList(promptList);
           return;
         }
 
-        // COMMENT: Handle CodeMirror editors (e.g., 扣子)
-        const isCodeMirrorEditor =
+        // COMMENT: CodeMirror / Slate / ProseMirror 共用统一插入逻辑
+        const isSharedRichEditor =
+          // CodeMirror
           (inputBox.classList && (inputBox.classList.contains('cm-content') || inputBox.classList.contains('cm-lineWrapping'))) ||
-          (typeof inputBox.closest === 'function' && (!!inputBox.closest('.cm-content') || !!inputBox.closest('.cm-lineWrapping')));
-        if (isCodeMirrorEditor) {
-          // COMMENT: For CodeMirror editors, try paste event first
-          if (!disableOverwrite) {
-            inputBox.innerHTML = '';
-          }
-          
-          inputBox.focus();
-          
-          const textToInsert = content + '  ';
-          const inserted = InputBoxHandler.tryInsertRichText(inputBox, textToInsert);
-
-          if (!inserted) {
-            InputBoxHandler.fallbackInsertRichText(inputBox, textToInsert, disableOverwrite);
-          }
-          
-          const endRange = document.createRange();
-          endRange.selectNodeContents(inputBox);
-          endRange.collapse(false);
-          const sel = window.getSelection();
-          sel.removeAllRanges();
-          sel.addRange(endRange);
-          
-          inputBox.dispatchEvent(new Event('change', { bubbles: true }));
-          PromptUIManager.hidePromptList(promptList);
-          return;
-        }
-
-        // COMMENT: Handle Slate editors (e.g., 千问) which respond well to execCommand/beforeinput
-        const isSlateEditor =
+          (typeof inputBox.closest === 'function' && (!!inputBox.closest('.cm-content') || !!inputBox.closest('.cm-lineWrapping'))) ||
+          // Slate
           (inputBox.hasAttribute && (inputBox.hasAttribute('data-slate-node') || inputBox.hasAttribute('data-slate-editor'))) ||
-          (typeof inputBox.closest === 'function' && (!!inputBox.closest('[data-slate-node]') || !!inputBox.closest('[data-slate-editor]')));
-        if (isSlateEditor) {
-          // COMMENT: For Slate editors, first try to clear content if in overwrite mode
-          if (!disableOverwrite) {
-            inputBox.innerHTML = '';
-          }
-          
-          inputBox.focus();
-          
-          const textToInsert = content + '  ';
-          const inserted = InputBoxHandler.tryInsertRichText(inputBox, textToInsert);
-
-          if (!inserted) {
-            InputBoxHandler.fallbackInsertRichText(inputBox, textToInsert, disableOverwrite);
-          }
-          
-          // COMMENT: Ensure caret ends up at the end after insertion
-          const endRange = document.createRange();
-          endRange.selectNodeContents(inputBox);
-          endRange.collapse(false);
-          const sel = window.getSelection();
-          sel.removeAllRanges();
-          sel.addRange(endRange);
-          
-          // COMMENT: Notify any listeners the content changed and close the UI
-          inputBox.dispatchEvent(new Event('change', { bubbles: true }));
-          PromptUIManager.hidePromptList(promptList);
-          return;
-        }
-
-        // COMMENT: Handle ProseMirror/Tiptap editors (e.g., Grok) which respond well to execCommand/beforeinput
-        const isProseMirrorEditor =
+          (typeof inputBox.closest === 'function' && (!!inputBox.closest('[data-slate-node]') || !!inputBox.closest('[data-slate-editor]'))) ||
+          // ProseMirror/Tiptap
           (inputBox.classList && inputBox.classList.contains('ProseMirror')) ||
           (typeof inputBox.closest === 'function' && !!inputBox.closest('.ProseMirror'));
-        if (isProseMirrorEditor) {
-          // COMMENT: Normalize caret based on append/overwrite preference
-          const selection = window.getSelection();
-          const range = document.createRange();
-          range.selectNodeContents(inputBox);
-          if (disableOverwrite) {
-            // COMMENT: Append — place caret at the end
-            range.collapse(false);
-          }
-          selection.removeAllRanges();
-          selection.addRange(range);
-          // COMMENT: Overwrite requires clearing selection before insertion
-          if (!disableOverwrite) {
-            document.execCommand('delete', false, null);
-          }
-          const textToInsert = content + '  ';
-          const inserted = InputBoxHandler.tryInsertRichText(inputBox, textToInsert);
-          if (!inserted) {
-            InputBoxHandler.fallbackInsertRichText(inputBox, textToInsert, disableOverwrite);
-          }
-          // COMMENT: Ensure caret ends up at the end after insertion
-          const endRange = document.createRange();
-          endRange.selectNodeContents(inputBox);
-          endRange.collapse(false);
-          const sel = window.getSelection();
-          sel.removeAllRanges();
-          sel.addRange(endRange);
-          // COMMENT: Notify any listeners the content changed and close the UI
-          inputBox.dispatchEvent(new Event('change', { bubbles: true }));
+
+        if (isSharedRichEditor) {
+          InputBoxHandler._insertIntoRichEditor(inputBox, content + '  ', disableOverwrite);
           PromptUIManager.hidePromptList(promptList);
           return;
         }

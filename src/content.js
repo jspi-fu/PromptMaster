@@ -53,68 +53,50 @@
    * COMMENT: Centralizes chrome.* guards so storage calls stay reliable.
    * -------------------------------------------------------------------------*/
   const ChromeBridge = (() => {
-    /**
-     * COMMENT: Wrapper that swallows exceptions and returns a fallback.
-     * @template T
-     * @param {() => Promise<T>} executor
-     * @param {T} fallback
-     * @returns {Promise<T>}
-     */
-    const safeAsync = async (executor, fallback) => {
-      try {
-        return await executor();
-      } catch (error) {
-        console.error('[PromptManager] safeAsync captured error:', error);
-        return fallback;
-      }
-    };
-
     const storage = {
-      /**
-       * COMMENT: Read from chrome.storage.local with consistent error handling.
-       * @param {string} key
-       * @param {any} fallback
-       * @returns {Promise<any>}
-       */
       async get(key, fallback) {
         if (!chrome?.storage?.local) return fallback;
-        return safeAsync(() => new Promise(resolve => {
-          chrome.storage.local.get(key, data => {
-            if (chrome.runtime?.lastError) {
-              console.warn(`[PromptManager] chrome.storage.get failed for ${key}:`, chrome.runtime.lastError.message);
-              resolve(fallback);
-              return;
-            }
-            if (key && typeof key === 'string') {
-              resolve(data?.[key] !== undefined ? data[key] : fallback);
-            } else {
-              resolve(data ?? fallback);
-            }
+        try {
+          return await new Promise(resolve => {
+            chrome.storage.local.get(key, data => {
+              if (chrome.runtime?.lastError) {
+                console.warn(`[PromptManager] chrome.storage.get failed for ${key}:`, chrome.runtime.lastError.message);
+                resolve(fallback);
+                return;
+              }
+              if (key && typeof key === 'string') {
+                resolve(data?.[key] !== undefined ? data[key] : fallback);
+              } else {
+                resolve(data ?? fallback);
+              }
+            });
           });
-        }), fallback);
+        } catch (error) {
+          console.error('[PromptManager] chrome.storage.get error:', error);
+          return fallback;
+        }
       },
-      /**
-       * COMMENT: Write to chrome.storage.local and surface boolean success.
-       * @param {string} key
-       * @param {any} value
-       * @returns {Promise<boolean>}
-       */
       async set(key, value) {
         if (!chrome?.storage?.local) return false;
-        return safeAsync(() => new Promise(resolve => {
-          chrome.storage.local.set({ [key]: value }, () => {
-            if (chrome.runtime?.lastError) {
-              console.warn(`[PromptManager] chrome.storage.set failed for ${key}:`, chrome.runtime.lastError.message);
-              resolve(false);
-              return;
-            }
-            resolve(true);
+        try {
+          return await new Promise(resolve => {
+            chrome.storage.local.set({ [key]: value }, () => {
+              if (chrome.runtime?.lastError) {
+                console.warn(`[PromptManager] chrome.storage.set failed for ${key}:`, chrome.runtime.lastError.message);
+                resolve(false);
+                return;
+              }
+              resolve(true);
+            });
           });
-        }), false);
+        } catch (error) {
+          console.error('[PromptManager] chrome.storage.set error:', error);
+          return false;
+        }
       }
     };
 
-    return { safeAsync, storage };
+    return { storage };
   })();
 
   /* ---------------------------------------------------------------------------
@@ -1549,13 +1531,6 @@
     });
   }
 
-  /* [08] Simple Event Bus */
-  class EventBus {
-    constructor() { this.events = {}; }
-    on(evt, listener) { (this.events[evt] = this.events[evt] || []).push(listener); }
-    emit(evt, ...args) { (this.events[evt] || []).forEach(fn => fn(...args)); }
-  }
-
   /* [09] Storage Manager */
   class PromptStorageManager {
     // Generic local-storage helpers (still used by non-prompt features)
@@ -1731,9 +1706,9 @@
     static set manuallyOpened(v) { PromptUI.State.manuallyOpened = v; }
     static get inVariableInputMode() { return PromptUI.State.inVariableInputMode; }
     static set inVariableInputMode(v) { PromptUI.State.inVariableInputMode = v; }
-    static onPromptSelect(cb) { PromptUIManager._eb.on('promptSelect', cb); }
-    static emitPromptSelect(prompt) { PromptUIManager._eb.emit('promptSelect', prompt); }
-    static _eb = new EventBus();
+    static _promptSelectListeners = [];
+    static onPromptSelect(cb) { PromptUIManager._promptSelectListeners.push(cb); }
+    static emitPromptSelect(prompt) { PromptUIManager._promptSelectListeners.forEach(fn => fn(prompt)); }
     // COMMENT: Removed panel height lock; CSS now enforces min/max height across views
 
     static injectPromptManagerButton(prompts) {
@@ -2568,7 +2543,7 @@
       // COMMENT: Ensure non-list view uses fixed height
       PromptUIManager.setPanelHeightMode('fixed');
       // COMMENT: Button container sticks to bottom of the panel
-      const btnContainer = createEl('div', { styles: { display: 'flex', gap: '8px', marginTop: '8px', marginTop: 'auto', position: 'sticky', bottom: '0', background: 'transparent' } });
+      const btnContainer = createEl('div', { styles: { display: 'flex', gap: '8px', marginTop: 'auto', position: 'sticky', bottom: '0', background: 'transparent' } });
       const backBtn = createEl('button', { innerHTML: '返回', className: `opm-button opm-${getMode()}`, styles: { backgroundColor: '#9CA3AF', flex: '1' } });
       backBtn.addEventListener('click', () => {
         PromptUIManager.inVariableInputMode = false;
