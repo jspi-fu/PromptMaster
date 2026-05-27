@@ -2,7 +2,7 @@ import { importPrompts } from '../promptStorage.js';
 import { t, initI18n } from '../i18n.js';
 
 /**
- * Show a toast notification instead of alert()
+ * 显示 toast 提示通知
  */
 function showToast(message, duration = 3000) {
   const existing = document.querySelector('.pm-toast');
@@ -41,35 +41,24 @@ function showToast(message, duration = 3000) {
   }, duration);
 }
 
-// This script is injected into the page to manage permissions for AI providers
-// It retrieves the providers map from storage and creates elements for each provider
 document.addEventListener('DOMContentLoaded', function () {
-  // Initialize i18n for static HTML elements
   initI18n();
 
-  // Get the target containers
   const permissionGrantedContainer = document.getElementById('permission-granted');
   const requestPermissionContainer = document.getElementById('request-permission');
-  // Get the Get Started button container
   const getStartedBtnContainer = document.getElementById('get-started-btn-container');
-  // COMMENT: Controls to grant/remove all permissions at once
+  // 一键授权/撤销所有权限的控件
   const grantAllBtn = document.getElementById('grant-all-permissions');
   const removeAllBtn = document.getElementById('remove-all-permissions');
 
   if (!permissionGrantedContainer || !requestPermissionContainer) {
     console.error('Required container elements (#permission-granted or #request-permission) not found.');
-    return; // Stop execution if containers are missing
+    return;
   }
 
   function updateGetStartedButton(allowedProviders) {
     if (allowedProviders.length > 0 && getStartedBtnContainer) {
-      /*
-        Try to use the URL that we already have in memory (it was populated via
-        service-worker.js -> checkProviderPermissions). This removes the need for
-        an extra fetch request and avoids potential path issues when the
-        permissions page lives in a sub-folder ("src/permissions") while the JSON
-        file is located in "src/llm_providers.json".
-      */
+      // 优先使用内存中已有的 URL，避免额外请求和子目录路径问题
       let firstAllowedUrl = null;
 
       for (const allowed of allowedProviders) {
@@ -79,9 +68,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
       }
 
-      // Fallback – if, for some reason, the providerInfo does not contain a
-      // URL, we fetch the JSON file (using the correct path) and try to look it
-      // up. This keeps backwards-compatibility with existing logic.
+      // 回退：若内存中无 URL，则从 JSON 文件获取以保持向后兼容
       const ensureUrlPromise = firstAllowedUrl
         ? Promise.resolve(firstAllowedUrl)
         : fetch(chrome.runtime.getURL('/llm_providers.json'))
@@ -99,7 +86,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
       ensureUrlPromise.then(resolvedUrl => {
         if (resolvedUrl) {
-          // Create (or replace) the Get Started buttons
           getStartedBtnContainer.innerHTML = `
             <div style="display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 16px; margin-top: 1.5rem;">
               <button id="get-started-best-practices-btn" class="custom-button" style="height: 46px; padding: 0 1.5rem; border-radius: 8px; font-size: 1rem; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: none; cursor: pointer; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.1s;">
@@ -108,7 +94,6 @@ document.addEventListener('DOMContentLoaded', function () {
               </button>
             </div>`;
 
-          // Button: Start with Best Practices (Import -> Open)
           document.getElementById('get-started-best-practices-btn').addEventListener('click', async () => {
             try {
               const importUrl = chrome.runtime.getURL('/default-prompts.json');
@@ -129,23 +114,19 @@ document.addEventListener('DOMContentLoaded', function () {
       });
 
     } else if (getStartedBtnContainer) {
-      // When no providers are allowed yet, show guidance title instead of the button
-      // This matches the requested behavior: display a title until at least one LLM is selected
+      // 无已授权平台时显示引导标题，至少选择一个 LLM 后才会显示按钮
       getStartedBtnContainer.innerHTML = `<h3 class="custom-onboarding-title">${t('selectAIAssistants')}</h3>`;
     }
   }
 
-  // Function to populate providers UI
   async function populateProviders(providersMap) {
     console.log('Populating UI with providers map:', providersMap);
 
-    // Clear existing content
     permissionGrantedContainer.innerHTML = '';
     requestPermissionContainer.innerHTML = '';
 
     const allowedProviders = [];
 
-    // Fetch llm_providers.json to maintain the original order
     let providersOrder = [];
     try {
       const response = await fetch(chrome.runtime.getURL('llm_providers.json'));
@@ -157,7 +138,6 @@ document.addEventListener('DOMContentLoaded', function () {
       console.error('Failed to load llm_providers.json for ordering:', error);
     }
 
-    // Use ordered list if available, otherwise fall back to Object.entries
     const providersToDisplay = providersOrder.length > 0
       ? providersOrder.map(name => [name, providersMap[name]]).filter(([_, info]) => info)
       : Object.entries(providersMap);
@@ -166,9 +146,7 @@ document.addEventListener('DOMContentLoaded', function () {
       const iconUrl = providerInfo.iconUrl;
       const isAllowed = providerInfo.hasPermission === "Yes";
 
-      // For allowed providers, clicking should open their website in a new tab.
-      // For not-yet-allowed providers, the link remains "#" and we attach the
-      // permission-request listener below.
+      // 已授权的平台：点击直接打开官网；未授权的平台：点击请求权限
       const elementHTML = isAllowed
         ? `<a id="perm-${key}" class="custom-button"
                aria-current="true" href="${providerInfo.url}" target="_blank" rel="noopener">
@@ -186,7 +164,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       if (providerInfo.hasPermission == "Yes") {
         targetContainer = permissionGrantedContainer;
-        allowedProviders.push({ key, providerInfo }); // Collect allowed providers
+        allowedProviders.push({ key, providerInfo });
       } else {
         targetContainer = requestPermissionContainer;
         needsClickListener = true;
@@ -205,9 +183,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             chrome.permissions.request({ origins: [originPattern] }, (granted) => {
               if (granted) {
-                // Update local providersMap and persist
                 providersMap[providerKey].hasPermission = "Yes";
-                // Persist change; UI will refresh via storage.onChanged listener
                 chrome.storage.local.set({ aiProvidersMap: providersMap });
               } else {
                 showToast(t('permissionDenied'));
@@ -219,8 +195,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }
 
-    // COMMENT: Hide the "Allowed" section container when there are no allowed providers yet.
-    // This keeps the UI clean until the user approves at least one LLM origin.
+    // 无已授权平台时隐藏"已授权"区域，保持界面整洁
     const allowedSectionContainer = permissionGrantedContainer.closest('.custom-container-mt5');
     if (allowedSectionContainer) {
       allowedSectionContainer.style.display = allowedProviders.length > 0 ? '' : 'none';
@@ -229,39 +204,33 @@ document.addEventListener('DOMContentLoaded', function () {
     updateGetStartedButton(allowedProviders);
   }
 
-  // Listen for changes to aiProvidersMap in storage and update UI
   chrome.storage.onChanged.addListener((changes, areaName) => {
     if (areaName === 'local' && changes.aiProvidersMap && changes.aiProvidersMap.newValue) {
       populateProviders(changes.aiProvidersMap.newValue);
     }
   });
 
-  // Get the providers map from storage when the page loads
   chrome.storage.local.get(['aiProvidersMap'], function (result) {
     if (result.aiProvidersMap) {
       const providersMap = result.aiProvidersMap;
       console.log('Retrieved providersMap from storage:', providersMap);
 
-      // Use the helper to populate UI and attach listeners
       populateProviders(providersMap);
 
     } else {
       console.log('No providersMap found in storage.');
-      // Handle the case where the map doesn't exist yet
-      requestPermissionContainer.innerHTML = '<p>No provider data found in storage.</p>'; // Example message
+      requestPermissionContainer.innerHTML = '<p>No provider data found in storage.</p>';
     }
   });
 
-  // COMMENT: Grant all permissions handler — requests all optional origins and updates providers map
+  // 一键授权：请求所有可选来源权限并更新 providers map
   if (grantAllBtn) {
     grantAllBtn.addEventListener('click', async () => {
       try {
-        // Fetch providers data to get all patterns
         const response = await fetch(chrome.runtime.getURL('/llm_providers.json'));
         const data = await response.json();
         const llmList = data.llm_providers || [];
 
-        // Collect all origin patterns
         const allPatterns = llmList
           .map(provider => provider.pattern)
           .filter(Boolean);
@@ -271,15 +240,12 @@ document.addEventListener('DOMContentLoaded', function () {
           return;
         }
 
-        // Request all permissions at once
         chrome.permissions.request({ origins: allPatterns }, async (granted) => {
           if (granted) {
-            // Get current providers map
             chrome.storage.local.get(['aiProvidersMap'], (res) => {
               const currentMap = res && res.aiProvidersMap ? res.aiProvidersMap : {};
               const updated = {};
 
-              // Update all providers to "Yes" in the map
               for (const provider of llmList) {
                 const key = provider.name;
                 if (currentMap[key]) {
@@ -288,7 +254,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     hasPermission: 'Yes'
                   };
                 } else {
-                  // If provider not in map yet, create entry
                   updated[key] = {
                     hasPermission: 'Yes',
                     urlPattern: provider.pattern,
@@ -298,7 +263,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
               }
 
-              // Also preserve any existing providers not in llmList
               for (const [key, val] of Object.entries(currentMap)) {
                 if (!updated[key]) {
                   updated[key] = val;
@@ -318,21 +282,18 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // COMMENT: Remove all permissions handler — revokes all optional origins and resets providers map
+  // 一键撤销：撤销所有可选来源权限并重置 providers map
   if (removeAllBtn) {
     removeAllBtn.addEventListener('click', () => {
       chrome.storage.local.get(['aiProvidersMap'], (res) => {
         const currentMap = res && res.aiProvidersMap ? res.aiProvidersMap : {};
-        // Collect all origin patterns (unique)
         const allPatterns = Array.from(new Set(
           Object.values(currentMap)
             .map(v => v && v.urlPattern)
             .filter(Boolean)
         ));
-        // Attempt to remove all optional host permissions in one call
         try {
           chrome.permissions.remove({ origins: allPatterns }, (removed) => {
-            // Regardless of removed flag, update local storage map to reflect "No"
             const updated = {};
             for (const [key, val] of Object.entries(currentMap)) {
               updated[key] = {
@@ -343,7 +304,7 @@ document.addEventListener('DOMContentLoaded', function () {
             chrome.storage.local.set({ aiProvidersMap: updated });
           });
         } catch (e) {
-          // On error, still set map to "No" to reset UI; users can re-grant
+          // 出错时仍将状态重置为 "No"，用户可重新授权
           const updated = {};
           for (const [key, val] of Object.entries(currentMap)) {
             updated[key] = {

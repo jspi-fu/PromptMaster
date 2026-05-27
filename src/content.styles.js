@@ -1,20 +1,17 @@
 // content.styles.js
-// COMMENT: Extracted styles and merged global constants to reduce content.js size without changing behavior.
-// COMMENT: We expose constants and the style injector globally; no permissions or manifest changes required.
-
-// COMMENT: Wrap in IIFE to prevent duplicate execution
+// 从 content.js 中提取样式并合并全局常量，不改变原有行为
+// 常量和样式注入器通过全局挂载，无需修改权限或 manifest
 (function () {
   'use strict';
 
-  // COMMENT: Check injection marker at the very beginning - if already injected, exit immediately
   if (window.__promptManagerStylesInjected) {
     return;
   }
   window.__promptManagerStylesInjected = true;
-  window.__promptManagerInjected = true; // Legacy marker for compatibility
+  window.__promptManagerInjected = true; // 旧版兼容标记
 
-  /* Global constants (merged from content.constants.js) */
-  // COMMENT: Use var and window assignments so subsequent injected files see these values.
+  /* 合并自 content.constants.js 的全局常量 */
+  // 使用 var 和 window 挂载，确保后续注入的脚本可以访问这些值
   var THEME_COLORS = window.THEME_COLORS || {
     primary: '#3A6EA5', primaryGradientStart: '#3A6EA5', primaryGradientEnd: '#5788B3',
     hoverPrimary: '#4B88C7', darkBackground: '#0F0F0F', lightBackground: '#F7FAFC',
@@ -64,11 +61,11 @@
   };
   window.SELECTORS = SELECTORS;
 
-  // COMMENT: Make function globally available (uses constants defined above)
+  // 函数挂载到全局（依赖上方定义的常量）
   var injectGlobalStyles = window.injectGlobalStyles || function injectGlobalStyles() {
     const styleEl = document.createElement('style');
     styleEl.textContent = `
-    /* COMMENT: 全局 CSS 变量，供弹窗等不在 #opm-root 内的元素使用 */
+    /* 全局 CSS 变量，供弹窗等不在 #opm-root 内的元素使用 */
     :root {
       /* 主题色 */
       --primary: ${THEME_COLORS.primary};
@@ -126,7 +123,7 @@
       --font-family: 'Roboto', sans-serif;
     }
     
-    /* COMMENT: 用户偏好——滚动条永久隐藏（仅保留滚动功能，不显示任何滑动栏） */
+    /* 用户偏好——滚动条永久隐藏（仅保留滚动功能，不显示任何滑动栏） */
     #${SELECTORS.ROOT} .opm-scrollable {
       scrollbar-width: none !important; /* Firefox */
       -ms-overflow-style: none !important; /* IE/旧 Edge */
@@ -138,7 +135,7 @@
       background: transparent !important;
     }
     
-    /* COMMENT: 聊天输入框滚动条永久隐藏（用户输入区域不显示任何滚动条） */
+    /* 聊天输入框滚动条永久隐藏（用户输入区域不显示任何滚动条） */
     #${SELECTORS.ROOT} #opm-chat-input {
       scrollbar-width: none; /* Firefox */
       -ms-overflow-style: none; /* IE/旧 Edge */
@@ -149,7 +146,7 @@
       background: transparent;
     }
 
-    /* COMMENT: 聊天设置弹窗不在 ROOT 内，单独隐藏其滚动条（仍可滚动） */
+    /* 聊天设置弹窗不在 ROOT 内，单独隐藏其滚动条（仍可滚动） */
     .opm-chat-settings-content {
       scrollbar-width: none;
       -ms-overflow-style: none;
@@ -160,13 +157,12 @@
       height: 0;
       background: transparent;
     }
-    /* COMMENT: Horizontal tags bar uses a shorter scrollbar when active */
+    /* 横向标签栏激活时使用较短的滚动条 */
     #${SELECTORS.ROOT} .opm-tags-filter-bar.opm-scroll-active::-webkit-scrollbar {
       height: 8px;
     }
     
     #${SELECTORS.ROOT}, #${SELECTORS.ROOT} * { font-family: var(--font-family); }
-    /* Prompt Button styling */
     #${SELECTORS.ROOT} .opm-prompt-button {
       width: 100%;
       height: 100%;
@@ -183,7 +179,6 @@
       position: relative;
     }
     
-    /* Toggle switch styling */
     #${SELECTORS.ROOT} .opm-toggle-switch {
       position: relative;
       width: 40px;
@@ -225,7 +220,7 @@
       transform: translateX(20px);
     }
     
-    /* COMMENT: 设置页“?” 悬浮提示（tooltip 使用 title 原生提示） */
+    /* 设置页”?” 悬浮提示（tooltip 使用 title 原生提示） */
     #${SELECTORS.ROOT} .opm-toggle-label-wrap {
       display: inline-flex;
       align-items: center;
@@ -252,7 +247,6 @@
       border-color: ${THEME_COLORS.primary}80;
     }
     
-    /* Prompt Button styling */
     #${SELECTORS.ROOT} .opm-prompt-button::after {
       content: "";
       position: absolute;
@@ -269,7 +263,6 @@
       transform: scale(1.05);
       box-shadow: var(--dark-shadow);
     }
-    /* Prompt list container styling */
     #${SELECTORS.ROOT} .opm-prompt-list {
       position: absolute;
       bottom: 50px;
@@ -284,24 +277,23 @@
       will-change: transform, opacity;
       transition: opacity 0.15s ease, transform 0.2s ease;
       backdrop-filter: blur(12px);
-      /* Constrain panel and let inner list scroll. The main scroll must be inside items, not the whole panel. */
+      /* 限制面板高度，内部列表独立滚动，滚动必须在列表项容器内而非整个面板 */
       display: flex;
       flex-direction: column;
       min-height: 450px;
       max-height: 450px;
-      overflow: hidden; /* prevent bottom menu from being pushed outside */
+      overflow: hidden;
       text-align: left;
     }
-    /* Dedicated scrollable content container inside the panel */
     #${SELECTORS.ROOT} #${SELECTORS.PANEL_CONTENT} {
       flex: 1 1 auto;
       min-height: 0;
-      overflow: hidden; /* keep scroll limited to items container */
-      position: relative; /* anchor bottom menu absolutely inside */
-      padding-bottom: 10px; /* reserve space for bottom menu; ensure last item fully visible above it */
-      display: flex; /* allow children (list items container or forms) to flex */
+      overflow: hidden; /* 滚动仅限于列表项容器 */
+      position: relative; /* 作为底部菜单的绝对定位锚点 */
+      padding-bottom: 10px;
+      display: flex;
       flex-direction: column;
-      padding-bottom: 48px; /* COMMENT: increase reserved space to avoid overlap with bottom menu */
+      padding-bottom: 48px; /* 增大预留空间，避免与底部菜单重叠 */
     }
     #${SELECTORS.ROOT} .opm-prompt-list.opm-visible {
       opacity: 1;
@@ -317,7 +309,7 @@
       border: 1px solid var(--dark-border);
       box-shadow: var(--dark-shadow);
     }
-    /* Height modes: fixed (non-list views) vs variable (list view) */
+    /* 高度模式：固定（非列表视图）vs 自适应（列表视图） */
     #${SELECTORS.ROOT} .opm-prompt-list.opm-fixed-400 {
       min-height: 400px;
       max-height: 400px;
@@ -327,14 +319,13 @@
       min-height: 0;
       max-height: 400px;
     }
-    /* List Items styled as modern cards */
     #${SELECTORS.ROOT} .opm-prompt-list-items {
       max-height: 350px;
       overflow-y: auto;
       margin-bottom: 8px;
       padding-top: 4px;
-      padding-bottom: 24px; /* COMMENT: extra space so the last item is not obscured by bottom menu */
-      flex: 1 1 auto; /* ensure items take available space and scroll internally */
+      padding-bottom: 24px; /* 额外间距，避免最后一项被底部菜单遮挡 */
+      flex: 1 1 auto; /* 列表项占据可用空间并内部滚动 */
       display: flex;
       flex-direction: column;
     }
@@ -344,13 +335,13 @@
     #${SELECTORS.ROOT} .opm-prompt-list-items.opm-dark {
       background-color: var(--dark-bg);
     }
-    /* Tags filter bar (LIST view only) */
+    /* 标签筛选栏（仅列表视图） */
     #${SELECTORS.ROOT} .opm-tags-filter-bar {
       display: flex;
       flex-direction: row;
-      align-items: flex-start; /* COMMENT: Allow height to grow when expanded */
-      gap: 0; /* Wrapper handles gap */
-      padding: 6px 4px 6px 8px; /* Slightly reduced right padding for button */
+      align-items: flex-start; /* 展开时允许高度增长 */
+      gap: 0; /* 间距由外层容器控制 */
+      padding: 6px 4px 6px 8px; /* 右侧内边距稍减，为按钮留位 */
       border-bottom: 1px solid rgba(0,0,0,0.08);
       min-height: 34px;
       box-sizing: border-box;
@@ -366,21 +357,19 @@
       overflow-y: hidden;
       white-space: nowrap;
       flex: 1; /* Take all available width */
-      scrollbar-width: none; /* Try to hide scrollbar for cleaner look */
-      padding-bottom: 2px; /* Prevent scrollbar overlap with content if visible */
+      scrollbar-width: none; /* 隐藏滚动条保持简洁 */
+      padding-bottom: 2px; /* 防止滚动条遮挡内容 */
     }
     #${SELECTORS.ROOT} .opm-tags-wrapper::-webkit-scrollbar {
       display: none;
     }
-    /* Expanded state styles */
     #${SELECTORS.ROOT} .opm-tags-filter-bar.opm-expanded .opm-tags-wrapper {
       flex-wrap: wrap;
       overflow-x: visible;
       white-space: normal;
       height: auto;
-      padding-right: 4px; /* Space from button */
+      padding-right: 4px; /* 与按钮的间距 */
     }
-    /* Expand button styling */
     #${SELECTORS.ROOT} .opm-tags-expand-btn {
       flex: 0 0 auto;
       width: 24px;
@@ -431,7 +420,7 @@
       background-color: var(--dark-card-bg);
       color: var(--input-dark-text);
     }
-    /* Selected state for tag pill */
+    /* 标签胶囊选中状态 */
     #${SELECTORS.ROOT} .opm-tag-pill-filter[aria-pressed="true"] {
       background-color: var(--tag-selected-bg);
       border-color: var(--tag-selected-border);
@@ -440,19 +429,19 @@
       background-color: var(--dark-hover-bg);
       border-color: var(--primary);
     }
-    /* Generic text colors for common containers */
+    /* 通用容器文字颜色 */
     #${SELECTORS.ROOT} .opm-form-container.opm-light { color: var(--input-light-text); }
     #${SELECTORS.ROOT} .opm-form-container.opm-dark { color: var(--input-dark-text); }
-    /* Tighter spacing only for prompt creation form */
+    /* 仅提示词创建表单使用紧凑间距 */
     #${SELECTORS.ROOT} .opm-create-form { gap: 4px !important; }
-    /* Let textarea fields expand to available space in forms */
+    /* 文本域在表单中自动扩展 */
     #${SELECTORS.ROOT} .opm-form-container {
       display: flex;
       flex-direction: column;
-      min-height: 0; /* allow children to flex within constrained parent */
-      flex: 1 1 auto; /* fill remaining height in panel content */
-      overflow-y: auto; /* scroll form if content is taller */
-      padding-bottom: 0px; /* keep save buttons above sticky bottom menu */
+      min-height: 0; /* 允许子元素在受限父容器内弹性伸缩 */
+      flex: 1 1 auto; /* 填充面板剩余高度 */
+      overflow-y: auto; /* 内容超出时表单可滚动 */
+      padding-bottom: 0px;
     }
     #${SELECTORS.ROOT} .opm-form-container .opm-textarea-field {
       flex: 1 1 auto;
@@ -461,7 +450,7 @@
     }
     #${SELECTORS.ROOT} .opm-prompt-list-item.opm-light { color: var(--input-light-text); }
     #${SELECTORS.ROOT} .opm-prompt-list-item.opm-dark { color: var(--input-dark-text); }
-    /* COMMENT: 社区链接（支持我们的工作）颜色跟随主题自动切换 */
+    /* 社区链接颜色跟随主题自动切换 */
     #${SELECTORS.ROOT} .opm-community-title {
       font-weight: bold;
       font-size: 13px;
@@ -522,7 +511,7 @@
       background-color: var(--dark-surface);
       transform: translateY(-2px);
     }
-    /* COMMENT: 搜索匹配预览样式 */
+    /* 搜索匹配预览样式 */
     #${SELECTORS.ROOT} .opm-search-preview {
       font-size: 12px;
       white-space: nowrap;
@@ -728,10 +717,9 @@
       background-color: rgba(0, 0, 0, 0.1);
     }
     
-    /* Make bottom menu icons white-ish in dark mode only */
-    /* COMMENT: Force white-ish appearance for bottom menu icons when in dark mode */
+    /* 暗色模式下底部菜单图标强制白色显示 */
     #${SELECTORS.ROOT}.opm-dark .opm-bottom-menu .opm-icon-button img {
-      /* COMMENT: Use a high-contrast invert with no saturation; keep light mode untouched */
+      /* 高对比度反转，无饱和度；亮色模式保持不变 */
       filter: invert(100%) saturate(0%) brightness(115%) contrast(100%) !important;
     }
     /* Focus style for search input only (avoid styling tag inputs inside forms) */
@@ -773,12 +761,12 @@
       display: flex;
       align-items: center;
       gap: 4px;
-      flex-wrap: nowrap; /* COMMENT: keep on one line */
-      overflow-x: auto;  /* COMMENT: scroll horizontally instead of wrapping */
+      flex-wrap: nowrap; /* 保持单行 */
+      overflow-x: auto;  /* 横向滚动而非换行 */
       min-height: 32px;
       padding: 4px 6px;
       border-radius: 6px;
-      position: relative; /* COMMENT: allow suggestions to be positioned absolutely */
+      position: relative; /* 允许建议列表绝对定位 */
     }
     #${SELECTORS.ROOT} .opm-tag-row.opm-light { border: var(--input-light-border); background-color: var(--input-light-bg); }
     #${SELECTORS.ROOT} .opm-tag-row.opm-dark { border: var(--input-dark-border); background-color: var(--input-dark-bg); }
@@ -791,7 +779,7 @@
       align-items: center;
     }
     #${SELECTORS.ROOT} .opm-tag-input {
-      flex: 0 0 auto; /* COMMENT: do not grow so row stays one line */
+      flex: 0 0 auto; /* 不伸展，保持单行 */
       min-width: 120px;
       border: none;
       outline: none;
@@ -1264,7 +1252,7 @@
     document.head.appendChild(styleEl);
   };
 
-  // COMMENT: Preserve existing bootstrap call in content.js; we do not auto-invoke here to avoid double insertion.
+  // 保留 content.js 中的引导调用，此处不自动调用以避免重复注入
   window.injectGlobalStyles = injectGlobalStyles;
 
 })(); // End of IIFE wrapper

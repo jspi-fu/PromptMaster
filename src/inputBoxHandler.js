@@ -1,21 +1,18 @@
-// inputBoxHandler.js
-// This script handles input box detection and interactions on supported websites.
-
-// COMMENT: Wrap entire script in IIFE to prevent duplicate execution
+// 使用 IIFE 包裹脚本，防止重复执行
 (function() {
   'use strict';
   
-  // COMMENT: Check injection marker at the very beginning - if already injected, exit immediately
+  // 开头即检查注入标记，已注入则直接退出
   if (window.__promptManagerInputHandlerInjected) {
     return;
   }
   window.__promptManagerInputHandlerInjected = true;
 
 /**
- * Class to handle input box detection and interactions on supported websites.
+ * 输入框检测与交互处理类
  */
 class InputBoxHandler {
-  // COMMENT: 缓存 providers 数据，避免每次 getInputBox 都 fetch
+  // 缓存 providers 数据，避免每次 getInputBox 都 fetch
   static _providersCache = null;
 
   static async _getProviders() {
@@ -34,16 +31,14 @@ class InputBoxHandler {
   }
 
   /**
-   * Detects and retrieves the input box from supported websites.
-   * @returns {HTMLElement|null} The input box element or null if not found.
+   * 检测并获取受支持网站的输入框
+   * @returns {HTMLElement|null} 输入框元素，未找到时返回 null
    */
   static async getInputBox() {
     const providers = await InputBoxHandler._getProviders();
 
-    // Dynamic matching using llm_providers.json
     for (const provider of providers) {
       if (provider.pattern) {
-        // Convert pattern to a URL matching format
         const pattern = provider.pattern.replace(/\*/g, '.*');
         const regex = new RegExp(pattern, 'i');
         if (regex.test(window.location.href)) {
@@ -53,22 +48,18 @@ class InputBoxHandler {
               console.log(`Input box found: ${provider.name}`);
               return inputBox;
             }
-          } else {
-            // If no element_selector is provided, we'll fall back to the old logic
-            // This maintains backward compatibility for providers without selectors
           }
         }
       }
     }
 
-    // If no input box is found, log an error
     console.error('Input box not found on this page.');
     return null;
   }
 
   /**
-   * Waits for the input box to be available in the DOM.
-   * @returns {Promise<HTMLElement>} Resolves with the input box element.
+   * 等待输入框在 DOM 中出现
+   * @returns {Promise<HTMLElement>} 解析为输入框元素
    */
   static waitForInputBox() {
     return new Promise((resolve, reject) => {
@@ -78,9 +69,9 @@ class InputBoxHandler {
           clearInterval(checkExist);
           resolve(inputBox);
         }
-      }, 500); // Check every 500ms
+      }, 500); // 每 500ms 检查一次
 
-      // Timeout after 10 seconds
+      // 10 秒后超时
       setTimeout(() => {
         clearInterval(checkExist);
         reject('Input box not found after 10 seconds.');
@@ -147,7 +138,7 @@ class InputBoxHandler {
   }
 
   /**
-   * COMMENT: 通用富文本编辑器插入逻辑（CodeMirror/Slate/ProseMirror 等）
+   * 通用富文本编辑器插入逻辑（CodeMirror/Slate/ProseMirror 等）
    * @param {HTMLElement} inputBox
    * @param {string} textToInsert
    * @param {boolean} disableOverwrite
@@ -171,10 +162,10 @@ class InputBoxHandler {
   }
 
   /**
-   * Inserts a prompt into the detected input box.
-   * @param {HTMLElement} inputBox - The input box element.
-   * @param {string} content - The prompt content to insert.
-   * @param {HTMLElement} promptList - The prompt list element to hide after insertion.
+   * 将提示词插入到检测到的输入框中
+   * @param {HTMLElement} inputBox - 输入框元素
+   * @param {string} content - 要插入的提示词内容
+   * @param {HTMLElement} promptList - 插入后需要隐藏的提示词列表元素
    */
   static async insertPrompt(inputBox, content, promptList) {
     if (!inputBox || !content || !promptList) {
@@ -184,10 +175,10 @@ class InputBoxHandler {
     inputBox.focus();
     try {
       console.log('Inserting prompt:', { content, inputBox, promptList });
-      // COMMENT: Read setting that controls append vs overwrite behavior
+      // 读取追加/覆盖模式设置
       const disableOverwrite = await new Promise(resolve => {
         chrome.storage.local.get('disableOverwrite', data => {
-          // COMMENT: 默认开启”追加模式”；仅当用户显式设置为 false 时才关闭
+          // 默认开启”追加模式”；仅当用户显式设置为 false 时才关闭
           if (chrome.runtime?.lastError) { resolve(true); return; }
           if (data && Object.prototype.hasOwnProperty.call(data, 'disableOverwrite')) {
             resolve(Boolean(data.disableOverwrite));
@@ -198,14 +189,14 @@ class InputBoxHandler {
       });
 
       if (inputBox.contentEditable === 'true') {
-        // COMMENT: Handle rich editors (e.g., Perplexity uses Lexical under #ask-input)
-        // COMMENT: Lexical ignores direct DOM mutations but responds to execCommand/InputEvents
+        // 处理富文本编辑器（如 Perplexity 使用 Lexical 的 #ask-input）
+        // Lexical 忽略直接 DOM 操作，但响应 execCommand/InputEvents
         const isLexicalEditor = inputBox.getAttribute('data-lexical-editor') === 'true'
           || !!inputBox.closest('[data-lexical-editor=”true”]')
           || inputBox.id === 'ask-input';
 
         if (isLexicalEditor) {
-          // COMMENT: Normalize caret based on append/overwrite preference
+          // 根据追加/覆盖偏好设置光标位置
           const selection = window.getSelection();
           const range = document.createRange();
           if (disableOverwrite) {
@@ -239,7 +230,7 @@ class InputBoxHandler {
           return;
         }
 
-        // COMMENT: CodeMirror / Slate / ProseMirror 共用统一插入逻辑
+        // CodeMirror / Slate / ProseMirror 共用统一插入逻辑
         const isSharedRichEditor =
           // CodeMirror
           (inputBox.classList && (inputBox.classList.contains('cm-content') || inputBox.classList.contains('cm-lineWrapping'))) ||
@@ -257,10 +248,9 @@ class InputBoxHandler {
           return;
         }
 
-        // COMMENT: Default contentEditable handling (non-Lexical editors)
+        // 默认 contentEditable 处理（非 Lexical 编辑器）
         if (disableOverwrite) {
-          // COMMENT: Append mode — add content at the end without clearing existing text
-          // Ensure caret is at the end before appending
+          // 追加模式 — 在末尾添加内容，不清除已有文本
           const endRange = document.createRange();
           endRange.selectNodeContents(inputBox);
           endRange.collapse(false);
@@ -286,7 +276,7 @@ class InputBoxHandler {
             inputBox.appendChild(document.createTextNode(prefix + content));
           }
         } else {
-          // COMMENT: Overwrite mode — replace content and simulate a paste for better compatibility
+          // 覆盖模式 — 替换内容并模拟粘贴以提高兼容性
           inputBox.innerHTML = '';
 
           const dataTransfer = new DataTransfer();
@@ -298,7 +288,7 @@ class InputBoxHandler {
           });
           inputBox.dispatchEvent(pasteEvent);
 
-          // Fallback for line breaks if paste event doesn't handle them perfectly
+          // 粘贴事件未完美处理换行时的回退逻辑
           if (content.includes('\n')) {
             const lines = content.split('\n');
             inputBox.innerHTML = '';
@@ -315,15 +305,15 @@ class InputBoxHandler {
               }
             });
           } else {
-            // For single-line prompts, ensure content is set
+            // 单行提示词，确保内容已设置
             inputBox.textContent = content;
           }
         }
 
-        // Add two spaces at the end
+        // 末尾添加两个空格
         inputBox.appendChild(document.createTextNode('  '));
 
-        // Move cursor to the end of the content
+        // 将光标移至内容末尾
         const range = document.createRange();
         range.selectNodeContents(inputBox);
         range.collapse(false);
@@ -331,16 +321,16 @@ class InputBoxHandler {
         sel.removeAllRanges();
         sel.addRange(range);
 
-        // Trigger input event to notify the application of the change
+        // 触发 input 事件通知应用内容变更
         inputBox.dispatchEvent(new Event('input', { bubbles: true }));
 
-        // Final fallback: if still empty, set innerText
+        // 最终回退：若仍为空则设置 innerText
         if (!inputBox.textContent || inputBox.textContent.trim() === '') {
           inputBox.innerText = content + '  ';
           inputBox.dispatchEvent(new Event('input', { bubbles: true }));
         }
       } else if (inputBox.tagName.toLowerCase() === 'textarea') {
-        // COMMENT: For textareas, either overwrite or append
+        // textarea：覆盖或追加
         if (disableOverwrite) {
           const existing = inputBox.value || '';
           const needsSpace = existing && !/\s$/.test(existing);
@@ -364,9 +354,9 @@ class InputBoxHandler {
   }
 
   /**
-   * Retrieves the content from the input box.
-   * @param {HTMLElement} inputBox - The input box element.
-   * @returns {string} The content of the input box.
+   * 获取输入框中的内容
+   * @param {HTMLElement} inputBox - 输入框元素
+   * @returns {string} 输入框的内容
    */
   static getInputContent(inputBox) {
     if (inputBox.contentEditable === 'true') {
@@ -378,7 +368,6 @@ class InputBoxHandler {
   }
 }
 
-// Make class available globally
 window.InputBoxHandler = InputBoxHandler;
 
-})(); // End of IIFE wrapper
+})();

@@ -1,9 +1,9 @@
-import { getProviders } from './llm_providers.js'; // Import the correct function
-import { getPrompts, onPromptsChanged, savePrompt } from './promptStorage.js'; // COMMENT: Unified prompt storage API
+import { getProviders } from './llm_providers.js';
+import { getPrompts, onPromptsChanged, savePrompt } from './promptStorage.js';
 
-// COMMENT: Providers cache to reduce per-tab overhead.
-// - Avoid fetching/parsing llm_providers.json on every tab update
-// - Precompile wildcard patterns into RegExp once per service worker lifetime
+// 提供商缓存，减少每个标签页的开销
+// - 避免在每次标签页更新时获取/解析 llm_providers.json
+// - 在 Service Worker 生命周期内将通配符模式预编译为 RegExp 一次
 const ProvidersCache = (() => {
   /** @type {{ compiled: Array<{ originPattern: string, urlRegex: RegExp }> } | null} */
   let cache = null;
@@ -11,9 +11,9 @@ const ProvidersCache = (() => {
   let loading = null;
 
   const wildcardToRegex = (originPattern) => {
-    // Convert "*://example.com/*" to a safe RegExp
+    // 将 "*://example.com/*" 转换为安全的正则表达式
     const escaped = originPattern
-      .replace(/[|\\{}()[\]^$+?.]/g, '\\$&') // escape regex metacharacters except '*'
+      .replace(/[|\\{}()[\]^$+?.]/g, '\\$&') // 转义正则元字符（'*' 除外）
       .replace(/\*/g, '.*');
     return new RegExp(`^${escaped}`);
   };
@@ -57,20 +57,20 @@ const ProvidersCache = (() => {
   return { getAuthorizedCompiled, clear };
 })();
 
-// COMMENT: Unified script injection function to prevent duplicate injection
-// Checks for injection marker before injecting scripts
+// 统一脚本注入函数，防止重复注入
+// 注入前检查注入标记
 async function injectScriptsIfNeeded(tabId, tabUrl) {
-  // Skip injection for restricted URLs
+  // 跳过受限 URL 的注入
   if (!tabUrl || tabUrl.startsWith('chrome://') || tabUrl.startsWith('edge://') || tabUrl.startsWith('about:')) {
     return false;
   }
 
   try {
-    // Check if scripts are already injected by checking for the markers
+    // 通过检查标记判断脚本是否已注入
     const [{ result: isInjected }] = await chrome.scripting.executeScript({
       target: { tabId: tabId },
       func: () => {
-        // Check both markers to ensure all scripts are injected
+        // 检查所有标记以确保脚本已完全注入
         return (window.__promptManagerInjected === true ||
           window.__promptManagerContentInjected === true ||
           window.__promptManagerInputHandlerInjected === true);
@@ -82,7 +82,7 @@ async function injectScriptsIfNeeded(tabId, tabUrl) {
       return false;
     }
 
-    // Inject scripts if not already injected
+    // 未注入时执行注入
     await chrome.scripting.executeScript({
       target: { tabId: tabId },
       files: [
@@ -96,26 +96,26 @@ async function injectScriptsIfNeeded(tabId, tabUrl) {
     console.log(`Successfully injected scripts into tab ${tabId} (${tabUrl})`);
     return true;
   } catch (injectionError) {
-    // Handle specific error cases
+    // 处理特定错误情况
     if (injectionError.message.includes('Cannot access') ||
       injectionError.message.includes('No matching window') ||
       injectionError.message.includes('tab was closed')) {
-      // Ignore errors for restricted pages or closed tabs
+      // 忽略受限页面或已关闭标签页的错误
       return false;
     }
-    // Log other injection errors
+    // 记录其他注入错误
     console.error(`Failed to inject script into tab ${tabId} (${tabUrl}):`, injectionError);
     return false;
   }
 }
 
 chrome.runtime.onInstalled.addListener(function (details) {
-  // COMMENT: Chrome/Edge sidePanel capability check (some environments may not support it)
+  // Chrome/Edge 侧边栏能力检查（部分环境可能不支持）
   if (chrome.sidePanel && typeof chrome.sidePanel.setPanelBehavior === 'function') {
     chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
   }
   console.log('onInstalled', details);
-  // COMMENT: Rebuild providers map on install and update (but only open UI on first install)
+  // 安装和更新时重建提供商映射（仅首次安装时打开 UI）
   const shouldRebuild = ['install', 'update'].includes(details.reason);
   if (details.reason === 'install') {
     chrome.tabs.create({ url: 'permissions/permissions.html' });
@@ -125,7 +125,7 @@ chrome.runtime.onInstalled.addListener(function (details) {
       try {
         const providersMap = await checkProviderPermissions();
         console.log('Providers Map:', providersMap);
-        // Store the provider map in local storage
+        // 将提供商映射存储到本地存储
         await chrome.storage.local.set({ 'aiProvidersMap': providersMap });
         ProvidersCache.clear();
       } catch (error) {
@@ -139,15 +139,15 @@ chrome.runtime.onInstalled.addListener(function (details) {
 chrome.permissions.onAdded.addListener(async (permissions) => {
   console.log('Permissions added:', permissions.origins);
   if (permissions.origins && permissions.origins.length > 0) {
-    // Iterate through the newly granted origins
+    // 遍历新授权的源
     for (const origin of permissions.origins) {
       try {
-        // Find tabs that match the newly granted origin
+        // 查找匹配新授权源的标签页
         const tabs = await chrome.tabs.query({ url: origin });
         console.log(`Found ${tabs.length} tabs matching ${origin}`);
 
         for (const tab of tabs) {
-          // Use unified injection function to prevent duplicate injection
+          // 使用统一注入函数防止重复注入
           await injectScriptsIfNeeded(tab.id, tab.url);
         }
       } catch (err) {
@@ -158,9 +158,9 @@ chrome.permissions.onAdded.addListener(async (permissions) => {
 });
 
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  // Inject scripts when a tab finishes loading and has a URL
+  // 标签页加载完成且有 URL 时注入脚本
   if (changeInfo.status === 'complete' && tab.url) {
-    // Fast path: only attempt on http(s)
+    // 快速路径：仅在 http(s) 协议下尝试
     if (!tab.url.startsWith('http://') && !tab.url.startsWith('https://')) return;
     try {
       const compiled = await ProvidersCache.getAuthorizedCompiled();
@@ -174,9 +174,9 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
         break;
       }
     } catch (err) {
-      // Avoid logging errors for URLs like 'chrome://extensions/'
+      // 避免记录 'chrome://extensions/' 等 URL 的错误
       if (tab.url && !tab.url.startsWith('chrome://')) {
-        // Log errors from getProviders or permission checks
+        // 记录 getProviders 或权限检查过程中的错误
         console.error(`Error during tab update processing for ${tab.url}:`, err);
       }
     }
@@ -185,40 +185,39 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
 async function checkProviderPermissions() {
   try {
-    // Fetch the providers list (use absolute extension URL for reliability)
+    // 获取提供商列表（使用绝对扩展 URL 以确保可靠性）
     const response = await fetch(chrome.runtime.getURL('llm_providers.json'));
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const providersData = await response.json();
 
-    // COMMENT: Normalize icon URLs. For local paths (e.g. "../icons/foo.png" or "icons/foo.png"),
-    // convert to an absolute chrome-extension:// URL so all UIs resolve consistently.
+    // 规范化图标 URL。对于本地路径（如 "../icons/foo.png" 或 "icons/foo.png"），
+    // 转换为绝对 chrome-extension:// URL，确保所有 UI 一致解析。
     const resolveIconUrl = (raw) => {
       if (!raw) return '';
-      // Keep absolute/network/data/chrome-extension URLs as-is
+      // 保留绝对/网络/data/chrome-extension URL 不变
       if (/^(https?:|data:|chrome-extension:)/.test(raw)) return raw;
-      // Strip leading ./ or ../ segments to anchor at the extension root
+      // 去除开头的 ./ 或 ../ 段，锚定到扩展根目录
       const normalized = raw.replace(/^(\.\.\/)+/, '').replace(/^\.\//, '');
       return chrome.runtime.getURL(normalized);
     };
 
-    // Object to store provider permission status and URL
+    // 存储提供商权限状态和 URL 的对象
     const providersMap = {};
 
-    // Loop through each provider object in the patterns array
+    // 遍历模式数组中的每个提供商对象
     for (const providerInfo of providersData.llm_providers) {
-      // Get provider name, URL pattern, and provider URL
       const providerName = providerInfo.name;
       const urlPattern = providerInfo.pattern;
       const providerUrl = providerInfo.url;
 
-      // Check if permission exists for this provider's URL pattern
+      // 检查该提供商 URL 模式是否有对应权限
       const hasPermission = await chrome.permissions.contains({
         origins: [urlPattern]
       });
 
-      // Store the result (permission status and URL) in providersMap
+      // 将结果（权限状态和 URL）存储到 providersMap
       providersMap[providerName] = {
         hasPermission: hasPermission ? 'Yes' : 'No',
         urlPattern: urlPattern,
@@ -230,44 +229,41 @@ async function checkProviderPermissions() {
     return providersMap;
   } catch (error) {
     console.error('[PromptManager] Error checking permissions:', error);
-    return {}; // Return empty object so callers can safely iterate
+    return {}; // 返回空对象以便调用方安全遍历
   }
 }
 
-// --- CONTEXT MENU FOR PROMPT MANAGER ---
-
-// Helper: Get all prompts via the unified manager (single source of truth)
+// 辅助函数：通过统一管理器获取所有提示词（单一数据源）
 async function getAllPrompts() {
   return await getPrompts();
 }
 
-// Create the context menu
+// 创建右键菜单
 async function createPromptContextMenu() {
-  // Remove any existing menu to avoid duplicates
+  // 移除已有菜单以避免重复
   chrome.contextMenus.removeAll(() => {
-    // Create the parent menu
+    // 创建父级菜单
     chrome.contextMenus.create({
       id: 'open-prompt-manager',
       title: chrome.i18n.getMessage('openPromptMaster'),
       contexts: ['all']
     });
-    // First child: "Save as prompt" – only shown when there is a text selection
-    // COMMENT: This enables the flow "select text → right-click → Prompt Master → Save as prompt"
+    // "保存为提示词"子菜单——仅在有文本选中时显示
     chrome.contextMenus.create({
       id: 'save-as-prompt',
       parentId: 'open-prompt-manager',
       title: chrome.i18n.getMessage('saveAsNewPrompt'),
       contexts: ['selection']
     });
-    // COMMENT: Visual separator between "Save as prompt" and the list of existing prompts.
-    // Only show when there is a selection, mirroring the visibility of the save item.
+    // "保存为提示词"与提示词列表之间的视觉分隔符
+    // 仅在有选中文本时显示，与保存项的可见性保持一致
     chrome.contextMenus.create({
       id: 'save-separator',
       parentId: 'open-prompt-manager',
       type: 'separator',
       contexts: ['selection']
     });
-    // Add a menu item for each prompt
+    // 为每个提示词添加菜单项
     getAllPrompts().then(prompts => {
       prompts.forEach((prompt, idx) => {
         chrome.contextMenus.create({
@@ -281,15 +277,15 @@ async function createPromptContextMenu() {
   });
 }
 
-// On install or update, create the context menu
+// 安装或更新时创建右键菜单
 chrome.runtime.onInstalled.addListener(() => {
   createPromptContextMenu();
 });
 
-// On startup, also create the context menu (for reloads)
+// 启动时也创建右键菜单（用于重新加载场景）
 chrome.runtime.onStartup.addListener(() => {
   createPromptContextMenu();
-  // COMMENT: Refresh providers map on startup so icon changes and new providers propagate without reinstall
+  // 启动时刷新提供商映射，使图标变更和新增提供商无需重新安装即可生效
   (async () => {
     try {
       const providersMap = await checkProviderPermissions();
@@ -300,22 +296,22 @@ chrome.runtime.onStartup.addListener(() => {
   })();
 });
 
-// Listen for prompts changes via the unified API and update the context menu
+// 监听提示词变化，通过统一 API 更新右键菜单
 onPromptsChanged(() => {
-  // COMMENT: Regenerate the context menu whenever prompts change
+  // 提示词变化时重新生成右键菜单
   createPromptContextMenu();
 });
 
-// When a context menu item is clicked
+// 右键菜单项点击处理
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
-  // Handle "Save as prompt": opens a small popup dialog prefilled with the selected text
+  // 处理"保存为提示词"：打开预填选中文本的小弹窗对话框
   if (info.menuItemId === 'save-as-prompt') {
-    // COMMENT: Use Chrome's built-in dialogs in the page context:
-    // - prompt() to capture the title
-    // - alert() to show validation error if title is empty
+    // 使用页面上下文中 Chrome 内置对话框：
+    // - prompt() 用于获取标题
+    // - alert() 用于标题为空时显示验证错误
     try {
       const selected = info.selectionText || '';
-      // Ask for a title using the page's built-in blocking prompt
+      // 使用页面内置的阻塞式 prompt 获取标题
       const [{ result: titleValue }] = await chrome.scripting.executeScript({
         target: { tabId: tab.id },
         func: (msg) => {
@@ -325,7 +321,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
       });
       const title = (titleValue || '').trim();
       if (!title) {
-        // Show the requested error message if no title provided
+        // 标题为空时显示错误提示
         await chrome.scripting.executeScript({
           target: { tabId: tab.id },
           func: (msg) => { window.alert(msg); },
@@ -333,9 +329,9 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         });
         return;
       }
-      // Persist the prompt using the unified storage API
+      // 使用统一存储 API 保存提示词
       await savePrompt({ title, content: selected });
-      // Optional: fire a lightweight notification if available
+      // 可选：发送轻量级通知
       chrome.notifications?.create({
         type: 'basic',
         iconUrl: 'icons/icon128.png',
@@ -348,14 +344,14 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     return;
   }
   if (info.menuItemId.startsWith('prompt-')) {
-    // Extract the prompt index
+    // 提取提示词索引
     const idx = parseInt(info.menuItemId.replace('prompt-', ''), 10);
     const prompts = await getAllPrompts();
     if (prompts[idx]) {
-      // Write the prompt content to the clipboard
+      // 将提示词内容写入剪贴板
       try {
         await navigator.clipboard.writeText(prompts[idx].content);
-        // Optionally, show a notification
+        // 可选：显示通知
         chrome.notifications?.create({
           type: 'basic',
           iconUrl: 'icons/icon128.png',
@@ -363,7 +359,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
           message: chrome.i18n.getMessage('copiedTitle', [prompts[idx].title])
         });
       } catch (err) {
-        // Fallback: try to copy using the tabs API if clipboard API fails
+        // 降级方案：剪贴板 API 失败时尝试通过标签页 API 复制
         chrome.scripting.executeScript({
           target: { tabId: tab.id },
           func: (text) => navigator.clipboard.writeText(text),
@@ -373,5 +369,3 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     }
   }
 });
-
-// --- END CONTEXT MENU ---

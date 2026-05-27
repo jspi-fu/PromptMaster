@@ -1,39 +1,12 @@
-/* ============================================================================
-   Prompt Manager Content Script (content.js)
-
-   Table of Contents
-   [01] Global styles injection
-   [02] Utilities (createEl, debounce)
-   [03] Theme helpers (getMode, getIconFilter, showEl, hideEl, Theme)
-   [04] Selector helpers ($root, qs)
-   [05] Panel routing (PanelView, PanelRouter)
-   [06] Outside click closer
-   [07] Keyboard manager
-   [08] Dark mode state
-   [09] Event bus
-   [10] Storage manager
-   [11] Icon SVGs
-   [12] PromptUI internal modules
-   [13] PromptUIManager (public UI API)
-   [14] PromptProcessor (variables)
-   [15] PromptMediator (event wiring)
-   [16] Bootstrapping
-   ============================================================================ */
-
-// COMMENT: Wrap entire script in IIFE to prevent duplicate execution
 (function () {
   'use strict';
 
-  // COMMENT: Check injection marker at the very beginning - if already injected, exit immediately
   if (window.__promptManagerContentInjected) {
     return;
   }
   window.__promptManagerContentInjected = true;
 
-  /* ============================================================================
-     [01] Global Styles Injection
-     COMMENT: Ensure base CSS is present before any UI is mounted.
-     ============================================================================ */
+  // 确保全局 CSS 在 UI 挂载前注入
   const ensureStylesInjected = (() => {
     let injected = false;
     return () => {
@@ -48,10 +21,7 @@
   })();
   ensureStylesInjected();
 
-  /* ---------------------------------------------------------------------------
-   * [01] Chrome bridge helpers
-   * COMMENT: Centralizes chrome.* guards so storage calls stay reliable.
-   * -------------------------------------------------------------------------*/
+  // Chrome API 桥接层，统一 storage 调用的错误处理
   const ChromeBridge = (() => {
     const storage = {
       async get(key, fallback) {
@@ -99,10 +69,7 @@
     return { storage };
   })();
 
-  /* ---------------------------------------------------------------------------
-   * [02] Config & Constants
-   * COMMENT: Centralized timings and reusable constants.
-   * -------------------------------------------------------------------------*/
+  // 常量定义
   const HIDE_ANIMATION_MS = 200;
   const MUTATION_DEBOUNCE_MS = 300;
   const SEARCH_FOCUS_DELAY_MS = 50;
@@ -110,18 +77,15 @@
   const ONBOARDING_FADE_OUT_MS = 300;
   const IMPORT_SUCCESS_RESET_MS = 2000;
   const SCROLLBAR_PERSIST_MS = 900;
-  // Hot corner indicator sizes (px)
+  // 热角指示器尺寸（px）
   const HOT_CORNER_INDICATOR_SMALL_PX = 20;
   const HOT_CORNER_INDICATOR_LARGE_PX = 30;
 
-  // COMMENT: 禁用“闲置自动收回”机制（由 PromptUI.Behaviors.startCloseTimer 控制）
+  // 禁用”闲置自动收回”机制（由 PromptUI.Behaviors.startCloseTimer 控制）
   // 用户更偏好手动控制面板显示；同时也避免对话中途被收起影响体验
   window.PROMPT_DISABLE_AUTO_CLOSE = true;
 
-  /* ---------------------------------------------------------------------------
-   * [02] Types (JSDoc typedefs)
-   * COMMENT: Shapes used across UI/Storage operations.
-   * -------------------------------------------------------------------------*/
+  // JSDoc 类型定义
   /**
    * @typedef {Object} Prompt
    * @property {string} uuid
@@ -150,11 +114,9 @@
    * @returns {void|Promise<void>}
    */
 
-  // [01] Utilities — generic helpers
-  // Helper function for creating DOM elements
+  // DOM 元素创建工具
   /**
-   * Create a DOM element with common options applied.
-   * COMMENT: Centralizes element creation to keep callers concise and consistent.
+   * 创建 DOM 元素，统一配置项以保持调用简洁一致
    * @param {string} tag
    * @param {Object} [options]
    * @param {string} [options.id]
@@ -177,9 +139,7 @@
   };
   window.createEl = createEl;
 
-  /* ---------------------------------------------------------------------------
-   * Toast notification utility
-   * -------------------------------------------------------------------------*/
+  // Toast 通知工具
   const showToast = (message, duration = 2000) => {
     const toast = createEl('div', {
       className: 'opm-toast',
@@ -219,14 +179,8 @@
   };
   window.showToast = showToast;
 
-  /* ---------------------------------------------------------------------------
-   * [01] Utility: debounce
-   * Provides a simple debounce wrapper to coalesce rapid successive calls.
-   * Example: const debouncedFn = debounce(() => console.log('run'), 300);
-   * -------------------------------------------------------------------------*/
   /**
-   * Debounce a function so it runs after a quiet period.
-   * COMMENT: Prevents excessive executions during rapid events.
+   * 防抖包装器，避免快速连续事件过度触发
    * @template T
    * @param {(...args: any[]) => T} fn
    * @param {number} [wait=100]
@@ -240,10 +194,9 @@
     };
   };
 
-  // [02] Theme helpers — centralize theme and basic UI show/hide behavior
-  // Helper functions for theme and UI manipulation
+  // 主题与 UI 显示/隐藏辅助函数
   const getMode = () => (isDarkMode() ? 'dark' : 'light');
-  // Centralize the computed CSS filter used for icons based on theme
+  // 根据主题计算图标 CSS filter
   const getIconFilter = () => (
     isDarkMode()
       ? 'invert(93%) sepia(0%) saturate(0%) hue-rotate(213deg) brightness(107%) contrast(87%)'
@@ -252,20 +205,18 @@
   window.getMode = getMode;
   window.getIconFilter = getIconFilter;
   /**
-   * Show an element with Prompt Manager visibility semantics.
-   * COMMENT: Uses CSS class toggles and respectful display values.
+   * 显示元素，使用 CSS 类切换和适当的 display 值
    * @param {HTMLElement} el
    */
   const showEl = el => {
-    // Respect intended display for our panel
+    // 恢复元素的原始 display 值
     const isPromptList = el.classList && el.classList.contains('opm-prompt-list');
     el.style.display = isPromptList ? 'flex' : 'block';
     void el.offsetHeight;
     el.classList.add('opm-visible');
   };
   /**
-   * Hide an element with a short delay for transitions.
-   * COMMENT: Resets list item displays to avoid sticky filters on next open.
+   * 隐藏元素，带短暂延迟以支持过渡动画
    * @param {HTMLElement} el
    */
   const hideEl = el => {
@@ -279,40 +230,32 @@
   window.showEl = showEl;
   window.hideEl = hideEl;
 
-  /* ---------------------------------------------------------------------------
-   * [02] Theme helper, centralize applying light/dark class across our subtree
-   * -------------------------------------------------------------------------*/
+  // 主题管理，统一在子树中应用 light/dark 类名
   const Theme = {
-    // Apply current mode class to a single node
+    // 对单个节点应用当前主题类名
     applyNode(node) {
       if (!node) return;
       node.classList?.remove('opm-light', 'opm-dark');
       node.classList?.add(`opm-${getMode()}`);
     },
-    // Apply to all nodes that opt into theming within our root
+    // 对根节点下所有启用主题的节点应用类名
     applyAll() {
       const root = document.getElementById(SELECTORS.ROOT);
       if (!root) return;
-      // Root carries mode for global styles
+      // 根节点承载全局样式模式
       root.classList.toggle('opm-dark', isDarkMode());
       root.classList.toggle('opm-light', !isDarkMode());
-      // Update all nodes that have any opm-* class
+      // 更新所有带有 opm-* 类名的节点
       const themedNodes = root.querySelectorAll('[class*="opm-"]');
       themedNodes.forEach(el => this.applyNode(el));
     }
   };
 
-  /* ---------------------------------------------------------------------------
-   * [03] Selector helpers (scoped under our root)
-   * COMMENT: Small helpers to reduce query noise and keep scope consistent.
-   * -------------------------------------------------------------------------*/
+  // 选择器辅助函数（限定在 opm-root 作用域内）
   const $root = () => document.getElementById(SELECTORS.ROOT);
   const qs = (sel, root = $root()) => (root ? root.querySelector(sel) : null);
 
-  /* ---------------------------------------------------------------------------
-   * [04] Panel view states and tiny router
-   * COMMENT: Centralizes view switching and search visibility.
-   * -------------------------------------------------------------------------*/
+  // 面板视图状态与路由
   const PanelView = Object.freeze({
     LIST: 'LIST',
     CREATE: 'CREATE',
@@ -324,10 +267,7 @@
   });
   window.PanelView = PanelView;
 
-  /* ---------------------------------------------------------------------------
-   * Scroll visibility manager — shows scrollbars only while the user is scrolling.
-   * COMMENT: Keeps the panel minimal until actual scroll activity occurs.
-   * -------------------------------------------------------------------------*/
+  // 滚动条可见性管理——仅在用户滚动时短暂显示滚动条
   const ScrollVisibilityManager = (() => {
     const observers = new WeakMap();
     const ACTIVITY_EVENTS = ['scroll', 'wheel', 'touchmove'];
@@ -363,7 +303,7 @@
     };
 
     /**
-     * COMMENT: Shared factory for static info views so HELP stays consistent.
+     * 静态信息视图工厂，保持 HELP 视图结构一致
      * @param {{ titleText: string, contentId: string, sourcePath: string }} options
      * @returns {HTMLElement}
      */
@@ -405,7 +345,7 @@
     };
 
     /**
-     * COMMENT: Create chat interface for prompt generation
+     * 创建提示词生成器的聊天界面
      * @returns {HTMLElement}
      */
     const createChatView = () => {
@@ -422,7 +362,7 @@
         }
       });
 
-      // Header with title and settings icon
+      // 标题栏和设置图标
       const header = createEl('div', {
         className: `opm-chat-header opm-${getMode()}`,
         styles: {
@@ -501,7 +441,7 @@
       headerRight.append(resetBtn, settingsBtn);
       header.append(titleWrapper, headerRight);
 
-      // Chat messages container
+      // 消息容器
       const messagesContainer = createEl('div', {
         id: SELECTORS.CHAT_CONTENT,
         className: `opm-chat-messages opm-${getMode()}`,
@@ -516,7 +456,7 @@
         }
       });
 
-      // Input area
+      // 输入区域
       const inputArea = createEl('div', {
         className: `opm-chat-input-area opm-${getMode()}`,
         styles: {
@@ -552,7 +492,7 @@
           minHeight: '36px'
         }
       });
-      // COMMENT: 输入框滚动条默认隐藏（仅在滚动时短暂显示），与面板其他区域保持一致
+      // 输入框滚动条默认隐藏（仅在滚动时短暂显示），与面板其他区域保持一致
       ScrollVisibilityManager.observe(input);
 
       const sendBtn = createEl('button', {
@@ -580,12 +520,12 @@
       inputArea.append(input, sendBtn);
       container.append(header, messagesContainer, inputArea);
 
-      // Initialize chat
+      // 初始化聊天
       initializeChat(messagesContainer, input, sendBtn, resetBtn, settingsBtn);
 
       ScrollVisibilityManager.observe(messagesContainer);
 
-      // COMMENT: 首次打开提示词生成器时,若用户尚未配置模型,引导进入配置界面
+      // 首次打开提示词生成器时，若用户尚未配置模型，引导进入配置界面
       (async () => {
         try {
           const result = await new Promise(resolve => {
@@ -594,7 +534,7 @@
           const hasApiKey = result.chatApiKey && result.chatApiKey.trim().length > 0;
           const hasBeenGuided = result.chatConfigGuided || false;
 
-          // COMMENT: 如果从未配置过API且未被引导过,自动打开设置弹窗
+          // 如果从未配置过API且未被引导过，自动打开设置弹窗
           if (!hasApiKey && !hasBeenGuided) {
             // 标记为已引导,避免重复弹窗
             await new Promise(resolve => {
@@ -613,7 +553,7 @@
       return container;
     };
 
-    // COMMENT: Central map defining builder + UI rules for each panel view.
+    // 定义每个面板视图的构建器和 UI 规则的中心映射
     const VIEW_DEFINITIONS = {
       [PanelView.LIST]: {
         kind: 'list',
@@ -731,7 +671,7 @@
       if (!listEl) return;
 
       if (state.currentView === view && !definition.alwaysRebuild) {
-        // COMMENT: If view already active and does not require rebuild, just ensure visibility.
+        // 视图已激活且无需重建时，仅确保可见性
         PromptUIManager.showPromptList(listEl);
         return;
       }
@@ -748,8 +688,8 @@
       const builder = definition.builder;
       if (!builder) return;
 
-      // COMMENT: Reset the shared panel scaffolding first so builders can rely on
-      // the latest tags/search host before injecting their custom content.
+      // 先重置共享面板脚手架，确保构建器注入自定义内容前
+      // 能使用最新的标签/搜索宿主
       PromptUIManager.resetPromptListContainer();
 
       let node = null;
@@ -771,14 +711,14 @@
   window.PanelRouter = PanelRouter;
 
   /**
-   * COMMENT: Initialize chat interface with message handling and API calls
+   * 初始化聊天界面，包含消息处理和 API 调用
    */
   const initializeChat = (messagesContainer, input, sendBtn, resetBtn, settingsBtn) => {
     let messages = [];
     let systemPrompt = '';
     const HISTORY_KEY = 'pm_chat_history_v1';
 
-    // Load system prompt from system.md
+    // 从 system.md 加载系统提示词
     fetch(chrome.runtime.getURL('system.md'))
       .then(r => r.text())
       .then(text => {
@@ -786,11 +726,11 @@
       })
       .catch(err => {
         console.error('[PromptManager] Failed to load system.md:', err);
-        // Fallback: use default system prompt
+        // 加载失败时使用默认系统提示词
         systemPrompt = 'You are Lyra, a master-level AI prompt optimization specialist.';
       });
 
-    // Load chat settings
+    // 加载对话设置
     const loadSettings = () => {
       return new Promise((resolve) => {
         chrome.storage.local.get(['chatApiKey', 'chatBaseUrl', 'chatModelName'], (result) => {
@@ -803,7 +743,7 @@
       });
     };
 
-    // COMMENT: 持久化对话上下文（在用户点击“重置”之前保留）
+    // 持久化对话上下文（在用户点击”重置”之前保留）
     const loadHistory = () => new Promise(resolve => {
       chrome.storage.local.get([HISTORY_KEY], (result) => {
         const raw = result?.[HISTORY_KEY];
@@ -814,7 +754,7 @@
         resolve(clean);
       });
     });
-    // COMMENT: 对话历史上限：最多保留 50 轮（user+assistant 配对），或总字符数不超过 100KB
+    // 对话历史上限：最多保留 50 轮（user+assistant 配对），或总字符数不超过 100KB
     const trimHistoryIfNeeded = (msgs) => {
       const MAX_ROUNDS = 50;
       const MAX_CHARS = 100000;
@@ -822,11 +762,11 @@
         const totalChars = msgs.reduce((sum, m) => sum + (m.content?.length || 0), 0);
         if (totalChars <= MAX_CHARS) return msgs;
       }
-      // COMMENT: 保留最近的 N 轮（从后往前取）
+      // 保留最近的 N 轮（从后往前取）
       const trimmed = msgs.slice(-MAX_ROUNDS * 2);
       const totalChars = trimmed.reduce((sum, m) => sum + (m.content?.length || 0), 0);
       if (totalChars > MAX_CHARS) {
-        // COMMENT: 如果仍超限，按字符数从后往前截断
+        // 如果仍超限，按字符数从后往前截断
         let chars = 0;
         const result = [];
         for (let i = trimmed.length - 1; i >= 0 && chars < MAX_CHARS; i--) {
@@ -843,23 +783,23 @@
     };
 
     const persistHistory = debounce(() => {
-      // COMMENT: 只存 user/assistant 历史；system prompt 不落盘；应用上限控制
+      // 只存 user/assistant 历史；system prompt 不落盘；应用上限控制
       const trimmed = trimHistoryIfNeeded(messages.slice());
       chrome.storage.local.set({ [HISTORY_KEY]: trimmed }, () => {
-        // COMMENT: 如果被截断，同步更新内存中的 messages（保持一致性）
+        // 如果被截断，同步更新内存中的 messages（保持一致性）
         if (trimmed.length < messages.length) {
           messages.splice(0, messages.length - trimmed.length);
         }
       });
     }, 300);
 
-    // Configure marked for Markdown rendering
+    // 配置 marked 的 Markdown 渲染
     const renderMarkdown = (text) => {
       if (typeof marked === 'undefined' || !marked.parse) return text.replace(/\n/g, '<br>');
       return marked.parse(text, { gfm: true, breaks: true });
     };
 
-    // Add message to chat
+    // 添加消息到对话
     const addMessage = (container, role, content, isStreaming = false) => {
       const dark = isDarkMode();
       const messageDiv = createEl('div', {
@@ -903,12 +843,12 @@
       return { messageDiv, contentDiv, cursor };
     };
 
-    // Get welcome message
+    // 获取欢迎消息
     const getWelcomeMessage = () => {
       return chrome.i18n.getMessage('inputFormat');
     };
 
-    // COMMENT: 初始化时恢复历史（若无历史则显示欢迎语）
+    // 初始化时恢复历史（若无历史则显示欢迎语）
     (async () => {
       try {
         const history = await loadHistory();
@@ -924,7 +864,7 @@
       }
     })();
 
-    // Send message to API
+    // 发送消息到 API
     const sendMessage = async (userMessage) => {
       const settings = await loadSettings();
       if (!settings.apiKey) {
@@ -960,7 +900,7 @@
           throw new Error(error.error?.message || `HTTP ${response.status}`);
         }
 
-        // COMMENT: OpenAI 兼容 SSE 流式输出解析
+        // OpenAI 兼容 SSE 流式输出解析
         const reader = response.body?.getReader?.();
         if (!reader) {
           // Fallback: 部分环境/服务不支持流，退回普通 JSON
@@ -979,7 +919,7 @@
         let pendingUpdate = false;
         let rafScheduled = false;
 
-        // COMMENT: 使用 rAF 批量刷新，避免每次 delta 都写 DOM
+        // 使用 rAF 批量刷新，避免每次 delta 都写 DOM
         const flushUI = () => {
           if (!pendingUpdate) return;
           pendingUpdate = false;
@@ -987,7 +927,7 @@
 
           const cursorEl = contentDiv.querySelector('.opm-chat-stream-cursor');
           if (cursorEl) cursorEl.remove();
-          // COMMENT: 使用 marked.parse() 渲染 Markdown
+          // 使用 marked.parse() 渲染 Markdown
           contentDiv.innerHTML = renderMarkdown(acc);
           const nextCursor = createEl('span', {
             className: 'opm-chat-stream-cursor',
@@ -1012,7 +952,7 @@
           if (doneReading) break;
           buffer += decoder.decode(value, { stream: true });
 
-          // COMMENT: SSE 事件以换行分隔
+          // SSE 事件以换行分隔
           const lines = buffer.split(/\r?\n/);
           buffer = lines.pop() || '';
           for (const line of lines) {
@@ -1026,12 +966,12 @@
             const delta = payload?.choices?.[0]?.delta?.content ?? payload?.choices?.[0]?.message?.content ?? '';
             if (typeof delta === 'string' && delta) {
               acc += delta;
-              scheduleUpdate(); // COMMENT: 标记需要更新，由 rAF 批量刷新
+              scheduleUpdate(); // 标记需要更新，由 rAF 批量刷新
             }
           }
         }
 
-        // COMMENT: 结束时确保最后一次刷新完成，移除光标
+        // 结束时确保最后一次刷新完成，移除光标
         if (rafScheduled) {
           await new Promise(resolve => requestAnimationFrame(() => { flushUI(); resolve(); }));
         } else {
@@ -1039,14 +979,14 @@
         }
         const cursorEl = contentDiv.querySelector('.opm-chat-stream-cursor');
         if (cursorEl) cursorEl.remove();
-        // COMMENT: 最终渲染（无光标）
+        // 最终渲染（无光标）
         contentDiv.innerHTML = renderMarkdown(acc);
 
         const assistantMessage = acc || chrome.i18n.getMessage('noResponse');
         messages.push({ role: 'assistant', content: assistantMessage });
         persistHistory();
 
-        // COMMENT: 给每条模型回复增加“保存为提示词”按钮（避免重复插入）
+        // 给每条模型回复增加”保存为提示词”按钮（避免重复插入）
         if (messageDiv && !messageDiv.querySelector('.opm-chat-save-prompt')) {
           const saveBtn = createEl('div', {
             className: 'opm-chat-save-prompt',
@@ -1061,12 +1001,12 @@
         }
       } catch (error) {
         console.error('[PromptManager] Chat API error:', error);
-        // COMMENT: 统一显示友好的配置引导,避免技术性错误信息吓到用户
+        // 统一显示友好的配置引导，避免技术性错误信息吓到用户
         contentDiv.innerHTML = chrome.i18n.getMessage('configureModelFirst');
       }
     };
 
-    // Event listeners
+    // 事件监听
     sendBtn.addEventListener('click', () => {
       const text = input.value.trim();
       if (!text) return;
@@ -1096,7 +1036,7 @@
       chrome.storage.local.remove([HISTORY_KEY]);
     });
 
-    // Settings modal
+    // 设置弹窗
     let settingsModal = null;
     settingsBtn.addEventListener('click', () => {
       if (settingsModal && document.body.contains(settingsModal)) {
@@ -1107,7 +1047,7 @@
 
       const dark = isDarkMode();
 
-      // Overlay with blur
+      // 遮罩层
       settingsModal = createEl('div', {
         className: 'opm-chat-settings-modal',
         styles: {
@@ -1122,7 +1062,7 @@
         }
       });
 
-      // Main Card
+      // 主卡片
       const modalContent = createEl('div', {
         className: `opm-chat-settings-content opm-${getMode()}`,
         styles: {
@@ -1136,7 +1076,7 @@
         }
       });
 
-      // Header
+      // 头部
       const header = createEl('div', {
         className: `opm-chat-settings-header opm-${getMode()}`,
         styles: {
@@ -1155,7 +1095,7 @@
       });
       header.append(title, desc);
 
-      // Body
+      // 内容区
       const body = createEl('div', { className: 'opm-chat-settings-body', styles: { padding: '24px' } });
 
       const createField = (label, id, type, placeholder, helpText, defaultValue, showLinkIcon = false) => {
@@ -1278,7 +1218,7 @@
 
       body.append(apiKey.wrapper, baseUrl.wrapper, modelName.wrapper, status);
 
-      // Footer
+      // 底部
       const footer = createEl('div', {
         className: `opm-chat-settings-footer opm-${getMode()}`,
         styles: {
@@ -1334,14 +1274,14 @@
       rightActions.append(cancelBtn, saveBtn);
       footer.append(leftActions, rightActions);
 
-      // Initial Data Load
+      // 初始数据加载
       loadSettings().then(settings => {
         apiKey.input.value = settings.apiKey;
         baseUrl.input.value = settings.baseUrl;
         modelName.input.value = settings.modelName;
       });
 
-      // Event Handlers
+      // 事件处理
       testBtn.addEventListener('click', async () => {
         const key = apiKey.input.value.trim();
         const rawUrl = baseUrl.input.value.trim() || 'https://openrouter.ai/api/v1';
@@ -1408,7 +1348,7 @@
       settingsModal.addEventListener('click', (e) => { if (e.target === settingsModal) closeModal(); });
       document.body.appendChild(settingsModal);
 
-      // Animate In
+      // 弹入动画
       requestAnimationFrame(() => {
         settingsModal.style.opacity = '1';
         modalContent.style.transform = 'scale(1)';
@@ -1418,7 +1358,7 @@
 
   /* ---------------------------------------------------------------------------
    * [05] Centralized outside-click closer
-   * COMMENT: Single document-level handler that works for both modes.
+   * 单个文档级事件处理器，同时适用于两种模式。
    * -------------------------------------------------------------------------*/
   const OutsideClickCloser = (() => {
     let attached = false;
@@ -1431,7 +1371,8 @@
         || e.target.closest('.opm-form-container')
         || e.target.closest('.opm-button')
         || e.target.closest('.opm-tag-suggestions')
-        || e.target.closest('.opm-tag-suggestion-item');
+        || e.target.closest('.opm-tag-suggestion-item')
+        || e.target.closest('.opm-chat-settings-modal');
       if (!isMenu) PromptUIManager.hidePromptList(listEl);
     };
     return {
@@ -1511,12 +1452,12 @@
      ============================================================================ */
   ensureStylesInjected();
 
-  // Dark Mode Handling
+  // 暗色模式处理
   /* ---------------------------------------------------------------------------
    * Theme handling (dark / light) with subscription hook
    * -------------------------------------------------------------------------*/
   let isDarkModeActive = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  // Initialize global forced state (shared with content.shared.js)
+  // 初始化全局强制状态（与 content.shared.js 共享）
   if (typeof window.isDarkModeForced === 'undefined') window.isDarkModeForced = false;
 
   /* Read current mode */
@@ -1533,7 +1474,7 @@
 
   /* [09] Storage Manager */
   class PromptStorageManager {
-    // Generic local-storage helpers (still used by non-prompt features)
+    // 通用 localStorage 辅助方法
     static async getData(key, def) {
       return await ChromeBridge.storage.get(key, def);
     }
@@ -1543,13 +1484,13 @@
     }
     // ---- Unified prompt operations ----
     static async _ps() {
-      // COMMENT: Use the unified module in `src/promptStorage.js` via a dynamic import
+      // 通过动态导入使用 `src/promptStorage.js` 中的统一模块
       if (this.__ps) return this.__ps;
 
-      // COMMENT: Dynamically import the web-accessible module so content-scripts can use it
+      // 动态导入 web-accessible 模块，使内容脚本可以使用
       const mod = await import(chrome.runtime.getURL('promptStorage.js'));
 
-      // COMMENT: Build a thin adapter to keep current call-sites unchanged
+      // 构建薄适配层，保持现有调用点不变
       this.__ps = {
         getPrompts: mod.getPrompts,
         setPrompts: mod.setPrompts,
@@ -1572,7 +1513,7 @@
     }
 
     static async setPrompts(prompts) {
-      // COMMENT: Expose bulk set for reorder use-cases via the unified module
+      // 通过统一模块暴露批量设置接口，用于重排序场景
       const ps = await this._ps();
       return await ps.setPrompts(prompts);
     }
@@ -1605,26 +1546,26 @@
     static async getForceDarkMode() { return await PromptStorageManager.getData('forceDarkMode', false); }
     static async saveForceDarkMode(enabled) { return await PromptStorageManager.setData('forceDarkMode', !!enabled); }
 
-    // COMMENT: Preference to append prompts instead of overwriting the input area
+    // 追加模式偏好：插入提示词时追加而非覆盖输入区域
     static async getDisableOverwrite() {
-      // COMMENT: 默认开启“追加模式”（不覆盖输入框原有内容）
+      // 默认开启”追加模式”（不覆盖输入框原有内容）
       return await PromptStorageManager.getData('disableOverwrite', true);
     }
     static async saveDisableOverwrite(value) {
-      // COMMENT: Persist the user's preference for append vs overwrite
+      // 持久化用户的追加/覆盖偏好
       return await PromptStorageManager.setData('disableOverwrite', !!value);
     }
 
-    // COMMENT: Feature flag for tags in prompt creation UI (off by default)
+    // 提示词创建界面的标签功能开关（默认关闭）
     static async getEnableTags() {
-      // COMMENT: 默认开启“标签模式”
+      // 默认开启”标签模式”
       return await PromptStorageManager.getData('enableTags', true);
     }
     static async saveEnableTags(value) {
       return await PromptStorageManager.setData('enableTags', !!value);
     }
 
-    // COMMENT: Persist the active tag filter across sessions (LIST view)
+    // 跨会话持久化活跃标签筛选（列表视图）
     static async getActiveTagFilter() {
       return await PromptStorageManager.getData('activeTagFilter', 'all');
     }
@@ -1633,7 +1574,7 @@
       return await PromptStorageManager.setData('activeTagFilter', clean);
     }
 
-    // COMMENT: Persistent custom display order for tags in settings (array of tag names)
+    // 设置中标签的自定义显示顺序（标签名数组）
     static async getTagsOrder() {
       return await PromptStorageManager.getData('tagsOrder', []);
     }
@@ -1648,12 +1589,12 @@
 
   /* UI Manager */
   class PromptUIManager {
-    // COMMENT: Configuration for the info banner. Toggle 'active' to show/hide.
+    // 信息横幅配置，切换 'active' 以显示/隐藏
     static BANNER_CONFIG = {
       active: true,
-      id: 'info-banner-v2', // Change ID to re-show to users who dismissed it
+      id: 'info-banner-v3', // Change ID to re-show to users who dismissed it
       html: `<span>
-      <strong>更新:</strong> 能够根据内容进行搜索!鼠标悬停可以预览提示词内容~ </br>
+      <strong>更新:</strong> 变量语法升级！支持 <code>#变量名:占位提示#</code> 格式，用中英文冒号分隔变量名与输入框提示文字~ </br>
     </span>`
     };
 
@@ -1681,14 +1622,14 @@
       PromptUIManager.state.root = root;
       return root;
     }
-    // COMMENT: Toggle panel height mode: 'variable' (LIST) or 'fixed' (other views)
+    // 切换面板高度模式：'variable'（列表）或 'fixed'（其他视图）
     static setPanelHeightMode(mode) {
       const listEl = qs(`#${SELECTORS.PROMPT_LIST}`);
       if (!listEl) return;
       listEl.classList.remove('opm-fixed-400', 'opm-variable');
       if (mode === 'variable') listEl.classList.add('opm-variable'); else listEl.classList.add('opm-fixed-400');
     }
-    // COMMENT: Track whether the active list should expose editing controls or standard view.
+    // 跟踪当前列表应显示编辑控件还是标准视图
     static setListMode(mode = 'list') {
       const normalized = mode === 'edit' ? 'edit' : 'list';
       PromptUIManager.state.listMode = normalized;
@@ -1701,7 +1642,7 @@
     static requestListRefreshSuppression() {
       PromptUIManager.state.suppressNextListRefresh = true;
     }
-    // COMMENT: Map manager flags to PromptUI.State via accessors
+    // 通过访问器将管理器标记映射到 PromptUI.State
     static get manuallyOpened() { return PromptUI.State.manuallyOpened; }
     static set manuallyOpened(v) { PromptUI.State.manuallyOpened = v; }
     static get inVariableInputMode() { return PromptUI.State.inVariableInputMode; }
@@ -1709,7 +1650,6 @@
     static _promptSelectListeners = [];
     static onPromptSelect(cb) { PromptUIManager._promptSelectListeners.push(cb); }
     static emitPromptSelect(prompt) { PromptUIManager._promptSelectListeners.forEach(fn => fn(prompt)); }
-    // COMMENT: Removed panel height lock; CSS now enforces min/max height across views
 
     static injectPromptManagerButton(prompts) {
       if (PromptUIManager.state.buttonContainer &&
@@ -1737,7 +1677,7 @@
 
     static async checkAndShowOnboarding(container) {
       const onboardingCompleted = await PromptStorageManager.getOnboardingCompleted();
-      // Remove "!" to the onboardingCompleted to force it to show.
+      // 去掉 "!" 可强制显示引导页
       if (!onboardingCompleted) {
         PromptUIManager.showOnboardingPopup(container);
       }
@@ -1780,16 +1720,16 @@
     }
 
     static attachButtonEvents(button, listEl /*, container, prompts */) {
-      // COMMENT: Delegate event wiring to internal PromptUI.Events
+      // 委托给内部 PromptUI.Events 绑定事件
       PromptUI.Events.attachButtonEvents(button, listEl);
     }
 
     static startCloseTimer(e, listEl, callback) {
-      // COMMENT: Use shared behavior to coordinate delayed hide
+      // 使用共享行为协调延迟隐藏
       PromptUI.Behaviors.startCloseTimer(listEl, callback);
     }
     static cancelCloseTimer() {
-      // COMMENT: Cancel any pending delayed hide
+      // 取消待执行的延迟隐藏
       PromptUI.Behaviors.cancelCloseTimer();
     }
 
@@ -1841,7 +1781,7 @@
       });
     }
 
-    static refreshPromptList(prompts) {    // COMMENT: Rebuild list and ensure search is visible via centralized helper
+    static refreshPromptList(prompts) {    // 重建列表并通过集中式辅助方法确保搜索框可见
       const signature = PromptUIManager.computePromptsSignature(prompts);
       if (signature && PromptUIManager.state.lastPromptsSignature === signature) {
         PromptUIManager.setSearchVisibility(true);
@@ -1852,7 +1792,7 @@
       PromptUIManager.setSearchVisibility(true);
     }
 
-    static refreshItemsIfListActive(prompts = []) {   // COMMENT: Only refresh the items list when the prompt list view is active
+    static refreshItemsIfListActive(prompts = []) {   // 仅在提示词列表视图活跃时刷新列表项
       const panel = document.getElementById(SELECTORS.PANEL_CONTENT);
       if (!panel) return;
       const items = panel.querySelector(`.${SELECTORS.PROMPT_ITEMS_CONTAINER}.opm-view-list`);
@@ -1868,22 +1808,22 @@
         PromptUIManager.state.lastPromptsSignature = signature;
       }
       PromptUIManager.setSearchVisibility(true);
-      // COMMENT: After a storage-driven refresh, reapply the active tag filter (if any) and current search term
-      // COMMENT: Check if the currently selected tag still exists; if not, reset to 'all' to avoid empty list
+      // 存储变更触发刷新后，重新应用当前标签筛选和搜索条件
+      // 检查当前选中的标签是否仍存在，不存在则重置为 'all' 以避免空列表
       const currentTag = (PromptUIManager.activeTagFilter || 'all').toLowerCase();
       let selected = currentTag;
       if (currentTag !== 'all') {
-        // COMMENT: Compute tag counts synchronously from the prompts array
+        // 从提示词数组同步计算标签计数
         const counts = new Map();
         prompts.forEach(p => (Array.isArray(p.tags) ? p.tags : []).forEach(t => {
           const key = String(t).trim().toLowerCase();
           if (key) counts.set(key, (counts.get(key) || 0) + 1);
         }));
-        // COMMENT: If the selected tag no longer exists (e.g., all prompts with that tag were deleted), reset to 'all'
+        // 若选中的标签不再存在（如含该标签的提示词全部删除），重置为 'all'
         if (!counts.has(currentTag)) {
           selected = 'all';
           PromptUIManager.activeTagFilter = 'all';
-          // COMMENT: Update the tag bar UI to reflect the reset
+          // 更新标签栏 UI 以反映重置
           const tagsHost = document.querySelector(`#${SELECTORS.PANEL_CONTENT} .opm-tags-filter-bar`);
           if (tagsHost) {
             tagsHost.querySelectorAll('button').forEach(btn => {
@@ -1900,22 +1840,22 @@
       if (term) PromptUIManager.filterPromptItems(term);
     }
 
-    static setSearchVisibility(visible) {   // COMMENT: Explicitly control visibility of the search input in the bottom menu
+    static setSearchVisibility(visible) {   // 控制底部菜单中搜索框的可见性
       const input = document.getElementById(SELECTORS.PROMPT_SEARCH_INPUT);
       if (input) input.style.display = visible ? 'block' : 'none';
     }
 
-    // COMMENT: Control bottom menu visibility. Chat view hides it to prevent overlap with its own input area.
+    // 控制底部菜单可见性。聊天视图隐藏它以防止与自身输入区域重叠。
     static setBottomMenuVisibility(visible) {
       const panel = document.getElementById(SELECTORS.PANEL_CONTENT);
       if (!panel) return;
       const bottomMenu = panel.querySelector('.opm-bottom-menu');
       if (bottomMenu) bottomMenu.style.display = visible ? 'flex' : 'none';
-      // COMMENT: Panel reserves space for the absolute bottom menu; remove it when hidden.
+      // 面板为绝对定位的底部菜单预留空间，隐藏时移除
       panel.style.paddingBottom = visible ? '48px' : '0px';
     }
 
-    // COMMENT: Hover preview panel management
+    // 悬停预览面板管理
     static _previewTimer = null;
     static _previewPanel = null;
     static _previewSourceItem = null;
@@ -1931,7 +1871,7 @@
         panel.className = `opm-preview-panel opm-${getMode()}`;
         panel.style.whiteSpace = 'pre-wrap';
 
-        // COMMENT: 应用搜索高亮到预览面板
+        // 应用搜索高亮到预览面板
         const searchInput = document.getElementById(SELECTORS.PROMPT_SEARCH_INPUT);
         const searchTerm = searchInput ? searchInput.value.trim().toLowerCase() : '';
         if (searchTerm) {
@@ -1946,7 +1886,7 @@
           panel.textContent = content;
         }
 
-        // COMMENT: 将预览面板放入 button-container 中，与 prompt-list 共享同一个定位上下文（button-container），
+        // 将预览面板放入 button-container 中，与 prompt-list 共享同一个定位上下文（button-container），
         // 使用 absolute 定位确保在所有平台上相对位置一致，避免宿主页面 CSS 干扰
         const btnContainer = PromptUIManager.state.buttonContainer || PromptUIManager.state.hotCornerContainer;
         if (btnContainer) {
@@ -1956,7 +1896,7 @@
         }
         PromptUIManager._previewPanel = panel;
 
-        // Position: absolute 相对于 button-container 定位
+        // 绝对定位，相对于 button-container
         const mainPanel = qs(`#${SELECTORS.PROMPT_LIST}`);
         const mainRect = mainPanel ? mainPanel.getBoundingClientRect() : null;
         const panelW = 280;
@@ -1999,7 +1939,7 @@
         panel.style.right = right + 'px';
         panel.style.bottom = bottom + 'px';
 
-        // Keep preview open when hovering over the panel itself
+        // 鼠标悬停在预览面板上时保持打开
         panel.addEventListener('mouseenter', () => {
           if (PromptUIManager._previewHideTimer) {
             clearTimeout(PromptUIManager._previewHideTimer);
@@ -2010,7 +1950,7 @@
           PromptUIManager._delayedHidePreview();
         });
 
-        // Close on click
+        // 点击关闭
         panel.addEventListener('click', (e) => {
           e.stopPropagation();
           PromptUIManager.hidePreview();
@@ -2053,15 +1993,15 @@
       }
     }
 
-    // COMMENT: Centralized prompt items filter used by search input
+    // 搜索输入框使用的集中式提示词项过滤
     static filterPromptItems(term) {
       const value = (term || '').toLowerCase();
       const container = document.querySelector(`.${SELECTORS.PROMPT_ITEMS_CONTAINER}`);
       if (!container) return;
-      // Combine with active tag filter if present
+      // 与当前标签筛选组合
       const activeTag = (PromptUIManager.activeTagFilter || 'all').toLowerCase();
 
-      // COMMENT: Compute match score for sorting (title > tags > content)
+      // 计算匹配分数用于排序（标题 > 标签 > 内容）
       const computeScore = (searchTerm, title, tags, content) => {
         if (!searchTerm) return 0;
         let score = 0;
@@ -2089,7 +2029,7 @@
         return score;
       };
 
-      // First pass: compute scores and determine visibility
+      // 第一轮：计算匹配分数并确定可见性
       const items = Array.from(container.children);
       const scoredItems = [];
       items.forEach(item => {
@@ -2097,7 +2037,7 @@
           || item.dataset.title?.includes(value)
           || item.dataset.content?.includes(value)
           || item.dataset.tags?.includes(value);
-        // COMMENT: Use the exact tags list (JSON) for pill filtering to handle multi-word tags
+        // 使用精确的标签列表（JSON）进行标签筛选，支持多词标签
         let matchesTag = true;
         if (activeTag !== 'all') {
           try {
@@ -2113,7 +2053,7 @@
         } else {
           scoredItems.push({ item, score: 0 });
         }
-        // COMMENT: 更新搜索匹配预览
+        // 更新搜索匹配预览
         const previewEl = item.querySelector('.opm-search-preview');
         if (previewEl) {
           if (value && matchesSearch) {
@@ -2130,7 +2070,7 @@
         }
       });
 
-      // COMMENT: Apply CSS order to sort by match score (higher score = lower order = appears first)
+      // 通过 CSS order 按匹配分数排序（分数越高排序越靠前）
       if (value) {
         scoredItems.sort((a, b) => b.score - a.score);
         scoredItems.forEach((item, index) => {
@@ -2145,11 +2085,11 @@
       PromptUIManager.selectedSearchIndex = -1;
     }
 
-    // COMMENT: 生成搜索匹配预览HTML，高亮匹配字符
+    // 生成搜索匹配预览HTML，高亮匹配字符
     // NOTE: 逻辑与 utils.js::buildSearchPreviewHtml 相同，因 content.js 以 IIFE 注入无法 import ES module。
     static _buildSearchPreviewHtml(searchTerm, titleLower, contentRaw, tagsRaw) {
       if (!searchTerm) return '';
-      // COMMENT: 标题匹配时无需预览
+      // 标题匹配时无需预览
       if (titleLower?.includes(searchTerm)) return '';
       const esc = s => s.replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
       const escTerm = esc(searchTerm);
@@ -2179,7 +2119,7 @@
       );
     }
 
-    // COMMENT: Ensure every scrollable region only shows scrollbars while in motion.
+    // 确保所有可滚动区域仅在滚动时显示滚动条
     static refreshScrollObservers(context = document) {
       if (!window.ScrollVisibilityManager) return;
       const selectors = [
@@ -2196,26 +2136,26 @@
       });
     }
 
-    // COMMENT: Tag filter setter that reruns combined filtering without changing panel height
+    // 标签筛选器：重新执行组合筛选，不改变面板高度
     static filterByTag(tag) {
       const prev = (PromptUIManager.activeTagFilter || 'all');
       PromptUIManager.activeTagFilter = (tag || 'all');
-      // Re-apply current search term to combine filters
+      // 重新应用搜索关键词以组合筛选
       const input = document.getElementById(SELECTORS.PROMPT_SEARCH_INPUT);
       const term = input ? input.value : '';
       PromptUIManager.filterPromptItems(term);
-      // COMMENT: Persist selected tag for future sessions
+      // 持久化选中的标签以供后续会话使用
       PromptStorageManager.saveActiveTagFilter(PromptUIManager.activeTagFilter);
     }
 
-    // COMMENT: Centralized clearing of search input and results state
+    // 集中清理搜索输入框和结果状态
     static clearSearchInput() {
       const input = document.getElementById(SELECTORS.PROMPT_SEARCH_INPUT);
       if (input) input.value = '';
       PromptUIManager.selectedSearchIndex = -1;
     }
 
-    static buildPromptListContainer(prompts = []) {   // COMMENT: Rebuild the list content using internal view composition
+    static buildPromptListContainer(prompts = []) {   // 使用内部视图组合重建列表内容
       const listEl = qs(`#${SELECTORS.PROMPT_LIST}`);
       if (!listEl) return;
       Theme.applyNode(listEl);
@@ -2228,7 +2168,7 @@
       const content = PromptUI.Views.renderPromptList(prompts, { mode });
       fragment.appendChild(content);
 
-      // COMMENT: Inject Info Banner if active and not dismissed
+      // 若信息横幅激活且未被关闭，注入横幅
       if (PromptUIManager.BANNER_CONFIG.active) {
         (async () => {
           try {
@@ -2277,8 +2217,7 @@
 
             banner.appendChild(closeBtn);
 
-            // Insert before the tags bar (if present) or at the top
-            // The content container has: tagsHost, itemsContainer, bottomMenu.
+            // 插入到标签栏之前或容器顶部
             content.insertBefore(banner, content.firstChild);
           } catch (err) {
             console.error('[PromptManager] Failed to render banner:', err);
@@ -2306,7 +2245,7 @@
       }
     }
 
-    static replacePanelMainContent(node) {  // COMMENT: Replace the scrollable main area (prompt items) while preserving the bottom menu
+    static replacePanelMainContent(node) {  // 替换可滚动主区域（提示词项），保留底部菜单
       const panel = document.getElementById(SELECTORS.PANEL_CONTENT);
       if (!panel) return;
       const items = panel.querySelector(`.${SELECTORS.PROMPT_ITEMS_CONTAINER}`);
@@ -2316,31 +2255,31 @@
         const lastChild = panel.lastElementChild;
         if (lastChild) panel.insertBefore(node, lastChild); else panel.appendChild(node);
       }
-      // COMMENT: Toggle search visibility based on whether the new node is the list view
+      // 根据新节点是否为列表视图切换搜索框可见性
       const isListView = node.classList && node.classList.contains('opm-view-list');
       PromptUIManager.setSearchVisibility(!!isListView);
       PromptUIManager.refreshScrollObservers(panel);
     }
 
-    // COMMENT: Show the prompt list and handle keyboard navigation
+    // 显示提示词列表并处理键盘导航
     static showPromptList(listEl) {
       if (!listEl) return;
-      // COMMENT: Detect whether we are opening the panel (vs already open)
+      // 检测面板是首次打开还是已经展开
       const wasVisible = listEl.classList.contains('opm-visible');
-      // COMMENT: When showing, if current view is LIST, allow variable height; else keep fixed
+      // 显示时若当前视图为 LIST 则允许自适应高度，否则保持固定高度
       const panelNode = document.getElementById(SELECTORS.PANEL_CONTENT);
       const isListView = panelNode && panelNode.querySelector(`.${SELECTORS.PROMPT_ITEMS_CONTAINER}.opm-view-list`);
       PromptUIManager.setPanelHeightMode(isListView ? 'variable' : 'fixed');
       PromptUI.Behaviors.showList(listEl);
       const panel = document.getElementById(SELECTORS.PANEL_CONTENT);
       const hasListItems = panel && panel.querySelector(`.${SELECTORS.PROMPT_ITEMS_CONTAINER}.opm-view-list`);
-      // COMMENT: Reapply existing filters/search when reopening the list instead of refetching storage data
+      // 重新打开列表时重新应用现有筛选/搜索条件，而非重新获取数据
       if (!wasVisible && hasListItems) {
         const searchInput = document.getElementById(SELECTORS.PROMPT_SEARCH_INPUT);
         const currentTerm = searchInput ? searchInput.value : '';
         PromptUIManager.filterPromptItems(currentTerm);
       }
-      // COMMENT: Focus only if list view is active
+      // 仅列表视图活跃时聚焦
       PromptUIManager.setSearchVisibility(!!hasListItems);
       if (hasListItems) {
         const first = listEl.querySelector('.opm-prompt-list-item');
@@ -2352,10 +2291,10 @@
 
     static hidePromptList(listEl) {
       if (!listEl) return;
-      // COMMENT: Use unified hide behavior, then perform manager-side cleanup
+      // 使用统一隐藏逻辑，然后执行管理器层面的清理
       PromptUI.Behaviors.hideList(listEl);
       PromptUIManager.clearSearchInput();
-      // Reset both flags when hiding the view
+      // 隐藏视图时重置标记
       PromptUIManager.manuallyOpened = false;
       PromptUIManager.inVariableInputMode = false;
     }
@@ -2447,17 +2386,17 @@
         className: `opm-form-container opm-${getMode()}`,
         styles: { padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px', overflow: 'hidden', minHeight: '0' }
       });
-      // COMMENT: Layout behavior depends on the number of variables
+      // 布局行为取决于变量数量
       const count = Array.isArray(variables) ? variables.length : 0;
       const singleMode = count <= 1;
-      const splitMode = count === 2 || count === 3;   // COMMENT: equal split within available height
-      const listMode = count >= 4;                    // COMMENT: compact list of single-line inputs
+      const splitMode = count === 2 || count === 3;   // 2-3 个变量时均分可用高度
+      const listMode = count >= 4;                    // 4+ 变量时使用紧凑单行列表
       const itemGap = listMode ? '8px' : '12px';
-      // COMMENT: In single-variable mode, do not expand to fill all available height
+      // 单变量模式下不扩展填充全部可用高度
       const varContainerFlex = singleMode ? '0 1 auto' : '1 1 auto';
       const varContainer = createEl('div', {
-        // COMMENT: Grow to fill remaining height and become the only scrollable area when content exceeds space.
-        // COMMENT: Use both gap and rowGap for broader compatibility across flex-gap implementations.
+        // 填充剩余高度，内容超出时成为唯一可滚动区域
+        // 同时使用 gap 和 rowGap 以兼容不同浏览器实现
         styles: {
           display: 'flex',
           flexDirection: 'column',
@@ -2466,7 +2405,7 @@
           flex: varContainerFlex,
           minHeight: '0',
           overflowY: 'auto',
-          // COMMENT: Add subtle top/bottom padding for list presentation when many variables
+          // 变量较多时添加顶部/底部内边距用于列表展示
           paddingTop: listMode ? '8px' : '0',
           paddingBottom: listMode ? '8px' : '0'
         }
@@ -2474,9 +2413,14 @@
       ScrollVisibilityManager.observe(varContainer);
       const varValues = {};
       variables.forEach(v => {
-        // COMMENT: Normalize label text — replace underscores with spaces and capitalize first letter
-        const displayLabel = String(v).replace(/_/g, ' ').replace(/^./, c => c.toUpperCase());
-        // COMMENT: Each variable row flexes so space is shared logically between variables.
+        // 兼容字符串变量（向后兼容）和带 label/placeholder 的对象变量
+        const varObj = typeof v === 'object' && v !== null ? v : { name: v, label: v, placeholder: v };
+        const varName = varObj.name || varObj.label || String(v);
+        // 规范化标签文本：下划线替换为空格，首字母大写
+        const displayLabel = String(varObj.label || varName).replace(/_/g, ' ').replace(/^./, c => c.toUpperCase());
+        // 优先使用自定义占位符，否则回退到标签文本
+        const placeholderText = varObj.placeholder || displayLabel;
+        // 每个变量行弹性伸缩，空间在变量间合理分配
         // - For 1 variable: grow to consume available height (textarea fills the space)
         // - For 2 or 3 variables: share space evenly (50-50 or thirds) within available height
         // - For 4+ variables: compact rows that do not grow, list scrolls when needed
@@ -2485,18 +2429,18 @@
             display: 'flex',
             flexDirection: 'column',
             gap: '4px',
-            // COMMENT: Always auto-height to prevent overflow; container scrolls if needed
+            // 始终自适应高度防溢出，需要时容器滚动
             flex: '0 0 auto',
-            // COMMENT: Let flex children shrink properly in split mode
+            // 分割模式下让弹性子元素正确收缩
             minHeight: 'auto',
-            // COMMENT: Add explicit margin fallback so rows never visually collide if gap is not honored.
+            // 添加显式外边距回退，防止不支持 gap 时行之间碰撞
             marginBottom: itemGap,
-            // COMMENT: Apply list-like vertical padding when many variables
+            // 变量较多时应用列表式垂直内边距
             padding: listMode ? '6px 0' : '0'
           }
         });
-        // COMMENT: Use standard font inheritance by avoiding custom font styles and rely on theme class
-        // COMMENT: Subtle, consistent label styling to match the rest of the UI
+        // 使用标准字体继承，依赖主题类控制样式
+        // 标签样式与 UI 其余部分保持一致
         const label = createEl('label', {
           innerHTML: displayLabel,
           className: `opm-${getMode()}`,
@@ -2508,41 +2452,41 @@
             padding: '0 2px'
           }
         });
-        // COMMENT: Use a textarea with approx three lines height for easier multi-line input
-        // COMMENT: Rows: single = compact editor; 2-3 = shared vertical space; 4+ = compact single-line list
+        // 使用约三行高度的文本框方便多行输入
+        // 行数：单变量=紧凑编辑器；2-3=共享垂直空间；4+=紧凑单行列表
         const rowsAttr = listMode ? '1' : (splitMode ? '3' : '6');
         const inputField = createEl('textarea', {
-          // COMMENT: Rows tuned per mode and clear placeholder
-          attributes: { rows: rowsAttr, placeholder: `请输入实际的"${displayLabel}"` },
+          // 根据模式调整行数，使用清晰的占位提示
+          attributes: { rows: rowsAttr, placeholder: `请根据需要输入"${placeholderText}"` },
           className: `opm-textarea-field opm-${getMode()}`,
-          // COMMENT: Let the textarea expand within its row. In split mode, disable manual resize to preserve equal distribution.
-          // COMMENT: Minimum height ~ one line; when there are many variables and space runs out, the container scrolls.
+          // 文本框在行内自适应扩展，分割模式禁用手动调整以保持均匀分布
+          // 最小高度约一行；变量多且空间不足时容器滚动
           styles: {
-            // COMMENT: Increase vertical padding for a more comfortable input.
+            // 增加垂直内边距以提升输入舒适度
             padding: '12px 10px',
-            // COMMENT: Taller minima so fields feel more usable without manual resizing.
+            // 较大的最小高度，无需手动调整即可使用
             minHeight: listMode ? '32px' : '80px',
-            // COMMENT: For list mode enforce single-line visual height
+            // 列表模式强制单行高度
             height: listMode ? '32px' : 'auto',
-            // COMMENT: Ensure sizing accounts for padding and borders to prevent layout overflow/overlap.
+            // 确保尺寸计算包含内边距和边框，防止布局溢出
             boxSizing: 'border-box',
             width: '100%',
-            // COMMENT: Flex behavior depends on mode: split fills evenly; single & list are compact
+            // 弹性行为取决于模式：分割模式均匀填充，单变量和列表模式紧凑布局
             flex: '1 1 auto',
             resize: (splitMode || listMode) ? 'none' : 'vertical'
           }
         });
-        inputField.addEventListener('input', () => { varValues[v] = inputField.value; });
-        // COMMENT: Preserve Enter-to-submit behavior for consistency with previous single-line inputs
+        inputField.addEventListener('input', () => { varValues[varName] = inputField.value; });
+        // 保留回车提交行为，与之前的单行输入保持一致
         inputField.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); submitBtn.click(); } });
         row.append(label, inputField);
         varContainer.appendChild(row);
-        varValues[v] = '';
+        varValues[varName] = '';
       });
       form.appendChild(varContainer);
-      // COMMENT: Ensure non-list view uses fixed height
+      // 非列表视图使用固定高度
       PromptUIManager.setPanelHeightMode('fixed');
-      // COMMENT: Button container sticks to bottom of the panel
+      // 按钮容器固定在面板底部
       const btnContainer = createEl('div', { styles: { display: 'flex', gap: '8px', marginTop: 'auto', position: 'sticky', bottom: '0', background: 'transparent' } });
       const backBtn = createEl('button', { innerHTML: '返回', className: `opm-button opm-${getMode()}`, styles: { backgroundColor: '#9CA3AF', flex: '1' } });
       backBtn.addEventListener('click', () => {
@@ -2564,7 +2508,7 @@
     }
 
     static createPromptCreationForm(prefill = '') {
-      // COMMENT: Delegate to PromptUI.Views to build the creation form
+      // 委托给 PromptUI.Views 构建创建表单
       return PromptUI.Views.createPromptCreationForm(prefill);
     }
 
@@ -2573,7 +2517,7 @@
       const list = qs(`#${SELECTORS.PROMPT_LIST}`);
       if (!list) return;
       PromptUIManager.resetPromptListContainer();
-      // COMMENT: Show search in edit form as well for consistent filtering
+      // 编辑表单中也显示搜索框，保持一致的过滤体验
       PromptUIManager.setSearchVisibility(true);
       const form = PromptUI.Views.createPromptForm({
         initialTitle: prompt.title,
@@ -2590,11 +2534,11 @@
           PanelRouter.mount(PanelView.EDIT);
         }
       });
-      // COMMENT: Immediately render base form to avoid an empty panel while tags load
+      // 先渲染基础表单，避免标签加载期间面板为空
       PromptUIManager.replacePanelMainContent(form);
       const listElInitial = qs(`#${SELECTORS.PROMPT_LIST}`);
       if (listElInitial) { PromptUIManager.showPromptList(listElInitial); PromptUIManager.setSearchVisibility(false); }
-      // COMMENT: If tags are enabled, mount a reusable TagUI input
+      // 若启用标签功能，挂载可复用的 TagUI 输入组件
       (async () => {
         const enableTags = await PromptStorageManager.getEnableTags();
         if (!enableTags) {
@@ -2637,7 +2581,7 @@
     }
 
     static createSettingsForm() {
-      // COMMENT: Delegate to PromptUI.Views to build the settings form
+      // 委托给 PromptUI.Views 构建设置表单
       return PromptUI.Views.createSettingsForm();
     }
 
@@ -2651,7 +2595,7 @@
       }
     }
 
-    // COMMENT: Update the selection of the items in the when using keyboard navigation
+    // 键盘导航时更新列表项的选中状态
     static updateSelection(items, selIndex) {
       items.forEach((item, idx) => {
         item.style.backgroundColor = '';
@@ -2667,7 +2611,7 @@
       });
     }
 
-    // COMMENT: Store the selected index of the search results
+    // 搜索结果的当前选中索引
     static selectedSearchIndex = -1;
 
     // HOT CORNER MODE
@@ -2697,7 +2641,7 @@
       });
       container.appendChild(indicator);
 
-      // Create the prompt list container with some positioning rules
+      // 创建提示词列表容器
       const listEl = createEl('div', {
         id: SELECTORS.PROMPT_LIST,
         className: `opm-prompt-list opm-${getMode()} opm-fixed-400`,
@@ -2710,7 +2654,7 @@
       container.appendChild(listEl);
       PromptUIManager._ensureRoot().appendChild(container);
 
-      // Setup event handlers
+      // 设置事件处理
       this.setupHotCornerEvents(container, indicator, listEl);
       OutsideClickCloser.ensure();
       PromptUIManager.state.hotCornerContainer = container;
@@ -2718,13 +2662,13 @@
       PromptUIManager.state.currentMode = 'hotCorner';
     }
 
-    // Extracted event handling for hot corner
+    // 热角事件处理
     static setupHotCornerEvents(container, indicator, listEl) {
       container.addEventListener('mouseenter', async e => {
         e.stopPropagation();
         PromptUIManager.cancelCloseTimer();
 
-        // COMMENT: Mirror button-mode behavior — only mount if the list is not already visible
+        // 与按钮模式一致：仅在列表未显示时挂载
         const listIsVisible = listEl.classList.contains('opm-visible');
         if (!listIsVisible && !PromptUIManager.inVariableInputMode) {
           PromptUIManager.manuallyOpened = false;
@@ -2734,14 +2678,13 @@
         }
       });
 
-      // Existing mouseleave handler
-      // Cancel the close-timer when mouse re-enters the prompt list itself
+      // 鼠标重新进入列表时取消关闭定时器
       listEl.addEventListener('mouseenter', () => {
         PromptUIManager.cancelCloseTimer();
       });
-      // Restart the timer when leaving the prompt list
+      // 离开列表时重启关闭定时器
       listEl.addEventListener('mouseleave', e => {
-        // COMMENT: Ensure flags are reset when auto-closing so future hovers work
+        // 自动关闭时重置标记，确保后续悬停正常工作
         PromptUIManager.startCloseTimer(e, listEl, () => {
           PromptUIManager.manuallyOpened = false;
           PromptUIManager.inVariableInputMode = false;
@@ -2752,17 +2695,17 @@
         e.stopPropagation();
         indicator.style.borderWidth = `0 0 ${HOT_CORNER_INDICATOR_SMALL_PX}px ${HOT_CORNER_INDICATOR_SMALL_PX}px`;
         indicator.style.borderColor = `transparent transparent ${THEME_COLORS.primary}90 transparent`;
-        // COMMENT: Reset flags on timed close to avoid getting stuck in a "manually opened" state
+        // 定时关闭时重置标记，避免陷入"手动打开"状态
         PromptUIManager.startCloseTimer(e, listEl, () => {
           PromptUIManager.manuallyOpened = false;
           PromptUIManager.inVariableInputMode = false;
         });
       });
 
-      // COMMENT: When the tab is hidden and later shown again, make sure the UI resets properly
+      // 标签页隐藏后重新显示时，确保 UI 状态正确重置
       const visibilityHandler = () => {
         if (document.hidden) {
-          // COMMENT: Reset flags and hide the list silently when tab loses visibility
+          // 标签页失去可见性时重置状态并静默隐藏列表
           PromptUIManager.manuallyOpened = false;
           PromptUIManager.inVariableInputMode = false;
           PromptUI.Behaviors.hideList(listEl);
@@ -2771,18 +2714,18 @@
       document.addEventListener('visibilitychange', visibilityHandler);
       PromptUIManager.state.hotCornerVisibilityHandler = visibilityHandler;
 
-      // Set onboarding as completed when hovering over hot corner
+      // 悬停热角时标记引导完成
       container.addEventListener('mouseenter', () => { PromptUIManager.completeOnboarding(); });
     }
 
     static cleanupAllUIComponents() {
-      // Clean up button container
+      // 清理按钮容器
       if (PromptUIManager.state.buttonContainer &&
         document.body.contains(PromptUIManager.state.buttonContainer)) {
         PromptUIManager.state.buttonContainer.remove();
       }
 
-      // Clean up hot corner container
+      // 清理热角容器
       if (PromptUIManager.state.hotCornerVisibilityHandler) {
         document.removeEventListener('visibilitychange', PromptUIManager.state.hotCornerVisibilityHandler);
         PromptUIManager.state.hotCornerVisibilityHandler = null;
@@ -2792,7 +2735,7 @@
         PromptUIManager.state.hotCornerContainer.remove();
       }
 
-      // Clean up any other global handlers or state
+      // 清理全局状态
       PromptUIManager.manuallyOpened = false;
       PromptUIManager.state.buttonContainer = null;
       PromptUIManager.state.hotCornerContainer = null;
@@ -2803,36 +2746,36 @@
     static async refreshDisplayMode() {
       // clean up all existing UI components
       PromptUIManager.cleanupAllUIComponents();
-      // Get the current mode and prompts
+      // 获取当前模式和提示词
       const prompts = await PromptStorageManager.getPrompts();
       await PromptUIManager.injectUIForCurrentMode(prompts);
 
-      // Make sure the prompt list is refreshed only if list view is active
+      // 仅在列表视图激活时刷新
       PromptUIManager.refreshItemsIfListActive(prompts);
-      // If switching modes from settings, we should close any open menu
+      // 切换模式时关闭已打开的菜单
       const listEl = qs(`#${SELECTORS.PROMPT_LIST}`);
       if (listEl && listEl.classList.contains('opm-visible')) {
         PromptUIManager.hidePromptList(listEl);
       }
     }
 
-    // COMMENT: Helper to mark onboarding as complete and remove the popup if present
+    // 标记引导完成并移除弹窗
     static completeOnboarding() {
       PromptStorageManager.setOnboardingCompleted();
       const popup = document.getElementById(SELECTORS.ONBOARDING_POPUP);
       if (popup) popup.remove();
     }
 
-    // COMMENT: Helper to mount LIST or CREATE based on prompt availability
+    // 根据提示词数量挂载 LIST 或 CREATE 视图
     static async mountListOrCreateBasedOnPrompts() {
       const currentPrompts = await PromptStorageManager.getPrompts();
       if (currentPrompts.length === 0) PanelRouter.mount(PanelView.CREATE); else PanelRouter.mount(PanelView.LIST);
     }
 
-    // COMMENT: Inject the correct UI based on current display mode
+    // 根据当前显示模式注入对应的 UI
     static async injectUIForCurrentMode(prompts) {
       const displayMode = await PromptStorageManager.getDisplayMode();
-      // COMMENT: Skip reinjection when the requested mode is already mounted and healthy
+      // 请求的模式已挂载且正常时，跳过重复注入
       const hasButtonUI = PromptUIManager.state.buttonContainer &&
         document.body.contains(PromptUIManager.state.buttonContainer);
       const hasHotCornerUI = PromptUIManager.state.hotCornerContainer &&
@@ -2863,12 +2806,38 @@
   /* Prompt Processor */
   class PromptProcessor {
     static extractVariables(content) {
-      // COMMENT: Regex updated to support Chinese characters (\u4e00-\u9fa5) in variable names
-      const regex = /#([a-zA-Z0-9_\u4e00-\u9fa5]+)#/g;
-      return [...new Set([...content.matchAll(regex)].map(m => m[1]))];
+      // 支持中文字符、额外标点和 label:placeholder 语法
+      // 允许: a-z, A-Z, 0-9, _, 中文, ：:，,/、&
+      // 排除十六进制颜色（如 #ff0000, #3A6EA5）
+      const regex = /#([a-zA-Z0-9_\u4e00-\u9fa5]+)(?:[:：]([^#]*))?#/g;
+      const matches = [...content.matchAll(regex)];
+      const variables = [];
+      const seenNames = new Set();
+
+      for (const match of matches) {
+        const varName = match[1];
+        const placeholder = match[2] || '';
+
+        // 跳过十六进制颜色模式
+        if (!placeholder && /^[0-9a-fA-F]{3}$|^[0-9a-fA-F]{6}$/.test(varName)) continue;
+
+        // 跳过重复变量名
+        if (seenNames.has(varName)) continue;
+        seenNames.add(varName);
+
+        variables.push({
+          name: varName,
+          label: varName,
+          placeholder: placeholder || varName
+        });
+      }
+      return variables;
     }
     static replaceVariables(content, values) {
-      return Object.entries(values).reduce((res, [k, v]) => res.replace(new RegExp(`#${k}#`, 'g'), v), content);
+      // 替换所有变量模式，包括带占位符语法的变量
+      return content.replace(/#([a-zA-Z0-9_\u4e00-\u9fa5]+)(?:[:：][^#]*)?#/g, (match, varName) => {
+        return values[varName] !== undefined ? values[varName] : match;
+      });
     }
   }
 
@@ -2886,11 +2855,11 @@
     };
 
     /**
-     * COMMENT: Main prompt selection handler reused across listeners.
+     * 跨监听器复用的主提示词选择处理器。
      * @param {Prompt} prompt
      */
     const handlePromptSelect = async (prompt) => {
-      // COMMENT: Be resilient — if input box isn't ready yet, wait briefly before giving up
+      // 容错处理：若输入框尚未就绪，短暂等待后再放弃
       let inputBox = await InputBoxHandler.getInputBox();
       if (!inputBox) {
         try {
@@ -2989,7 +2958,7 @@
           const { onPromptsChanged } = await import(chrome.runtime.getURL('promptStorage.js'));
           onPromptsChanged(debouncedRefresh);
         } catch (err) {
-          state.storageWatcherAttached = false; // COMMENT: Allow retry if import fails transiently
+          state.storageWatcherAttached = false; // 导入瞬时失败时允许重试
           console.error('Failed to attach unified prompts change listener:', err);
         }
       })();
@@ -3003,14 +2972,14 @@
       if (state.initialized) return;
       state.initialized = true;
 
-      // COMMENT: Load theme preference before UI injection
+      // 注入 UI 前先加载主题偏好
       try {
         window.isDarkModeForced = await PromptStorageManager.getForceDarkMode();
       } catch (_) { /* ignore */ }
 
       state.processor = processor;
       ensurePromptSelectionListener();
-      // COMMENT: Inject UI immediately on page load without waiting for input box detection
+      // 页面加载时立即注入 UI，无需等待输入框检测
       PromptStorageManager.getPrompts()
         .then(prompts => PromptUIManager.injectUIForCurrentMode(prompts))
         .catch(err => console.error('Error initializing extension UI:', err));

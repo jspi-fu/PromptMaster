@@ -1,7 +1,4 @@
-/* ============================================================================
-   Prompt Manager Shared UI Helpers (content.shared.js)
-   COMMENT: Houses TagService, TagUI, and PromptUI so content.js stays lean.
-   ============================================================================ */
+// 共享 UI 辅助模块（TagService / TagUI / PromptUI），减轻 content.js 的体积
 (function registerPromptManagerShared() {
   function initPromptManagerShared() {
     if (window.__OPM_PROMPT_SHARED__) return;
@@ -135,13 +132,12 @@
             if (idx === activeIndex) item.classList.add('active');
 
             item.addEventListener('mousedown', e => {
-              // COMMENT: Prevent input blur (keep focus) and stop global mousedown (OutsideClickCloser)
+              // 阻止输入框失焦，并阻止事件冒泡到全局 mousedown（OutsideClickCloser）
               e.preventDefault();
               e.stopPropagation();
             });
 
             item.addEventListener('click', e => {
-              // COMMENT: Handle action logic here
               e.preventDefault();
               e.stopPropagation();
               addTag(t);
@@ -200,7 +196,7 @@
         },
         createTagsBar({ tags = [], counts = new Map(), onSelect, selectedTag = 'all' } = {}) {
           const bar = createEl('div', { className: `opm-tags-filter-bar opm-${getMode()}` });
-          // COMMENT: Create a wrapper for the tags to allow scroll-vs-wrap behavior
+          // 标签外层容器，用于支持滚动与换行两种布局模式
           const wrapper = createEl('div', { className: 'opm-tags-wrapper' });
           window.ScrollVisibilityManager?.observe(wrapper);
 
@@ -234,7 +230,6 @@
 
           bar.appendChild(wrapper);
 
-          // COMMENT: Add expand/collapse button
           const expandBtn = createEl('button', {
             className: `opm-tags-expand-btn opm-${getMode()}`,
             innerHTML: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`,
@@ -280,12 +275,12 @@
               }
             }
           });
-          // COMMENT: 标题+预览的纵向容器
+          // 标题+预览的纵向容器
           const textWrap = createEl('div', { styles: { flex: '1', minWidth: '0' } });
           const text = createEl('div');
           text.textContent = prompt.title;
           textWrap.appendChild(text);
-          // COMMENT: 搜索匹配预览元素（默认隐藏）
+          // 搜索匹配预览元素（默认隐藏）
           const preview = createEl('div', {
             className: `opm-search-preview opm-${getMode()}`,
             styles: { display: 'none' }
@@ -363,7 +358,7 @@
           const text = createEl('div', { styles: { flex: '0 0 auto' } });
           text.textContent = prompt.title;
           info.appendChild(text);
-          // COMMENT: 搜索匹配预览元素（默认隐藏，由 filterPromptItems 控制显隐与内容）
+          // 搜索匹配预览元素（默认隐藏，由 filterPromptItems 控制显隐与内容）
           const preview = createEl('div', {
             className: `opm-search-preview opm-${getMode()}`,
             styles: { display: 'none' }
@@ -486,12 +481,12 @@
             if (!isDragging || !ghost) return;
             e.preventDefault();
 
-            // Move ghost
+            // 移动拖拽幽灵元素
             const ghostHeight = ghost.offsetHeight;
             ghost.style.top = `${e.clientY - (ghostHeight / 2)}px`;
             ghost.style.left = `${e.clientX + 10}px`;
 
-            // Auto scroll
+            // 自动滚动
             const rect = promptsContainer.getBoundingClientRect();
             if (autoScrollTimer) clearInterval(autoScrollTimer);
             autoScrollTimer = null;
@@ -502,7 +497,7 @@
               autoScrollTimer = setInterval(() => { promptsContainer.scrollTop += SCROLL_SPEED_PX; }, 16);
             }
 
-            // Swap logic
+            // 交换逻辑
             const mouseY = e.clientY;
             const items = getListItems();
             let target = null;
@@ -1013,14 +1008,14 @@
             } catch (_) { /* ignore */ }
           })();
 
-          // COMMENT: Builder keeps Gitee + review links consistent (icon + label + spacing).
+          // 统一构建社区链接（图标 + 标签 + 间距），保持 Gitee 与反馈链接风格一致
           // 使用 CSS class 让颜色跟随主题自动切换，无需硬编码
           const createCommunityLink = ({ label, href, icon, alt }) => {
             const link = createEl('a', {
               attributes: { href, target: '_blank', rel: 'noopener noreferrer' },
               className: `opm-community-link opm-${getMode()}`
             });
-            // COMMENT: 保留图标原始颜色，不应用主题 filter，让 Gitee 红、Coffee 棕等原色显示
+            // 保留图标原始颜色，不应用主题 filter，让 Gitee 红、Coffee 棕等原色显示
             const iconImg = createEl('img', {
               attributes: { src: chrome.runtime.getURL(icon), alt, width: '20', height: '20' }
             });
@@ -1029,7 +1024,7 @@
             return link;
           };
 
-          // COMMENT: Highlight community call-to-actions so users can find Gitee + reviews fast.
+          // 突出社区链接区域，方便用户快速找到 Gitee 仓库与反馈入口
           const communityTitle = createEl('div', {
             className: `opm-community-title opm-${getMode()}`,
             innerHTML: chrome.i18n.getMessage('supportOurWork')
@@ -1061,14 +1056,14 @@
         },
         async createEditView() {
           const prompts = await window.PromptStorageManager.getPrompts();
-          // COMMENT: Treat edit view as a list variant so global search UI stays visible.
+          // 将编辑视图视为列表变体，使全局搜索 UI 保持可见
           const container = createEl('div', { className: `opm-form-container opm-view-list opm-${getMode()}`, styles: { padding: '0', display: 'flex', flexDirection: 'column', gap: '4px', minHeight: '0' } });
           const promptsContainer = createEl('div', { className: `${SELECTORS.PROMPT_ITEMS_CONTAINER} opm-prompt-list-items opm-${getMode()}`, styles: { maxHeight: '350px', overflowY: 'auto', marginBottom: '4px' } });
           const reorder = Reorder.attach(
             promptsContainer,
             prompts,
             async (newPrompts) => {
-              // COMMENT: Persist the reordered list without remounting so scroll position stays stable.
+              // 持久化重排后的列表但不重新挂载，以保持滚动位置稳定
               prompts.splice(0, prompts.length, ...newPrompts);
               Array.from(promptsContainer.children)
                 .filter(node => node.classList?.contains('opm-prompt-list-item'))
@@ -1117,7 +1112,7 @@
           container.appendChild(promptsContainer);
 
           (async () => {
-            // COMMENT: Mirror the LIST view tag filter so edit mode can reuse combined tag+search filtering.
+            // 复用列表视图的标签筛选栏，使编辑模式也能使用标签+搜索联合过滤
             const tagsHost = document.querySelector(`#${SELECTORS.PANEL_CONTENT} .opm-tags-filter-host`);
             if (!tagsHost) return;
             try {
@@ -1164,7 +1159,7 @@
           hideEl(listEl);
         },
         startCloseTimer(listEl, onClose) {
-          // COMMENT: 允许通过全局开关彻底禁用“闲置自动收回”机制（用户更偏好手动控制面板显示）
+          // 允许通过全局开关彻底禁用”闲置自动收回”机制（用户更偏好手动控制面板显示）
           if (window.PROMPT_DISABLE_AUTO_CLOSE === true) {
             Behaviors.cancelCloseTimer();
             return;

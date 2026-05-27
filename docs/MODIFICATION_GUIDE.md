@@ -980,5 +980,5 @@ if (left + panelWidth > window.innerWidth - 10) {
 ---
 
 **最后更新**：2026-05-13
-**版本**：v2.7.4
+**版本**：v2.8.0
 
