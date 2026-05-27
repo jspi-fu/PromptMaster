@@ -1954,8 +1954,22 @@
       PromptUIManager._previewTimer = setTimeout(() => {
         const panel = document.createElement('div');
         panel.className = `opm-preview-panel opm-${getMode()}`;
-        panel.textContent = content;
         panel.style.whiteSpace = 'pre-wrap';
+
+        // COMMENT: 应用搜索高亮到预览面板
+        const searchInput = document.getElementById(SELECTORS.PROMPT_SEARCH_INPUT);
+        const searchTerm = searchInput ? searchInput.value.trim().toLowerCase() : '';
+        if (searchTerm) {
+          const esc = s => s.replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+          const escTerm = esc(searchTerm);
+          const escaped = esc(content);
+          panel.innerHTML = escaped.replace(
+            new RegExp(escTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'),
+            m => `<mark>${m}</mark>`
+          );
+        } else {
+          panel.textContent = content;
+        }
 
         // COMMENT: 将预览面板放入 button-container 中，与 prompt-list 共享同一个定位上下文（button-container），
         // 使用 absolute 定位确保在所有平台上相对位置一致，避免宿主页面 CSS 干扰
@@ -1971,7 +1985,7 @@
         const mainPanel = qs(`#${SELECTORS.PROMPT_LIST}`);
         const mainRect = mainPanel ? mainPanel.getBoundingClientRect() : null;
         const panelW = 280;
-        const panelH = mainRect ? mainRect.height : 450;
+        const panelH = 450; // 与 prompt-list CSS 固定高度一致
         const gap = 14;
         panel.style.width = panelW + 'px';
         panel.style.height = panelH + 'px';
@@ -2177,11 +2191,11 @@
         matchIndex = tagsLower.indexOf(searchTerm);
       }
       if (matchIndex < 0) return '';
-      const halfLen = Math.floor((MAX_SNIPPET - searchTerm.length) / 2);
-      let start = Math.max(0, matchIndex - halfLen);
-      let end = Math.min(source.length, matchIndex + searchTerm.length + halfLen);
+      // 固定显示关键词及其之后的文字，保证关键词一定会出现在摘要中
+      const afterKeyword = matchIndex + searchTerm.length;
+      let start = matchIndex; // 从关键词开始
+      let end = Math.min(source.length, afterKeyword + MAX_SNIPPET - searchTerm.length);
       let snippet = source.substring(start, end);
-      if (start > 0) snippet = '...' + snippet;
       if (end < source.length) snippet = snippet + '...';
       const escaped = esc(snippet);
       return escaped.replace(

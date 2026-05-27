@@ -623,6 +623,15 @@
     .opm-preview-panel.opm-dark::-webkit-scrollbar-thumb {
       background: rgba(255, 255, 255, 0.15);
     }
+    .opm-preview-panel mark {
+      background-color: var(--search-highlight);
+      color: inherit;
+      padding: 0;
+      border-radius: 2px;
+    }
+    .opm-preview-panel.opm-dark mark {
+      background-color: var(--search-highlight-dark);
+    }
     @keyframes opm-preview-fadein {
       from { opacity: 0; transform: translateX(-4px); }
       to { opacity: 1; transform: translateX(0); }
