@@ -10,14 +10,14 @@
   /* 浅色主题 */
   --light-bg: #F7FAFC;
   --light-text: #1e293b;
-  --light-text-secondary: #64748b;
+  --light-text-secondary: #1e293b;
   --light-border: #E2E8F0;
   --light-card-bg: #ffffff;
 
   /* 暗色主题（预定义，供暗色模式覆盖） */
   --dark-bg: #0F0F0F;
   --dark-text: #E8E8E8;
-  --dark-text-secondary: #888888;
+  --dark-text-secondary: #E8E8E8;
   --dark-border: #2A2A2A;
   --dark-input-bg: #1A1A1A;
   --dark-input-border: #3A3A3A;
@@ -237,7 +237,7 @@ body {
 .custom-onboarding-gif-title {
     font-size: 1.2rem;
     margin-bottom: 0.5rem;
-    color: var(--dark-text);
+    color: #475569;
 }
 
 .custom-onboarding-caption {
@@ -254,7 +254,7 @@ body {
 .custom-features-title {
   margin: 0 0 0.75rem 0;
   font-size: 1.35rem;
-  color: var(--dark-text);
+  color: #475569;
   text-align: center;
 }
 .custom-features-list {
@@ -294,7 +294,7 @@ body {
   flex-shrink: 0;
 }
 .custom-feature-text {
-  color: var(--dark-text);
+  color: #59606c9e;
   font-size: 0.95rem;
 }
 /* COMMENT: Subtitles live in a vertical stack so each feature reads like a mini card */

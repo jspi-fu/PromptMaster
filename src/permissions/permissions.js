@@ -103,15 +103,12 @@ document.addEventListener('DOMContentLoaded', function () {
           getStartedBtnContainer.innerHTML = `
             <div style="display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 16px; margin-top: 1.5rem;">
               <button id="get-started-best-practices-btn" class="custom-button" style="height: 46px; padding: 0 1.5rem; border-radius: 8px; font-size: 1rem; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: none; cursor: pointer; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.1s;">
-                <img src="../icons/icon-button.png" alt="Icon" width="20" height="20" style="object-fit: cover; filter: brightness(0) invert(1);"> 
+                <img src="../icons/icon-button.png" alt="Icon" width="20" height="20" style="object-fit: cover; filter: brightness(0) invert(1);">
                 <span style="font-weight: 500;">${t('startFromBestPractice')}</span>
-              </button>
-              <button id="get-started-scratch-btn" style="height: 46px; padding: 0 1.5rem; border-radius: 8px; font-size: 1rem; border: 1px solid #e2e8f0; background: #fff; color: #64748b; font-weight: 500; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center;">
-                ${t('startFromScratch')}
               </button>
             </div>`;
 
-          // Button 1: Start with Best Practices (Import -> Open)
+          // Button: Start with Best Practices (Import -> Open)
           document.getElementById('get-started-best-practices-btn').addEventListener('click', async () => {
             try {
               const importUrl = chrome.runtime.getURL('/default-prompts.json');
@@ -126,11 +123,6 @@ document.addEventListener('DOMContentLoaded', function () {
             } catch (e) {
               console.error('Error importing default prompts:', e);
             }
-            window.open(resolvedUrl, '_blank');
-          });
-
-          // Button 2: Start from Scratch (Just Open)
-          document.getElementById('get-started-scratch-btn').addEventListener('click', () => {
             window.open(resolvedUrl, '_blank');
           });
         }
