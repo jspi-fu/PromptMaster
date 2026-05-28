@@ -67,7 +67,7 @@
       "name": "NotebookLM",
       "pattern": "*://notebooklm.google.com/*",
       "url": "https://notebooklm.google.com",
-      "icon_url": "https://notebooklm.google.com/_/static/branding/v5/light_mode/favicon/favicon.svg",
+      "icon_url": "https://bsyimg.luoca.net/imgtc/20260528/544c027b199396ff7c516ab94ce80f33.webp",
       "element_selector": "textarea"
     },
     {
@@ -165,7 +165,7 @@
       "name": "阶跃AI",
       "pattern": "*://www.stepfun.com/*",
       "url": "https://www.stepfun.com/",
-      "icon_url": "https://www.stepfun.com/favicon.ico",
+      "icon_url": "https://bsyimg.luoca.net/imgtc/20260528/310808cde1bd8c0930ad4566c14898d5.webp",
       "element_selector": "textarea"
     }
   ]

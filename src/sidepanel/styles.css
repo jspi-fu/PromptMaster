@@ -128,14 +128,23 @@ html::-webkit-scrollbar {
     outline: none;
   }
 
+  #prompt-title {
+    min-height: 36px;
+    height: 36px;
+    line-height: 22px;
+    vertical-align: middle;
+  }
+
   input[type="text"]:focus,
   textarea:focus {
     border-color: var(--primary);
   }
 
   textarea {
-    resize: vertical;
-    min-height: 220px; /* 约 10 行文本高度，超出后再出现滚动条 */
+    resize: none;
+    min-height: 88px;
+    max-height: 330px;
+    overflow-y: auto;
   }
 
   #prompt-content {
@@ -660,12 +669,12 @@ html.force-dark .llm-pill.icon-only:hover .llm-pill-icon {
   :root:not(.force-light) #prompt-list button:hover {
     background-color: var(--dark-hover-bg);
   }
-  /* COMMENT: 暗色模式下搜索匹配预览样式 */
   :root:not(.force-light) .search-match-preview {
     color: var(--light-text-secondary);
   }
   :root:not(.force-light) .search-match-preview mark {
     background-color: var(--search-highlight-dark);
+    color: #ffffff;
   }
 
     /* Info banner unified dark theme */
@@ -891,7 +900,7 @@ html.force-dark footer.footer {
 
   /* 搜索高亮 */
   --search-highlight: rgba(250, 204, 21, 0.35);
-  --search-highlight-dark: rgba(250, 204, 21, 0.25);
+  --search-highlight-dark: rgba(59, 130, 246, 0.5);
 }
 
 /* Headings adopt primary colour */
@@ -1113,8 +1122,14 @@ button.main:hover {
   border: 1px solid var(--primary);
   border-radius: 6px;
   background-color: #ffffff;
-  align-items: flex-start;
+  align-items: center;
   min-height: 36px;
+  height: auto;
+  max-height: 108px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -1145,12 +1160,14 @@ html.force-dark .tags-container {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 2px 8px;
+  padding: 3px 8px;
   border-radius: 9999px;
   background-color: rgba(54, 116, 181, 0.12);
   color: var(--primary);
   font-size: 12px;
-  line-height: 1.4;
+  line-height: 18px;
+  height: 24px;
+  box-sizing: border-box;
   user-select: none;
   cursor: default;
 }
@@ -1205,6 +1222,9 @@ html.force-dark .tag-pill {
   margin-bottom: 0 !important;
   outline: none;
   text-align: left;
+  min-height: 24px;
+  height: 24px;
+  line-height: 20px;
 }
 
 #tag-input:focus {
@@ -1214,4 +1234,9 @@ html.force-dark .tag-pill {
 /* 标签输入框 placeholder 左对齐 */
 #tag-input::placeholder {
   text-align: left;
+}
+
+.tags-container::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }

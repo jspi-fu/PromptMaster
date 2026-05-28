@@ -206,6 +206,7 @@ body {
 .custom-onboarding-title {
     margin-bottom: 1.5rem;
     font-size: 1.5rem; /* Adjusted font size */
+    color: #000000;
 }
 
 .custom-row {

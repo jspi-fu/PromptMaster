@@ -50,6 +50,17 @@ let llmsAvailableCollapsed = true;
 // 跟踪提示词管理的折叠状态（默认折叠）
 let pmCollapsed = true;
 
+let contentInputRef = null;
+
+function autoResizeTextarea() {
+  if (contentInputRef) {
+    contentInputRef.style.height = 'auto';
+    const computedStyle = window.getComputedStyle(contentInputRef);
+    const scrollHeight = contentInputRef.scrollHeight;
+    contentInputRef.style.height = `${scrollHeight}px`;
+  }
+}
+
 // 平滑展开/折叠可折叠元素，不自动滚动视图
 function setCollapsibleOpen(collapsibleEl, open) {
   if (!collapsibleEl) return;
@@ -439,12 +450,14 @@ function createPromptItem(prompt, index, searchTerm) {
     hidePreviewPanel();
     // 填充编辑表单
     document.getElementById('prompt-title').value = prompt.title;
-    document.getElementById('prompt-content').value = prompt.content;
+    const contentInput = document.getElementById('prompt-content');
+    contentInput.value = prompt.content;
     document.getElementById('prompt-index').value = index;
 
-    // 加载标签
     currentTags = prompt.tags ? [...prompt.tags] : [];
     renderTags();
+
+    autoResizeTextarea();
 
     document.getElementById('submit-button').innerHTML = `<img src="../icons/add-icon.png" alt="${t('add')}" style="margin-right: 5px" /><span>${t('updatePrompt')}</span>`;
     document.getElementById('cancel-edit-button').style.display = 'inline';
@@ -777,9 +790,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const infoBanner = document.getElementById('info-banner');
   const infoBannerClose = document.getElementById('info-banner-close');
   
-  // 标签相关 DOM 引用（currentTags 与 renderTags 已提升至模块级）
   const tagsContainer = document.getElementById('tags-container');
   const tagInput = document.getElementById('tag-input');
+
+  contentInputRef = contentInput;
+  if (contentInputRef) {
+    contentInputRef.addEventListener('input', autoResizeTextarea);
+    autoResizeTextarea();
+  }
 
   // 添加标签（去重、去空白）
   function addTag(tagName) {
@@ -964,24 +982,23 @@ document.addEventListener('DOMContentLoaded', () => {
       }).catch(console.error);
     }
 
-    // 重置表单
     titleInput.value = '';
     contentInput.value = '';
     promptIndexInput.value = '';
     clearTags();
     submitButton.innerHTML = `<img src="../icons/add-icon.png" alt="${t('add')}" style="margin-right: 5px" /><span>${t('savePrompt')}</span>`;
     cancelEditButton.style.display = 'none';
+    autoResizeTextarea();
   });
 
-  // 取消编辑
   cancelEditButton.addEventListener('click', () => {
-    // 重置表单
     titleInput.value = '';
     contentInput.value = '';
     promptIndexInput.value = '';
     clearTags();
     submitButton.innerHTML = `<img src="../icons/add-icon.png" alt="${t('add')}" style="margin-right: 5px" /><span>${t('addPrompt')}</span>`;
     cancelEditButton.style.display = 'none';
+    autoResizeTextarea();
   });
 
   // 导出提示词

@@ -115,7 +115,7 @@
       --tag-selected-border: #BBD3FF;
       /* 搜索高亮 */
       --search-highlight: rgba(250, 204, 21, 0.35);
-      --search-highlight-dark: rgba(250, 204, 21, 0.25);
+      --search-highlight-dark: rgba(59, 130, 246, 0.5);
     }
     #${SELECTORS.ROOT} {
       --transition-speed: 0.3s;
@@ -535,6 +535,7 @@
     }
     #${SELECTORS.ROOT} .opm-search-preview.opm-dark mark {
       background-color: var(--search-highlight-dark);
+      color: #ffffff;
     }
 
     /* Prompt hover preview panel */
