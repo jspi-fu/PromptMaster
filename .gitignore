@@ -40,3 +40,4 @@ public/files/
 *.tmp
 *.temp 
 temp/
+.codegraph/

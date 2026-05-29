@@ -2391,7 +2391,7 @@
       const singleMode = count <= 1;
       const splitMode = count === 2 || count === 3;   // 2-3 个变量时均分可用高度
       const listMode = count >= 4;                    // 4+ 变量时使用紧凑单行列表
-      const itemGap = listMode ? '8px' : '12px';
+      const itemGap = '6px';
       // 单变量模式下不扩展填充全部可用高度
       const varContainerFlex = singleMode ? '0 1 auto' : '1 1 auto';
       const varContainer = createEl('div', {
@@ -2452,31 +2452,26 @@
             padding: '0 2px'
           }
         });
-        // 使用约三行高度的文本框方便多行输入
-        // 行数：单变量=紧凑编辑器；2-3=共享垂直空间；4+=紧凑单行列表
-        const rowsAttr = listMode ? '1' : (splitMode ? '3' : '6');
+        // 所有模式下至少 3 行高度，内容超出时自适应增加
         const inputField = createEl('textarea', {
-          // 根据模式调整行数，使用清晰的占位提示
-          attributes: { rows: rowsAttr, placeholder: `请根据需要输入"${placeholderText}"` },
+          attributes: { rows: '3', placeholder: `请根据需要输入"${placeholderText}"` },
           className: `opm-textarea-field opm-${getMode()}`,
-          // 文本框在行内自适应扩展，分割模式禁用手动调整以保持均匀分布
-          // 最小高度约一行；变量多且空间不足时容器滚动
           styles: {
-            // 增加垂直内边距以提升输入舒适度
             padding: '12px 10px',
-            // 较大的最小高度，无需手动调整即可使用
-            minHeight: listMode ? '32px' : '80px',
-            // 列表模式强制单行高度
-            height: listMode ? '32px' : 'auto',
-            // 确保尺寸计算包含内边距和边框，防止布局溢出
+            minHeight: '72px',
+            height: 'auto',
             boxSizing: 'border-box',
             width: '100%',
-            // 弹性行为取决于模式：分割模式均匀填充，单变量和列表模式紧凑布局
-            flex: '1 1 auto',
+            flex: listMode ? '0 0 auto' : '1 1 auto',
             resize: (splitMode || listMode) ? 'none' : 'vertical'
           }
         });
-        inputField.addEventListener('input', () => { varValues[varName] = inputField.value; });
+        inputField.addEventListener('input', () => {
+          varValues[varName] = inputField.value;
+          // 自适应高度：内容超过 3 行时自动扩展
+          inputField.style.height = 'auto';
+          inputField.style.height = inputField.scrollHeight + 'px';
+        });
         // 保留回车提交行为，与之前的单行输入保持一致
         inputField.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); submitBtn.click(); } });
         row.append(label, inputField);
