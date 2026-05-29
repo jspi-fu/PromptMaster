@@ -1,6 +1,6 @@
 {
     "name": "prompt-master",
-    "version": "2.8.1",
+    "version": "2.8.2",
     "dependencies": {
         "jest": "^29.7.0",
         "puppeteer": "^24.4.0"
